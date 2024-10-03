@@ -20,9 +20,11 @@ const App = () => {
           <Stack.Navigator
             screenOptions={{headerShown: false}}
             initialRouteName="Onboarding">
+            <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+            <Stack.Screen name="Login" component={LoginScreen} /> 
             <Stack.Screen name="HomeScreen" component={HomeScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Onboarding" component={OnboardingScreen} />           
+            
+                     
           </Stack.Navigator>
         </NavigationContainer>
       </GestureHandlerRootView>

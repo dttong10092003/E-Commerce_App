@@ -9,15 +9,18 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 
 type Props = {};
-export type RootStackParamList = {
-  Login: { id: number } | undefined;
-
-};
 
 const OnboardingScreen = (props: Props) => {
+  const navigate = useNavigation();
+  const handlDone = () => {
+    navigate.navigate('Login'); // nhan de sang trang Login
+  };
+
   return (
     <View className="flex-1">
       <Onboarding
+        onSkip={handlDone} // nhan de qua trang khac
+        onDone={handlDone}
         pages={[
           {
             backgroundColor: '#fff',
