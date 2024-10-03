@@ -4,7 +4,7 @@ import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SplashScreen from 'react-native-splash-screen';
-import { HomeScreen, OnboardingScreen, LoginScreen } from './src/screens';
+import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen, SignupScreen } from './src/screens';
 
 const App = () => {
   const Stack = createNativeStackNavigator();
@@ -23,6 +23,8 @@ const App = () => {
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
             <Stack.Screen name="Login" component={LoginScreen} /> 
             <Stack.Screen name="HomeScreen" component={HomeScreen} />
+            <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+            <Stack.Screen name="Signup" component={SignupScreen} />
             
                      
           </Stack.Navigator>

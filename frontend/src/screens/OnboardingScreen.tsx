@@ -1,7 +1,7 @@
 import { View, Text, Image } from 'react-native';
 import React from 'react';
 import Onboarding from 'react-native-onboarding-swiper';
-import { images } from '../constants';
+import  images  from '../constants/images';
 import { SplashData } from '../constants/data';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -13,7 +13,7 @@ type Props = {};
 const OnboardingScreen = (props: Props) => {
   const navigate = useNavigation();
   const handlDone = () => {
-    navigate.navigate('Login'); // nhan de sang trang Login
+    navigate.navigate('Login');
   };
 
   return (
