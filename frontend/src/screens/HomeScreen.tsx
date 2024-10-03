@@ -3,6 +3,7 @@ import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
 import {Image, Text, View} from 'react-native';
 import icons from '../constants/icons';
 import {HomeTab, WishlistTab, CartTab, SearchTab, SettingTab} from '../tabs';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type TabBarItemProps = {
   source: any; // Adjust type according to your image sources
@@ -17,7 +18,7 @@ const TabBarItem: React.FC<TabBarItemProps> = ({
   name,
 }) => {
   return (
-    <View
+    <SafeAreaView
       style={{
         justifyContent: 'center',
         alignItems: 'center',
@@ -53,7 +54,7 @@ const TabBarItem: React.FC<TabBarItemProps> = ({
           {name}
         </Text>
       )}
-    </View>
+    </SafeAreaView>
   );
 };
 type Props = {};
