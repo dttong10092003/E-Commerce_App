@@ -1,14 +1,15 @@
-import { View, Text } from 'react-native';
+import {View, Text} from 'react-native';
 import React from 'react';
 
-type Props = {};
+
+type Props = {}
 
 const LoginScreen = (props: Props) => {
-    return (
-        <View>
-            <Text>Login Screen</Text>
-        </View>
-    );
-}
+  return (
+    <View>
+      <Text>LoginScreen</Text>
+    </View>
+  );
+};
 
 export default LoginScreen;
