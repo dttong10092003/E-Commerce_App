@@ -17,7 +17,7 @@ const LoginScreen = (props: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     email: '',
-    username: '',
+    username: '', // Có thể bỏ username chỉ lấy email thôi
     password: '',
   });
 

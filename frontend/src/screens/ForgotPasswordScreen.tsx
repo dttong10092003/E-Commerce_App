@@ -50,15 +50,15 @@ const ForgotPasswordScreen = (props: Props) => {
         />
       </View>
 
-      <Text style={styles.noteText}>
-          <Text style={styles.asterisk}>*</Text> We will send you a message to set or reset your new password
+      <Text className="text-[#676767] text-lg font-medium self-end">
+          <Text className="text-red-600">*</Text> We will send you a message to set or reset your new password
       </Text>
 
       <CustomButton
         title="Submit"
         handlePress={handleForgotPasswordSubmit}
         isLoading={isSubmitting}
-        containerStyle="py-5"
+        containerStyle="py-5 mt-7"
       />
     </SafeAreaView>
   );
@@ -77,15 +77,4 @@ const styles = StyleSheet.create({
     height: 24,
     marginRight: 5,
   },
-  noteText: {
-    color: '#676767',
-    fontSize: 14, 
-    marginTop: 10,
-    marginBottom: 40, 
-  },
-  asterisk: {
-    color: '#FF4B28',
-    fontSize: 14,
-  },
- 
 });
