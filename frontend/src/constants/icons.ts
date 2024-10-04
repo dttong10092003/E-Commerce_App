@@ -1,6 +1,7 @@
 const eye = require('../assets/icons/eye.png');
 const eyeHide = require('../assets/icons/eye_hide.png');
 const next1 = require('../assets/icons/arrow_right.png');
+const back = require('../assets/icons/arrow_left.png');
 const buy_now = require('../assets/icons/but_now.png');
 const apple = require('../assets/icons/apple.png');
 const calender = require('../assets/icons/calender.png');
@@ -34,6 +35,7 @@ export default {
   cart_circle,
   buy,
   next1,
+  back,
   buy_now,
   apple,
   calender,
