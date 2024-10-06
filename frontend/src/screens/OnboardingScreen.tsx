@@ -9,11 +9,14 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 
 type Props = {};
+export type RootStackParamList = {
+  Login: undefined;
 
+};
 const OnboardingScreen = (props: Props) => {
-  const navigate = useNavigation();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const handlDone = () => {
-    navigate.navigate('Login');
+    navigation.navigate('Login');
   };
 
   return (
