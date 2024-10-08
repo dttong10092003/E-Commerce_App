@@ -1,4 +1,4 @@
-import {View, Text, Image, TouchableOpacity } from 'react-native';
+import {View, Text, Image, TouchableOpacity,ImageSourcePropType, } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React from 'react';
 import {useNavigation} from '@react-navigation/native';
@@ -55,3 +55,20 @@ const HomeTab = (props: Props) => {
 };
 
 export default HomeTab;
+type FeaturesDataProps = {
+  id: number;
+  title: string;
+  image: ImageSourcePropType;
+};
+export const FeaturesData: FeaturesDataProps[] = [
+  {
+    id: 1,
+    title: 'Sort',
+    image: icons.sort,
+  },
+  {
+    id: 2,
+    title: 'Filter',
+    image: icons.filter,
+  },
+];

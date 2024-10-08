@@ -26,7 +26,10 @@ const cart_circle = require('../assets/icons/cart_circle.png');
 const buy = require('../assets/icons/buy.png');
 const components = require('../assets/icons/components.png');
 const pen = require('../assets/icons/pen.png');
-
+const favorites = require('../assets/icons/favorites.png');
+const share = require('../assets/icons/share.png');
+const policy = require('../assets/icons/policy.png');
+const location = require('../assets/icons/location.png');
 export default {
   eyeHide,
   pen,
@@ -56,4 +59,8 @@ export default {
   show_all,
   sort,
   user,
+  favorites,
+  share,
+  policy,
+  location,
 };

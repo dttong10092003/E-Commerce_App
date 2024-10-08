@@ -4,9 +4,9 @@ import {Image, Text, View} from 'react-native';
 import icons from '../constants/icons';
 import {HomeTab, WishlistTab, CartTab, SearchTab, SettingTab} from '../tabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { ItemDetails } from '../constants/types';
 type TabBarItemProps = {
-  source: any; // Adjust type according to your image sources
+  source: any; 
   focused: boolean;
   cart?: boolean;
   name?: string;
@@ -58,6 +58,13 @@ const TabBarItem: React.FC<TabBarItemProps> = ({
   );
 };
 type Props = {};
+export type RouteTabsParamList = {
+  Home: undefined;
+  Wishlist: undefined;
+  Cart: {itemDetails: ItemDetails}  | undefined;
+  Search: {query: string} | undefined;
+  Setting: undefined;
+};
 const HomeScreen = (props: Props) => {
   const Tab = createBottomTabNavigator();
 

@@ -5,6 +5,20 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SplashScreen from 'react-native-splash-screen';
 import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen, SignupScreen, GetStartedScreen } from './src/screens';
+import ProductsDetailsScreen from './src/screens/ProductsDetailsScreen';
+import {ItemDetails} from './src/constants/types';
+export type RouteStackParamList = {
+  Onboarding: undefined;
+  GetStarted: undefined;
+  Login: undefined;
+  Signup: undefined;
+  HomeScreen: undefined;
+  Profile: undefined;
+  Checkout: undefined;
+  PlaceOrder: {itemDetails: ItemDetails} | undefined;
+  ForgotPassword: undefined;
+  ProductDetails: {itemDetails: ItemDetails} | undefined;
+};
 
 const App = () => {
   const Stack = createNativeStackNavigator();
@@ -19,14 +33,15 @@ const App = () => {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{headerShown: false}}
-            initialRouteName="GetStarted">
+            initialRouteName="ProductDetails">
             <Stack.Screen name="HomeScreen" component={HomeScreen} />
             <Stack.Screen name="GetStarted" component={GetStartedScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
             <Stack.Screen name="Login" component={LoginScreen} />            
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
-            
+            <Stack.Screen name="ProductDetails" component={ProductsDetailsScreen} />
+           
                      
           </Stack.Navigator>
         </NavigationContainer>
