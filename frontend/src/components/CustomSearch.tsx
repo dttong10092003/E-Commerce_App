@@ -29,8 +29,9 @@ import {
     const navigation = useNavigation<ScreenNavigationProps>();
     
     const [query, setQuery] = useState(initialQuery);
+
     const handlePress = () => {
-      if (query === '') {
+      if (query.trim() === '') {
         return Alert.alert('Please fill the required field');
       } else {
         navigation.navigate('Search', {query});
