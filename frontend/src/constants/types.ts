@@ -12,25 +12,25 @@ type FeaturesTypes = {
 };
 type ItemDetails = ProductTypes;
 type ProductTypes = {
-  image: string[];
-  status?: {
-    icon?: string;
-    name?: string;
-  };
-  _id: string;
+  image: string;
+  // status?: {
+  //   icon?: string;
+  //   name?: string;
+  // };
+  // _id: string;
   title: string;
   description: string;
   price: number;
   priceBeforeDeal: number;
   priceOff: string;
-  finalPrice: number;
+  // finalPrice: number;
   stars: number;
   numberOfReview: number;
-  ukSide?: string[] | number[];
-  tags: string[];
-  createdAt: string;
-  updatedAt: string;
-  __v: number;
+  // ukSide?: string[] | number[];
+  // tags: string[];
+  // createdAt: string;
+  // updatedAt: string;
+  // __v: number;
 };
 type TabBarTypes = {
   title?: string;

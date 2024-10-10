@@ -87,7 +87,7 @@ const randomStars = (): number => (Math.random()  * 5);
 const randomNumberOfReview = (): number => Math.floor(Math.random() * 10000);
 
 const ProductData: ProductTypes[] = Array.from(
-  {length: 15},
+  {length: 5},
   (): ProductTypes => {
     const price = randomPrice();
     const priceBeforeDeal = randomPriceBeforeDeal();

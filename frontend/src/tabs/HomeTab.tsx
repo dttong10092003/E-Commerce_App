@@ -110,12 +110,12 @@ const HomeTab = (props: Props) => {
         </View>
 
         {/* Offer */}
-        <View className='pb-5'> 
+        <View className='pb-5 mx-5'> 
           <TouchableOpacity onPress={handleDealOff}>
             <Image
                 source={images.deal_off}
-                className='w-full mt-6'
-                resizeMode='contain'
+                className='w-full mt-6 rounded-lg'
+                resizeMode='cover'
             />
           </TouchableOpacity>
         </View>
@@ -143,12 +143,13 @@ const HomeTab = (props: Props) => {
         </View>
 
         {/* New Product */}
-        <View className="my-8">
+        <View className="my-6">
           <FlatList
             data={ProductData}
             renderItem={({item}) => (
             <ProductItem
-              image={item.image[0]}
+              // image={item.image[0]}
+              image={item.image}
               title={item.title}
               description={item.description}
               price={item.price}
@@ -165,6 +166,70 @@ const HomeTab = (props: Props) => {
             contentContainerStyle={{paddingHorizontal: 20}}
           />
         </View>
+
+        {/* special Offer */}
+        <View className="flex justify-between bg-white flex-row items-center py-3 px-4 mx-5 rounded-lg">
+          <Image
+            source={icons.offer}
+            className="w-24 h-24"
+            resizeMode="contain"
+          />
+          <View className="">
+            <Text className="text-2xl mb-1 text-black-100 font-bold">
+              Special Offers
+            </Text>
+            <Text className="text-neutral-500 text-base w-52">
+              We make sure you get the offer you need at best prices
+            </Text>
+          </View>
+        </View>
+
+        {/* Flat Shoes Offer */}
+        <TouchableOpacity>
+          <View className="my-5 mx-5">
+            <Image
+              source={images.flat}
+              className="self-center w-full rounded-lg"
+              resizeMode="cover"
+            />
+          </View>
+        </TouchableOpacity>
+
+        {/* Product */}
+        <View className="my-6">
+          <FlatList
+            data={ProductData}
+            renderItem={({item}) => (
+            <ProductItem
+              // image={item.image[0]}
+              image={item.image}
+              title={item.title}
+              description={item.description}
+              price={item.price}
+              priceBeforeDeal={item.priceBeforeDeal}
+              priceOff={item.priceOff}
+              stars={item.stars}
+              numberOfReview={item.numberOfReview}
+              itemDetails={item}
+            />
+            )}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            ItemSeparatorComponent={() => <View className="w-8" />}
+            contentContainerStyle={{paddingHorizontal: 20}}
+          />
+        </View>
+
+        {/* Hot Summer */}
+        <TouchableOpacity>
+          <View className="my-5 mx-5">
+            <Image
+              source={images.hot_summer}
+              className="self-center w-full rounded-lg"
+              resizeMode="cover"
+            />
+          </View>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );
