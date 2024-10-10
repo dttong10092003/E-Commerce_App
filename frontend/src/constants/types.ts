@@ -22,7 +22,7 @@ type ProductTypes = {
   description: string;
   price: number;
   priceBeforeDeal: number;
-  priceOff: string;
+  priceOff: number;
   // finalPrice: number;
   stars: number;
   numberOfReview: number;

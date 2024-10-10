@@ -21,6 +21,7 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   const [selectedColor, setSelectedColor] = useState<string>('red'); // Default selected color
   const [quantity, setQuantity] = useState<number>(1); // Default quantity
   const [currentIndex, setCurrentIndex] = useState<number>(0); // Current image index
+  const finalPrice = itemDetails.price * quantity;
 
   const colors = ['red', 'yellow', 'blue', 'black', 'white'];
 
@@ -192,7 +193,8 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
 
       {/* Price and Add to Cart Button - Sticky at Bottom */}
       <View className="absolute bottom-0 left-0 right-0 bg-white px-4 py-3 shadow-lg flex flex-row items-center justify-between">
-        <Text className="text-3xl font-bold text-gray-900">${itemDetails?.finalPrice || '200.00'}</Text>
+        {/* <Text className="text-3xl font-bold text-gray-900">${itemDetails?.finalPrice || '200.00'}</Text> */}
+        <Text className="text-3xl font-bold text-gray-900">${finalPrice}</Text>
         <TouchableOpacity className="bg-blue-500 py-3 px-8 rounded-full shadow-lg" onPress={NavigateToCart}>
           <Text className="text-white font-semibold text-lg tracking-wider">Add To Cart</Text>
         </TouchableOpacity>

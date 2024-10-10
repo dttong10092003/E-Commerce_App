@@ -14,10 +14,10 @@ type ProductItemProps = {
   description: string;
   price: number;
   priceBeforeDeal: number;
-  priceOff: string;
+  priceOff: number;
   stars: number;
   numberOfReview: number;
-  ukSide?: number[];
+  // ukSide?: number[];
   itemDetails: ItemDetails;
 };
 
@@ -54,15 +54,13 @@ const ProductItem: React.FC<ProductItemProps> = ({
           {description}
         </Text>
         <Text className="text-black-100 font-bold text-2xl text-start">
-          {' '}
-          ${price}{' '}
+          ${price}
         </Text>
         <View className="flex flex-row items-center gap-x-3">
           <Text className="text-black-100/50 font-medium text-xl line-through text-start">
-            {' '}
-            {priceBeforeDeal}{' '}
+            {priceBeforeDeal}
           </Text>
-          <Text className="text-action font-medium text-xl"> {priceOff} </Text>
+          <Text className="text-action font-medium text-xl">{priceOff}{'%'}</Text>
         </View>
         <View className="flex flex-row items-center mb-3">
           <View>
@@ -76,9 +74,8 @@ const ProductItem: React.FC<ProductItemProps> = ({
             />
           </View>
 
-          <Text className="text-xl font-thin text-black-100/90 pl-5">
-            {' '}
-            {numberOfReview}{' '} 
+          <Text className="text-xl font-thin text-[#BBBBBB]-100 pl-5">
+            {'('}{numberOfReview}{' reviews)'}
           </Text>
         </View>
       </View>

@@ -79,15 +79,17 @@ const randomPriceBeforeDeal = (): number =>
     (randomPrice() + (Math.floor(Math.random() * 1000) + 100)).toFixed(2),
   );
 
-const randomPriceOff = (price: number, priceBeforeDeal: number): string =>
-  ((1 - price / priceBeforeDeal) * 100).toFixed(2);
+  // Sau này sử dụng data sẽ sửa lại
+const randomPriceOff = (price: number, priceBeforeDeal: number): number =>
+  parseFloat(
+  ((1 - price / priceBeforeDeal) * 100).toFixed(2));
 
 const randomStars = (): number => (Math.random()  * 5);
 
 const randomNumberOfReview = (): number => Math.floor(Math.random() * 10000);
 
 const ProductData: ProductTypes[] = Array.from(
-  {length: 5},
+  {length: 10},
   (): ProductTypes => {
     const price = randomPrice();
     const priceBeforeDeal = randomPriceBeforeDeal();
