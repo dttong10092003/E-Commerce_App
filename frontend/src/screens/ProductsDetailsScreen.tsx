@@ -1,15 +1,12 @@
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import React from 'react';
-import { FlatList, Image, ImageSourcePropType, ScrollView, Text, TouchableOpacity, View, } from 'react-native';
-import { AirbnbRating } from 'react-native-ratings';
+import React, { useState, useRef } from 'react';
+import { Image, ScrollView, Text, TouchableOpacity, View, FlatList, Animated, Dimensions } from 'react-native';
 import icons from '../constants/icons';
 import { RouteTabsParamList } from './HomeScreen';
-import LinearGradient from 'react-native-linear-gradient';
-import { FeaturesData } from '../tabs/HomeTab';
-import ProductItem from '../components/ProductItem';
-import { ProductData } from '../constants/data';
 import { RouteStackParamList } from '../../App';
+
+const { width } = Dimensions.get('window');
 
 type ScreenRouteProps = RouteProp<RouteStackParamList, 'ProductDetails'>;
 
@@ -20,291 +17,188 @@ type ProductDetailsProps = {
 const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   const { itemDetails } = route.params || {};
   const navigation = useNavigation<StackNavigationProp<RouteTabsParamList, 'Cart'>>();
+  const [selectedSize, setSelectedSize] = useState<number | null>(40); // Default selected size
+  const [selectedColor, setSelectedColor] = useState<string>('red'); // Default selected color
+  const [quantity, setQuantity] = useState<number>(1); // Default quantity
+  const [currentIndex, setCurrentIndex] = useState<number>(0); // Current image index
+
+  const colors = ['red', 'yellow', 'blue', 'black', 'white'];
+
+  const images = [
+    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/dc16a201-3c3c-4ba6-815e-26da4030dd35/W+PEGASUS+TRAIL+5+GTX.png',
+    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/2dbee938-c814-4f63-9995-b52fbc851bb6/W+PEGASUS+TRAIL+5+GTX.png',
+    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/8589a490-f175-4c2e-ab5f-cd1a4fde4c2e/W+PEGASUS+TRAIL+5+GTX.png',
+    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/fdf0cfaf-29e2-455f-8f34-0577ce7f78c5/W+PEGASUS+TRAIL+5+GTX.png',
+    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/26e88cb3-a856-40e8-a256-a33861691188/W+PEGASUS+TRAIL+5+GTX.png',
+  ];
+
+  const scrollX = useRef(new Animated.Value(0)).current;
 
   const GoBack = () => {
     navigation.goBack();
   };
+
   const NavigateToCart = () => {
-    navigation.navigate('Cart', { itemDetails: itemDetails! });
+    navigation.navigate('Cart', { itemDetails: itemDetails!, selectedColor, selectedSize, quantity });
   };
+
+  const handleIncrease = () => setQuantity(prev => prev + 1);
+  const handleDecrease = () => {
+    if (quantity > 1) setQuantity(prev => prev - 1);
+  };
+
+  const handleScroll = (event: any) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / width);
+    setCurrentIndex(index);
+  };
+
   return (
-    <ScrollView className="pt-5 px-3" >
-      {/* header */}
-      <View className="flex flex-row justify-between items-center mt-5">
+    <View className="flex-1">
+      {/* Header - Fixed at the top */}
+      <View className="absolute top-0 left-0 right-0 px-4 py-3  flex flex-row justify-between items-center z-10 mt-8 ">
         <TouchableOpacity onPress={GoBack}>
-          <Image
-            source={icons.next1}
-            className="rotate-180 w-8 h-8"
-            resizeMode="contain"
-          />
+          <Image source={icons.next1} className="rotate-180 w-8 h-8" resizeMode="contain" />
         </TouchableOpacity>
         <TouchableOpacity onPress={NavigateToCart}>
           <Image source={icons.cart} className="w-6 h-6" resizeMode="contain" />
         </TouchableOpacity>
       </View>
-      {/* image slider */}
-      <View className="mt-5">
-        <Image
-          source={{ uri: itemDetails?.image && itemDetails.image.length > 0 ? itemDetails.image[0] : 'https://static.nike.com/a/images/q_auto:eco/t_product_v1/f_auto/dpr_1.3/h_452,c_limit/d780ddce-1b20-4a3c-915c-bb46c78c7ddc/air-pegasus-2005-shoes-KhtkBW.png' }}
-          className="h-72 rounded-2xl"
-        />
-      </View>
-      {/* size uk */}
-      <View>
-        <Text className="text-black-100 text-lg font-bold ">Size: 7UK</Text>
-        <View className="flex flex-row gap-x-5 mt-5 items-center">
-          {sizeData.map(item => (
-            <View
-              key={item.id}
-              className="bg-transparent py-1 px-2 rounded-lg border border-red-500">
-              <Text className="text-action text-xl font-medium">
-                {item.size} uk{' '}
-              </Text>
-            </View>
-          ))}
-        </View>
-      </View>
-      {/* details */}
-      {/* Tên sản phẩm */}
-      <View className=" mt-5">
-        <Text className="text-2xl font-bold text-black-100">
-          {' '}
-          {itemDetails?.title}{'Nike Air Pegasus 2005'}
-        </Text>
-        <Text className="text-neutral-400 font-medium text-lg">
-          {' '}
-          Vision Alta Men’s Shoes Size (All Colours){''}
-        </Text>
-        <View className="flex flex-row items-center mb-3">
-          {/* Đánh giá */}
-          <View>
-            <AirbnbRating
-              count={itemDetails?.stars}
-              reviews={['Terrible', 'Bad', 'Okay', 'Good', 'Great']}
-              defaultRating={itemDetails?.stars}
-              size={20}
-              ratingContainerStyle={{ flex: 1, flexDirection: 'row' }}
-            />
+
+      {/* ScrollView */}
+      <ScrollView contentContainerStyle={{ paddingBottom: 100, paddingTop: 60 }} className="pt-5 px-4 bg-white">
+        {/* Product Image Slider */}
+        <View className="">
+          <FlatList
+            data={images}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            pagingEnabled
+            snapToAlignment="center" // Ensure snapping to the center of each image
+            snapToInterval={width} // Snap each image to fill the screen width
+            decelerationRate="fast" // Smooth scroll behavior
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { x: scrollX } } }],
+              { useNativeDriver: false, listener: handleScroll }
+            )}
+            renderItem={({ item }) => (
+              <View style={{ width }}>
+                <Image
+                  source={{ uri: item }}
+                  style={{ height: 300, width: width, resizeMode: 'cover' }} // Adjust size here
+                />
+              </View>
+            )}
+            keyExtractor={(item, index) => index.toString()}
+          />
+          {/* Pagination Dots */}
+          <View className="absolute bottom-2 left-0 right-0 flex flex-row justify-center">
+            {images.map((_, index) => (
+              <View
+                key={index}
+                style={{
+                  height: 8,
+                  width: 8,
+                  borderRadius: 4,
+                  backgroundColor: currentIndex === index ? 'blue' : 'gray',
+                  marginHorizontal: 4,
+                }}
+              />
+            ))}
           </View>
+        </View>
 
-          <Text className="text-xl font-thin text-black-100/90 ">
-            {' '}
-            {itemDetails?.numberOfReview}{' '}
+        {/* Product Details */}
+        <View className="mt-6">
+          <Text className="text-3xl font-bold text-gray-900 mt-2">{itemDetails?.title || 'Nike Pegasus Trail 5'}</Text>
+          <Text className="text-gray-500 font-medium  mt-2 leading-relaxed">
+            Air Jordan is an American brand of basketball shoes, athletic, casual, and style clothing produced by Nike.
           </Text>
-        </View>
-        {/* Tiền */}
-        <View className="flex flex-row items-center gap-x-3">
-          <Text className="text-black-100 font-bold text-2xl text-start">
-            {' '}
-            ${itemDetails?.price}{'500'}
-          </Text>
-          {/* Tiền trước khi giảm giá */}
-          <Text className="text-black-100/50 font-thin text-xl  line-through text-start">
-            {' '}
-            ${itemDetails?.priceBeforeDeal}{'1000'}
-          </Text>
-          <Text className="text-action font-thin text-xl ">
-            {' '}
-            {itemDetails?.priceOff}{' '}
-          </Text>
-        </View>
-        {/* Mô tả sản phẩm */}
-        <View className="mt-3">
-          <Text className="text-xl font-semibold text-black-100">
-            Product Details
-          </Text>
-          <Text className="text-md font-medium text-neutral-400">
-            {itemDetails?.description} {'A springy ride for every run. The familiar, just-for-you feel of the Peg returns to help you accomplish.'}
-          </Text>
-        </View>
-        {/* status */}
-        <View className="flex flex-row items-center gap-x-3  mt-5">
-          <FlatList
-            data={StatusData}
-            renderItem={({ item }) => (
-              <View className=" py-1 px-2 border flex flex-row  rounded-lg border-neutral-500">
-                <Image
-                  className="w-6 h-6"
-                  resizeMode="contain"
-                  source={item.icon}
-                />
-                <Text className="text-neutral-400 font-medium text-lg">
-                  {' '}
-                  {item.name}{' '}
-                </Text>
-              </View>
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View className="w-3" />}
-          />
-        </View>
-        {/* go to cart/ buy now */}
-        <View className="flex flex-row justify-around items-center mt-6">
-          {/* Nút Chia sẻ */}
-          <TouchableOpacity className="p-3  rounded-full shadow-md">
-            <Image
-              source={icons.share}
-              className="w-6 h-6"
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-
-          {/* Nút Yêu thích */}
-          <TouchableOpacity className="p-3  rounded-full shadow-md">
-            <Image
-              source={icons.favorites}
-              className="w-6 h-6"
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-
-          {/* Nút Add to Bag */}
-          <TouchableOpacity className="bg-blue-500 py-3 px-8 rounded-full ">
-            <Text className="text-white font-semibold text-base">
-              Add to Bag
+          {/* Price Details */}
+          <View className="flex flex-row items-center gap-x-2 mt-4">
+            {/* Giá hiện tại */}
+            <Text className="text-2xl font-bold text-gray-900">
+              ${itemDetails?.price || '200.00'}
             </Text>
-          </TouchableOpacity>
+
+            {/* Giá trước khi giảm */}
+            <Text className="text-xl font-thin text-gray-500 line-through">
+              ${itemDetails?.priceBeforeDeal || '250.00'}
+            </Text>
+          </View>
         </View>
 
+        {/* Size Selection */}
+        <View className="mt-5">
+          <Text className="text-lg font-semibold text-gray-700">Size</Text>
 
-        {/* delivery in ... */}
-        <View className="bg-red-300 px-3 py-3 my-5">
-          <Text className="text-black-100 text-lg ">Delivery in </Text>
-          <Text className="text-black-100 text-2xl font-bold ">
-            1 within Hour
-          </Text>
+          {/* Sizes */}
+          <View className="flex flex-row justify-between items-center mt-3">
+            {[38, 39, 40, 41, 42, 43].map(size => (
+              <TouchableOpacity
+                key={size}
+                onPress={() => setSelectedSize(size)}
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${selectedSize === size ? 'bg-blue-500' : 'bg-gray-200'
+                  } shadow-md`}
+              >
+                <Text className={`${selectedSize === size ? 'text-white' : 'text-gray-900'}`}>{size}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-        {/* View similar */}
-        <View className="flex flex-row items-center justify-between mb-8">
-          <FlatList
-            data={similarData}
-            renderItem={({ item }) => (
-              <View className="bg-white py-3 px-3 rounded-lg border border-neutral-200 flex flex-row gap-x-2">
-                <Image
-                  source={item.icon}
-                  className="w-6 h-6"
-                  resizeMode="contain"
-                />
-                <Text className="text-black-100 text-xl font-medium ">
-                  {' '}
-                  {item.name}{' '}
-                </Text>
-              </View>
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View className="w-3" />}
-          />
-        </View>
-        {/* similar to */}
-        <View className="mb-5">
-          <Text className="text-2xl text-black-100 font-bold text-start">
-            Similar To
-          </Text>
-          {/* features */}
-          <View className="flex my-5 flex-row mx-5 justify-between ">
-            <Text className="text-2xl font-bold ">282+ Items </Text>
-            <View className="flex flex-row gap-x-3 ">
-              {FeaturesData.map(item => (
-                <View
-                  className="bg-white  rounded-lg  flex-row flex items-center px-2 "
-                  key={item.id}>
-                  <Text className="text-black-100"> {item.title} </Text>
-                  <Image
-                    source={item.image}
-                    className="w-4 h-4"
-                    resizeMode="contain"
-                  />
-                </View>
+
+        {/* Color and Quantity Selection */}
+        <View className="mt-6 flex flex-row justify-between items-center">
+          {/* Color Selection */}
+          <View>
+            <Text className="text-lg font-semibold text-gray-700">Colors available</Text>
+            <View className="flex flex-row mt-4 space-x-2">
+              {colors.map(color => (
+                <TouchableOpacity
+                  key={color}
+                  onPress={() => setSelectedColor(color)}
+                  className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'border-2 border-blue-500' : 'border border-gray-300'
+                    } shadow-md`}
+                  style={{ backgroundColor: color }}
+                >
+                  {selectedColor === color && (
+                    <Text className="text-white text-xs">✓</Text>
+                  )}
+                </TouchableOpacity>
               ))}
             </View>
           </View>
+
+          {/* Quantity Selection */}
+          <View>
+            <Text className="text-lg font-semibold text-gray-700">Quantity</Text>
+            <View className="flex flex-row items-center mt-4">
+              <TouchableOpacity
+                onPress={handleDecrease}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
+              >
+                <Text className="text-lg font-bold text-gray-600">-</Text>
+              </TouchableOpacity>
+              <Text className="mx-4 text-lg font-medium">{quantity}</Text>
+              <TouchableOpacity
+                onPress={handleIncrease}
+                className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
+              >
+                <Text className="text-lg font-bold text-gray-600">+</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
         </View>
-        {/* similar products */}
-        <View className="my-8">
-          <FlatList
-            data={itemDetails ? [itemDetails] : []}
-            renderItem={({ item }) => (
-              <ProductItem
-                image={item.image[0]}
-                title={item.title}
-                description={item.description}
-                price={item.price}
-                priceBeforeDeal={item.priceBeforeDeal}
-                priceOff={item.priceOff}
-                stars={item.stars}
-                numberOfReview={item.numberOfReview}
-                itemDetails={item}
-              />
-            )}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View className="w-8" />}
-            ListFooterComponent={<View className="w-8" />}
-            ListHeaderComponent={<View className="w-8" />}
-          />
-        </View>
+      </ScrollView>
+
+      {/* Price and Add to Cart Button - Sticky at Bottom */}
+      <View className="absolute bottom-0 left-0 right-0 bg-white px-4 py-3 shadow-lg flex flex-row items-center justify-between">
+        <Text className="text-3xl font-bold text-gray-900">${itemDetails?.finalPrice || '200.00'}</Text>
+        <TouchableOpacity className="bg-blue-500 py-3 px-8 rounded-full shadow-lg" onPress={NavigateToCart}>
+          <Text className="text-white font-semibold text-lg tracking-wider">Add To Cart</Text>
+        </TouchableOpacity>
       </View>
-    </ScrollView>
+    </View>
   );
 };
 
 export default ProductsDetailsScreen;
-
-interface similarDataType {
-  icon: ImageSourcePropType;
-  name: string;
-}
-
-const similarData: similarDataType[] = [
-  {
-    icon: icons.eye,
-    name: 'View Similar',
-  },
-  {
-    icon: icons.components,
-    name: 'Add to Compare',
-  },
-];
-
-const sizeData = [
-  {
-    id: 0,
-    size: 6,
-  },
-  {
-    id: 1,
-    size: 7,
-  },
-  {
-    id: 2,
-    size: 8,
-  },
-  {
-    id: 3,
-    size: 9,
-  },
-  {
-    id: 4,
-    size: 10,
-  },
-];
-interface StatusDataType {
-  id: number;
-  icon: ImageSourcePropType;
-  name: string;
-}
-
-const StatusData: StatusDataType[] = [
-  {
-    id: 0,
-    icon: icons.location,
-    name: 'Nearest Store',
-  },
-  {
-    id: 1,
-    icon: icons.policy,
-    name: 'Return policy',
-  },
-];

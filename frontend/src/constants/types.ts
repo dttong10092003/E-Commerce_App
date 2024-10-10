@@ -23,6 +23,7 @@ type ProductTypes = {
   price: number;
   priceBeforeDeal: number;
   priceOff: string;
+  finalPrice: number;
   stars: number;
   numberOfReview: number;
   ukSide?: string[] | number[];

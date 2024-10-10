@@ -18,6 +18,12 @@ export type RouteStackParamList = {
   PlaceOrder: {itemDetails: ItemDetails} | undefined;
   ForgotPassword: undefined;
   ProductDetails: {itemDetails: ItemDetails} | undefined;
+  Cart: {
+    itemDetails: ItemDetails;
+    selectedColor: string;
+    selectedSize: number;
+    quantity: number;
+  };
 };
 
 const App = () => {
@@ -33,7 +39,7 @@ const App = () => {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{headerShown: false}}
-            initialRouteName="HomeScreen">
+            initialRouteName="ProductDetails">
             <Stack.Screen name="HomeScreen" component={HomeScreen} />
             <Stack.Screen name="GetStarted" component={GetStartedScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />
