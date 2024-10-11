@@ -4,7 +4,7 @@ import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteTabsParamList } from './HomeScreen';
 import { RouteStackParamList } from '../../App';
-import { AirbnbRating } from 'react-native-ratings'; // Import thêm AirbnbRating
+import { Rating } from 'react-native-ratings'; // Import thêm AirbnbRating
 import icons from '../constants/icons';
 
 const { width } = Dimensions.get('window');
@@ -127,9 +127,16 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
 
           {/* Rating and Number of Reviews */}
           <View className="flex flex-row items-center mb-3">
-            <AirbnbRating count={5} defaultRating={itemDetails?.stars || 0} size={17} showRating={false} />
+            <Rating
+              type="custom"
+              ratingCount={5}
+              imageSize={20}
+              startingValue={itemDetails?.stars || 0}
+              readonly={true}
+              ratingBackgroundColor="#EEEEEE"
+            />
             <Text className="text-xl font-thin text-black-100/90 ml-3">
-              {itemDetails?.numberOfReview || 0} Reviews
+               {'('}{itemDetails?.numberOfReview || 0} reviews{')'}
             </Text>
           </View>
           <Text className="text-gray-500 font-medium mt-2 leading-relaxed">
