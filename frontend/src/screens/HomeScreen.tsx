@@ -61,9 +61,15 @@ type Props = {};
 export type RouteTabsParamList = {
   Home: undefined;
   Wishlist: undefined;
-  Cart: {itemDetails: ItemDetails}  | undefined;
+  Cart: {
+    itemDetails: ItemDetails;
+    selectedColor: string;
+    selectedSize: number;
+    quantity: number;
+  } | undefined;
   Search: {query: string} | undefined;
   Setting: undefined;
+  RatingsReviews: undefined;
 };
 const HomeScreen = (props: Props) => {
   const Tab = createBottomTabNavigator();
