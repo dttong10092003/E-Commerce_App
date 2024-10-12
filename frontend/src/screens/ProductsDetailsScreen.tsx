@@ -6,7 +6,8 @@ import { RouteTabsParamList } from './HomeScreen';
 import { RouteStackParamList } from '../../App';
 import { Rating } from 'react-native-ratings'; // Import thêm AirbnbRating
 import icons from '../constants/icons';
-
+import Icon from 'react-native-vector-icons/Ionicons';
+import { CategoriesData, ProductData } from '../constants/data';
 const { width } = Dimensions.get('window');
 
 type ScreenRouteProps = RouteProp<RouteStackParamList, 'ProductDetails'>;
@@ -23,6 +24,7 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   const [quantity, setQuantity] = useState<number>(1); // Default quantity
   const [currentIndex, setCurrentIndex] = useState<number>(0); // Current image index
   const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
+  const [isFavorited, setIsFavorited] = useState(false);
   const finalPrice = itemDetails.price * quantity;
 
   const colors = ['red', 'yellow', 'blue', 'black', 'white'];
@@ -60,6 +62,11 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   const handleAddToCart = () => {
     setModalVisible(true); // Show modal to choose size
   };
+  const toggleFavorite = () => {
+    setIsFavorited(!isFavorited);
+  };
+
+
 
   return (
     <View className="flex-1">
@@ -119,10 +126,21 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
         {/* Product Details */}
         <View className="mt-6">
           <Text className="text-3xl font-bold text-gray-900 mt-2">{itemDetails?.title || 'Nike Pegasus Trail 5'}</Text>
-          {/* Price Details */}
-          <View className="flex flex-row items-center gap-x-2 mt-4">
-            <Text className="text-2xl font-bold text-gray-900">${itemDetails?.price || '200.00'}</Text>
-            <Text className="text-xl font-thin text-gray-500 line-through">${itemDetails?.priceBeforeDeal || '250.00'}</Text>
+          {/* Price Details with Heart Icon */}
+          <View className="flex flex-row items-center justify-between mt-4">
+            <View className="flex flex-row items-center">
+              <Text className="text-2xl font-bold text-gray-900">${itemDetails?.price || '200.00'}</Text>
+              <Text className="text-xl font-thin text-gray-500 line-through ml-2">${itemDetails?.priceBeforeDeal || '250.00'}</Text>
+            </View>
+
+            {/* Heart Icon for Favorite */}
+            <TouchableOpacity onPress={toggleFavorite}>
+              <Icon
+                name={isFavorited ? 'heart' : 'heart-outline'}
+                size={28}
+                color={isFavorited ? 'red' : 'gray'}
+              />
+            </TouchableOpacity>
           </View>
 
           {/* Rating and Number of Reviews */}
@@ -136,7 +154,7 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
               ratingBackgroundColor="#EEEEEE"
             />
             <Text className="text-xl font-thin text-black-100/90 ml-3">
-               {'('}{itemDetails?.numberOfReview || 0} reviews{')'}
+              {'('}{itemDetails?.numberOfReview || 0} reviews{')'}
             </Text>
           </View>
           <Text className="text-gray-500 font-medium mt-2 leading-relaxed">
@@ -163,6 +181,52 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
             </TouchableOpacity>
           </View>
 
+          {/* Các sản phẩm tương tự */}
+          <View className="mt-6 mb-3">
+            <Text className="text-xl font-bold mb-3">You can also like this</Text>
+            <FlatList
+              horizontal
+              data={ProductData}
+              renderItem={({ item }) => (
+                <View className="mr-4 w-40">
+                  <View className="relative">
+                    <Image source={{ uri: item.image }} className="w-full h-44 rounded-lg" />
+                    {item.priceOff && (
+                      <View className="absolute top-2 left-2 bg-red-500 px-2 py-1 rounded-full">
+                        <Text className="text-white text-xs">{item.priceOff}%</Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Giới hạn số dòng của tiêu đề sản phẩm */}
+                  <Text className="text-sm mt-2 text-gray-500" numberOfLines={1} ellipsizeMode="tail">
+                    {item.title}
+                  </Text>
+
+                  <View className="flex flex-row items-center mt-1">
+                    <Rating
+                      type="custom"
+                      ratingCount={5}
+                      imageSize={14}
+                      readonly={true}
+                      startingValue={item.stars}
+                    />
+                    <Text className="ml-2 text-xs text-gray-500">({item.numberOfReview})</Text>
+                  </View>
+
+                  <View className="flex flex-row items-center mt-1">
+                    {item.priceBeforeDeal && (
+                      <Text className="line-through text-sm text-gray-400">${item.priceBeforeDeal}</Text>
+                    )}
+                    <Text className="ml-2 text-sm text-red-500">${item.price}</Text>
+                  </View>
+                </View>
+              )}
+              keyExtractor={(item, index) => index.toString()}
+              showsHorizontalScrollIndicator={false}
+            />
+          </View>
+
         </View>
       </ScrollView>
 
@@ -175,89 +239,104 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
 
       {/* Modal for selecting size, quantity and showing price */}
       <Modal
-        visible={modalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        {/* Background dim effect */}
-        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onPress={() => setModalVisible(false)} />
+  visible={modalVisible}
+  animationType="slide"
+  transparent={true}
+  onRequestClose={() => setModalVisible(false)}
+>
+  {/* Background dim effect */}
+  <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onPress={() => setModalVisible(false)} />
 
-        <View className="absolute bottom-0 left-0 right-0 bg-white p-6 rounded-t-lg" style={{ height: '51%' }}>
-          <Text className="text-lg font-semibold mb-4">Select size</Text>
+  <View className="absolute bottom-0 left-0 right-0 bg-white p-6 rounded-t-lg" style={{ height: '60%', paddingBottom: 20 }}>
+    
+    {/* Product image and price */}
+    <View className="flex flex-row items-center mb-4">
+      {/* Left: Product Image */}
+      <Image source={{ uri: itemDetails.image }} className="w-24 h-24 rounded-lg" resizeMode="cover" />
+      
+      {/* Right: Price Details */}
+      <View className="ml-4">
+        <Text className="text-lg font-bold text-gray-900">${itemDetails.price}</Text>
+        <Text className="text-sm text-gray-500 line-through">${itemDetails.priceBeforeDeal}</Text>
+      </View>
+    </View>
 
-          {/* Size Selection */}
-          <View className="flex flex-row justify-between items-center mt-3">
-            {[38, 39, 40, 41, 42, 43].map(size => (
-              <TouchableOpacity
-                key={size}
-                onPress={() => setSelectedSize(size)}
-                className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${selectedSize === size ? 'bg-blue-500' : 'bg-gray-200'
-                  } shadow-md`}
-              >
-                <Text className={`${selectedSize === size ? 'text-white' : 'text-gray-900'}`}>{size}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+    <Text className="text-lg font-semibold mb-4">Select size</Text>
 
-          {/* Color and Quantity Selection - In the same row */}
-          <View className="flex flex-row justify-between mt-6">
-            {/* Color Selection */}
-            <View>
-              <Text className="text-lg font-semibold text-gray-700">Colors available</Text>
-              <View className="flex flex-row mt-4 space-x-2">
-                {colors.map(color => (
-                  <TouchableOpacity
-                    key={color}
-                    onPress={() => setSelectedColor(color)}
-                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'border-2 border-blue-500' : 'border border-gray-300'
-                      } shadow-md`}
-                    style={{ backgroundColor: color }}
-                  >
-                    {selectedColor === color && (
-                      <Text className="text-white text-xs">✓</Text>
-                    )}
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
+    {/* Size Selection */}
+    <View className="flex flex-row justify-between items-center mt-3">
+      {[38, 39, 40, 41, 42, 43].map(size => (
+        <TouchableOpacity
+          key={size}
+          onPress={() => setSelectedSize(size)}
+          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${selectedSize === size ? 'bg-blue-500' : 'bg-gray-200'
+            } shadow-md`}
+        >
+          <Text className={`${selectedSize === size ? 'text-white' : 'text-gray-900'}`}>{size}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
 
-            {/* Quantity Selection */}
-            <View>
-              <Text className="text-lg font-semibold text-gray-700">Quantity</Text>
-              <View className="flex flex-row items-center mt-4">
-                <TouchableOpacity
-                  onPress={handleDecrease}
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
-                >
-                  <Text className="text-lg font-bold text-gray-600">-</Text>
-                </TouchableOpacity>
-                <Text className="mx-4 text-lg font-medium">{quantity}</Text>
-                <TouchableOpacity
-                  onPress={handleIncrease}
-                  className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
-                >
-                  <Text className="text-lg font-bold text-gray-600">+</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
+    {/* Color and Quantity Selection - In the same row */}
+    <View className="flex flex-row justify-between mt-6">
+      {/* Color Selection */}
+      <View>
+        <Text className="text-lg font-semibold text-gray-700">Colors available</Text>
+        <View className="flex flex-row mt-4 space-x-2">
+          {colors.map(color => (
+            <TouchableOpacity
+              key={color}
+              onPress={() => setSelectedColor(color)}
+              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'border-2 border-blue-500' : 'border border-gray-300'
+                } shadow-md`}
+              style={{ backgroundColor: color }}
+            >
+              {selectedColor === color && (
+                <Text className="text-white text-xs">✓</Text>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </View>
 
-          {/* Final Price */}
-          <View className="mt-6 flex flex-row justify-between items-center">
-            <Text className="text-xl font-bold text-gray-900">Total Price: ${finalPrice}</Text>
-          </View>
-
-          {/* Add to Cart Button - Positioned at the bottom */}
+      {/* Quantity Selection */}
+      <View>
+        <Text className="text-lg font-semibold text-gray-700">Quantity</Text>
+        <View className="flex flex-row items-center mt-4">
           <TouchableOpacity
-            className="bg-red-500 py-3 rounded-lg"
-            onPress={() => setModalVisible(false)}
-            style={{ position: 'absolute', bottom: 16, left: 16, right: 16 }}
+            onPress={handleDecrease}
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
           >
-            <Text className="text-white text-center text-lg" onPress={NavigateToCart}>Add To Cart</Text>
+            <Text className="text-lg font-bold text-gray-600">-</Text>
+          </TouchableOpacity>
+          <Text className="mx-4 text-lg font-medium">{quantity}</Text>
+          <TouchableOpacity
+            onPress={handleIncrease}
+            className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
+          >
+            <Text className="text-lg font-bold text-gray-600">+</Text>
           </TouchableOpacity>
         </View>
-      </Modal>
+      </View>
+    </View>
+
+    {/* Final Price */}
+    <View className="mt-6 flex flex-row justify-between items-center">
+      <Text className="text-xl font-bold text-gray-900">Total Price: ${finalPrice}</Text>
+    </View>
+
+    {/* Add to Cart Button - Positioned at the bottom */}
+    <View className="absolute bottom-4 left-0 right-0 px-6">
+      <TouchableOpacity
+        className="bg-red-500 py-3 rounded-lg"
+        onPress={() => setModalVisible(false)}
+      >
+        <Text className="text-white text-center text-lg" onPress={NavigateToCart}>Add To Cart</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
 
 
 
