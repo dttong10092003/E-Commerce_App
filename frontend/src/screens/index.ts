@@ -6,7 +6,7 @@ import ForgotPasswordScreen from './ForgotPasswordScreen';
 import SignupScreen from './SignupScreen';
 import GetStartedScreen from './GetStartedScreen';
 import MyOrdersScreen from './MyOrdersScreen';
-
+import OrderDetailScreen from './OrderDetailScreen';
 
 export {
   HomeScreen,
@@ -16,4 +16,5 @@ export {
   SignupScreen,
   GetStartedScreen,
   MyOrdersScreen,
+  OrderDetailScreen,
 };
