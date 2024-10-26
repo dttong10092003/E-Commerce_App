@@ -6,7 +6,7 @@ import { useNavigation } from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createStackNavigator } from '@react-navigation/stack';
-import { MyOrdersScreen, OrderDetailScreen } from '../screens';
+import { MyOrdersScreen, OrderDetailScreen, ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen } from '../screens';
 
 type Props = {};
 
@@ -122,6 +122,10 @@ const SettingTab = () => {
       <Stack.Screen name="SettingMain" component={SettingMainScreen} />
       <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
       <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+      <Stack.Screen name="ShippingAddresses" component={ShippingAddressesScreen} />
+      <Stack.Screen name="EditAddress" component={EditAddressScreen} />
+      <Stack.Screen name="AddNewAddress" component={AddNewAddressScreen} />
+
     </Stack.Navigator>
   );
 };
