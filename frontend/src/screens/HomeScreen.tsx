@@ -60,7 +60,7 @@ const TabBarItem: React.FC<TabBarItemProps> = ({
 type Props = {};
 export type RouteTabsParamList = {
   Home: undefined;
-  Wishlist: undefined;
+  WishlistTab: undefined;
   Cart: {
     itemDetails: ItemDetails;
     selectedColor: string;

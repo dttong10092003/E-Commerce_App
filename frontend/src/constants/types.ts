@@ -26,6 +26,7 @@ type ProductTypes = {
   // finalPrice: number;
   stars: number;
   numberOfReview: number;
+  brand: string;
   // ukSide?: string[] | number[];
   // tags: string[];
   // createdAt: string;

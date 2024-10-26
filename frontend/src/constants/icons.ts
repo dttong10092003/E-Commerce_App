@@ -30,6 +30,7 @@ const favorites = require('../assets/icons/favorites.png');
 const share = require('../assets/icons/share.png');
 const policy = require('../assets/icons/policy.png');
 const location = require('../assets/icons/location.png');
+const grid = require('../assets/icons/grid.png');
 export default {
   eyeHide,
   pen,
@@ -63,4 +64,5 @@ export default {
   share,
   policy,
   location,
+  grid,
 };

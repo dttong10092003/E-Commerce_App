@@ -75,7 +75,7 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
         <TouchableOpacity onPress={GoBack}>
           <Image source={icons.next1} className="rotate-180 w-8 h-8" resizeMode="contain" />
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
+        <TouchableOpacity >
           <Image source={icons.cart} className="w-6 h-6" resizeMode="contain" />
         </TouchableOpacity>
       </View>
