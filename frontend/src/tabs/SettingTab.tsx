@@ -17,6 +17,7 @@ import AddNewAddressScreen from '../screens/AddNewAddressScreen';
 import PaymentMethodsScreen from '../screens/PaymentMethodsScreen';
 import AddNewCardScreen from '../screens/AddNewCardScreen';
 import EditCardScreen from '../screens/EditCardScreen';
+import SettingsScreen from '../screens/SettingsScreen';
 
 type Props = {};
 
@@ -90,7 +91,8 @@ const SettingMainScreen = (props: Props) => {
 
         <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"
-          onPress={() => navigation.navigate('Promocodes')}
+          // onPress={() => navigation.navigate('Promocodes')}
+          
         >
           <View>
             <Text className="text-lg font-bold">Promocodes</Text>
@@ -101,7 +103,7 @@ const SettingMainScreen = (props: Props) => {
 
         <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"
-          onPress={() => navigation.navigate('Reviews')}
+          // onPress={() => navigation.navigate('Reviews')}
         >
           <View>
             <Text className="text-lg font-bold">My reviews</Text>
@@ -138,6 +140,7 @@ const SettingTab = () => {
       <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
       <Stack.Screen name="AddNewCard" component={AddNewCardScreen} />
       <Stack.Screen name="EditCard" component={EditCardScreen} />
+      <Stack.Screen name="Settings" component={SettingsScreen} />
 
     </Stack.Navigator>
   );

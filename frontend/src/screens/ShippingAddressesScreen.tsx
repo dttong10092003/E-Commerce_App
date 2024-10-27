@@ -94,7 +94,7 @@ const ShippingAddressesScreen = ({ navigation }) => {
           onPress={addNewAddress}
           className="bg-blue-500 py-3 rounded-full flex-row items-center justify-center"
         >
-          <Ionicons name="add-circle-outline" size={20} color="white" />
+          <Ionicons name="add-circle-outline" size={24} color="white" />
           <Text className="text-white font-medium ml-2">Add New Address</Text>
         </TouchableOpacity>
       </View>
