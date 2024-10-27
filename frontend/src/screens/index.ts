@@ -10,6 +10,10 @@ import OrderDetailScreen from './OrderDetailScreen';
 import ShippingAddressesScreen from './ShippingAddressesScreen';
 import EditAddressScreen from './EditAddressScreen';
 import AddNewAddressScreen from './AddNewAddressScreen';
+import ProductsDetailsScreen from './ProductsDetailsScreen';
+import RatingsReviewsScreen from './RatingsReviewsScreen';
+import CheckoutScreen from './CheckoutScreen';
+import PaymentMethodsScreen from './PaymentMethodsScreen';
 
 export {
   HomeScreen,
@@ -23,4 +27,8 @@ export {
   ShippingAddressesScreen,
   EditAddressScreen,
   AddNewAddressScreen,
+  ProductsDetailsScreen,
+  RatingsReviewsScreen,
+  CheckoutScreen,
+  PaymentMethodsScreen,
 };

@@ -6,7 +6,17 @@ import { useNavigation } from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createStackNavigator } from '@react-navigation/stack';
-import { MyOrdersScreen, OrderDetailScreen, ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen } from '../screens';
+// import { MyOrdersScreen, OrderDetailScreen, ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen, PaymentMethodsScreen } from '../screens';
+
+
+import MyOrdersScreen from '../screens/MyOrdersScreen';
+import OrderDetailScreen from '../screens/OrderDetailScreen';
+import ShippingAddressesScreen from '../screens/ShippingAddressesScreen';
+import EditAddressScreen from '../screens/EditAddressScreen';
+import AddNewAddressScreen from '../screens/AddNewAddressScreen';
+import PaymentMethodsScreen from '../screens/PaymentMethodsScreen';
+import AddNewCardScreen from '../screens/AddNewCardScreen';
+import EditCardScreen from '../screens/EditCardScreen';
 
 type Props = {};
 
@@ -125,6 +135,9 @@ const SettingTab = () => {
       <Stack.Screen name="ShippingAddresses" component={ShippingAddressesScreen} />
       <Stack.Screen name="EditAddress" component={EditAddressScreen} />
       <Stack.Screen name="AddNewAddress" component={AddNewAddressScreen} />
+      <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+      <Stack.Screen name="AddNewCard" component={AddNewCardScreen} />
+      <Stack.Screen name="EditCard" component={EditCardScreen} />
 
     </Stack.Navigator>
   );
