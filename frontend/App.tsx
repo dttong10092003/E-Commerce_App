@@ -7,6 +7,8 @@ import SplashScreen from 'react-native-splash-screen';
 import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen, SignupScreen, GetStartedScreen } from './src/screens';
 import ProductsDetailsScreen from './src/screens/ProductsDetailsScreen';
 import RatingsReviewsScreen from './src/screens/RatingsReviewsScreen';
+import CheckoutScreen from './src/screens/CheckoutScreen';
+import PaymentMethodsScreen from './src/screens/PaymentMethodsScreen';
 import {ItemDetails} from './src/constants/types';
 export type RouteStackParamList = {
   Onboarding: undefined;
@@ -49,7 +51,8 @@ const App = () => {
             <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="ProductDetails" component={ProductsDetailsScreen} />
             <Stack.Screen name="RatingsReviews" component={RatingsReviewsScreen} />
-
+            <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+            <Stack.Screen name="Checkout" component={CheckoutScreen} />
                      
           </Stack.Navigator>
         </NavigationContainer>

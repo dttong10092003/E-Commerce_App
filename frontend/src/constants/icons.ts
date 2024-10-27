@@ -31,6 +31,15 @@ const share = require('../assets/icons/share.png');
 const policy = require('../assets/icons/policy.png');
 const location = require('../assets/icons/location.png');
 const grid = require('../assets/icons/grid.png');
+const dots = require('../assets/icons/dots.png');
+const mastercard = require('../assets/icons/mastercard.png');
+const mastercard2 = require('../assets/icons/mastercard2.png');
+const fedex = require('../assets/icons/fedex.png');
+const usps = require('../assets/icons/usps.png');
+const dhl = require('../assets/icons/dhl.png');
+const chip = require('../assets/icons/chip.png');
+const visa = require('../assets/icons/visa.png');
+const check = require('../assets/icons/check.png');
 export default {
   eyeHide,
   pen,
@@ -65,4 +74,14 @@ export default {
   policy,
   location,
   grid,
+  dots,
+  mastercard,
+  fedex,
+  usps,
+  dhl,
+  chip,
+  mastercard2,
+  visa,
+  check,
+  
 };
