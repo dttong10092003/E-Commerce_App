@@ -43,7 +43,7 @@ const WishlistTab = () => {
       />
 
       {item.priceOff && (
-        <View className="absolute top-2 left-2 bg-red-500 rounded-full px-2 py-1">
+        <View className="absolute top-3 left-3 bg-red-500 rounded-full px-2 py-1">
           <Text className="text-white text-xs font-bold">{item.priceOff}%</Text>
         </View>
       )}
@@ -53,8 +53,6 @@ const WishlistTab = () => {
           <Text className="text-gray-700 font-bold text-lg">Sorry, this item is currently sold out</Text>
         </View>
       )}
-
-      <Text className="text-xs text-gray-500 mt-2">{item.brand || 'No Brand'}</Text>
 
       <Text className="text-base font-bold mt-1" numberOfLines={1} ellipsizeMode="tail">
         {item.title}
@@ -87,7 +85,7 @@ const WishlistTab = () => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row justify-between px-4 py-4">
+      <View className="flex-row justify-between px-4 pb-4">
         <Text className="text-2xl font-bold">Favorites</Text>
       </View>
 
@@ -150,7 +148,7 @@ const WishlistTab = () => {
         numColumns={2}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 16 }}
-        columnWrapperStyle={{ justifyContent: 'space-between' }}
+        columnWrapperStyle={{ justifyContent: 'space-between',marginBottom:10 }}
         style={{ flex: 1, marginBottom: 8 }}
       />
     </SafeAreaView>

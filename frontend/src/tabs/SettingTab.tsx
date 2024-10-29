@@ -6,24 +6,12 @@ import { useNavigation } from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { createStackNavigator } from '@react-navigation/stack';
-// import { MyOrdersScreen, OrderDetailScreen, ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen, PaymentMethodsScreen } from '../screens';
-
-
-import MyOrdersScreen from '../screens/MyOrdersScreen';
-import OrderDetailScreen from '../screens/OrderDetailScreen';
-import ShippingAddressesScreen from '../screens/ShippingAddressesScreen';
-import EditAddressScreen from '../screens/EditAddressScreen';
-import AddNewAddressScreen from '../screens/AddNewAddressScreen';
-import PaymentMethodsScreen from '../screens/PaymentMethodsScreen';
-import AddNewCardScreen from '../screens/AddNewCardScreen';
-import EditCardScreen from '../screens/EditCardScreen';
-import SettingsScreen from '../screens/SettingsScreen';
 
 type Props = {};
 
 const Stack = createStackNavigator();
 
-const SettingMainScreen = (props: Props) => {
+const SettingTab = (props: Props) => {
   type RootStackParamList = {
     MyOrders: undefined;
     ShippingAddresses: undefined;
@@ -38,8 +26,8 @@ const SettingMainScreen = (props: Props) => {
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header Section */}
-      <View className="px-4 pt-6 pb-4">
-        <Text className="text-3xl font-bold">My profile</Text>
+      <View className="px-4 pb-4">
+        <Text className="text-2xl font-bold">My profile</Text>
       </View>
 
       {/* Profile Info */}
@@ -126,24 +114,5 @@ const SettingMainScreen = (props: Props) => {
     </SafeAreaView>
   );
 }
-
-
-const SettingTab = () => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SettingMain" component={SettingMainScreen} />
-      <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
-      <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
-      <Stack.Screen name="ShippingAddresses" component={ShippingAddressesScreen} />
-      <Stack.Screen name="EditAddress" component={EditAddressScreen} />
-      <Stack.Screen name="AddNewAddress" component={AddNewAddressScreen} />
-      <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
-      <Stack.Screen name="AddNewCard" component={AddNewCardScreen} />
-      <Stack.Screen name="EditCard" component={EditCardScreen} />
-      <Stack.Screen name="Settings" component={SettingsScreen} />
-
-    </Stack.Navigator>
-  );
-};
 
 export default SettingTab;

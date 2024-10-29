@@ -3,17 +3,40 @@ import React from 'react';
 import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '../constants/icons';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+const formatAddress = (address) => {
+    const { street, district, city, country } = address;
+    return `${street}, ${district}, ${city}, ${country}`;
+};
 
 const CheckoutScreen = ({ navigation }) => {
+
+    const address = {
+        name: 'Jane Doe',
+        phoneNumber: '+1 234 567 890',
+        street: '3 Newbridge Court',
+        district: 'Chino Hills',
+        city: 'CA 91709',
+        country: 'United States'
+    };
+
+    const card = {
+        cardType: 'mastercard',
+        cardNumber: '123456789012', // 12 chữ số mẫu
+        cardHolder: 'Jennyfer Doe',
+        expiryDate: '05/23',
+        cvv: '122223',
+        logo: icons.mastercard2,
+    }
+
     return (
         <SafeAreaView className="flex-1 bg-white">
-            <View className="px-4 pt-4 flex-1">
+            <View className="px-4 flex-1">
                 {/* Header */}
-                <View className="flex-row items-center mb-6">
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Image source={icons.back} className="w-6 h-6 mr-2" resizeMode="contain" />
-                    </TouchableOpacity>
-                    <Text className="text-xl font-bold">Checkout</Text>
+                <View className="flex-row items-center mb-2">
+                <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
+                    <Text className="text-2xl font-bold ml-2">Checkout</Text>
                 </View>
 
 
@@ -21,25 +44,29 @@ const CheckoutScreen = ({ navigation }) => {
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}>
                     {/* Shipping Address Section */}
                     <Text className="text-lg font-semibold mb-3">Shipping address</Text>
-                    <View className="bg-white p-4 rounded-lg mb-6 shadow-sm border border-gray-200">
-                        <View className="flex-row justify-between">
-                            <View>
-                                <Text className="font-semibold text-base">Jane Doe</Text>
-                                <Text className="text-gray-600">3 Newbridge Court</Text>
-                                <Text className="text-gray-600">Chino Hills, CA 91709, United States</Text>
+                    <TouchableOpacity
+                        onPress={() => navigation.navigate('ShippingAddresses')}
+                        className="bg-white p-4 rounded-lg mb-6 shadow-sm flex-row justify-between items-center border border-gray-200"
+                    >
+                        <View className="flex-1">
+                            <View className="flex-row items-center">
+                                <Text className="text-lg font-semibold">{address.name}</Text>
+                                <Ionicons name="call-outline" size={16} color="gray" style={{ marginHorizontal: 6 }} />
+                                <Text className="text-lg">{address.phoneNumber}</Text>
                             </View>
-                            <TouchableOpacity>
-                                <Text className="text-red-500 font-medium">Change</Text>
-                            </TouchableOpacity>
+                            <Text className="text-gray-600 mt-1">{formatAddress(address)}</Text>
                         </View>
-                    </View>
+                        <TouchableOpacity onPress={() => navigation.navigate('EditAddress', { address })}>
+                            <Text className="text-red-500 font-medium">Change</Text>
+                        </TouchableOpacity>
+                    </TouchableOpacity>
 
                     {/* Payment Section */}
                     <Text className="text-lg font-semibold mb-3">Payment</Text>
                     <View className="flex-row items-center justify-between bg-white p-4 rounded-lg mb-6 shadow-sm border border-gray-200">
                         <View className="flex-row items-center space-x-4">
                             <Image source={icons.mastercard} className="w-10 h-10" resizeMode="contain" />
-                            <Text className="text-gray-600">**** **** **** 3947</Text>
+                            <Text className="text-gray-600">**** **** **** {card.cardNumber.slice(-4)}</Text>
                         </View>
                         <TouchableOpacity onPress={() => navigation.navigate('PaymentMethods')}>
                             <Text className="text-red-500 font-medium">Change</Text>
@@ -51,7 +78,7 @@ const CheckoutScreen = ({ navigation }) => {
                     <View className="flex-row justify-between mb-6">
                         <TouchableOpacity className="flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border border-gray-200">
                             <Image source={icons.fedex} className="w-20 h-8 mb-2" resizeMode="contain" />
-                            <Text className="text-gray-600">2-3 days</Text>
+                            <Text className="text-gray-600">1-2 days</Text>
                         </TouchableOpacity>
                         <TouchableOpacity className="flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border border-gray-200">
                             <Image source={icons.usps} className="w-20 h-8 mb-2" resizeMode="contain" />
@@ -59,7 +86,7 @@ const CheckoutScreen = ({ navigation }) => {
                         </TouchableOpacity>
                         <TouchableOpacity className="flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border border-gray-200">
                             <Image source={icons.dhl} className="w-20 h-8 mb-2" resizeMode="contain" />
-                            <Text className="text-gray-600">2-3 days</Text>
+                            <Text className="text-gray-600">5-7 days</Text>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>

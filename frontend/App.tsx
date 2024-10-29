@@ -6,7 +6,9 @@ import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import SplashScreen from 'react-native-splash-screen';
 import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen, 
   SignupScreen, GetStartedScreen, ProductsDetailsScreen, RatingsReviewsScreen,
-  CheckoutScreen, PaymentMethodsScreen } from './src/screens';
+  CheckoutScreen, PaymentMethodsScreen, MyOrdersScreen, OrderDetailScreen,
+  ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen, AddNewCardScreen,
+  EditCardScreen, SettingsScreen, CategoriesScreen, CatalogScreen, FilterScreen   } from './src/screens';
 import {ItemDetails} from './src/constants/types';
 export type RouteStackParamList = {
   Onboarding: undefined;
@@ -25,6 +27,7 @@ export type RouteStackParamList = {
     selectedSize: number;
     quantity: number;
   };
+  PaymentMethods: undefined;
 };
 
 const App = () => {
@@ -48,8 +51,20 @@ const App = () => {
             <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
             <Stack.Screen name="Signup" component={SignupScreen} />
             <Stack.Screen name="ProductDetails" component={ProductsDetailsScreen} />
-            <Stack.Screen name="RatingsReviews" component={RatingsReviewsScreen} />           
+            <Stack.Screen name="RatingsReviews" component={RatingsReviewsScreen} />          
             <Stack.Screen name="Checkout" component={CheckoutScreen} />
+            <Stack.Screen name="MyOrders" component={MyOrdersScreen} />
+            <Stack.Screen name="OrderDetail" component={OrderDetailScreen} />
+            <Stack.Screen name="ShippingAddresses" component={ShippingAddressesScreen} />
+            <Stack.Screen name="EditAddress" component={EditAddressScreen} />
+            <Stack.Screen name="AddNewAddress" component={AddNewAddressScreen} />
+            <Stack.Screen name="PaymentMethods" component={PaymentMethodsScreen} />
+            <Stack.Screen name="AddNewCard" component={AddNewCardScreen} />
+            <Stack.Screen name="EditCard" component={EditCardScreen} />
+            <Stack.Screen name="Settings" component={SettingsScreen} />
+            <Stack.Screen name="Categories" component={CategoriesScreen} />
+            <Stack.Screen name="Catalog" component={CatalogScreen} />
+            <Stack.Screen name="Filter" component={FilterScreen} />
                      
           </Stack.Navigator>
         </NavigationContainer>

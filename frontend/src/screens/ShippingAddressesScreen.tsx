@@ -70,7 +70,7 @@ const ShippingAddressesScreen = ({ navigation }) => {
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
       {/* Header */}
-      <View className="px-4 pt-4 pb-2 flex-row items-center">
+      <View className="px-4 pb-2 flex-row items-center">
         <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
         <Text className="text-2xl font-bold ml-2">Shipping Addresses</Text>
       </View>

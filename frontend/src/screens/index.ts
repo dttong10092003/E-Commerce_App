@@ -14,6 +14,12 @@ import ProductsDetailsScreen from './ProductsDetailsScreen';
 import RatingsReviewsScreen from './RatingsReviewsScreen';
 import CheckoutScreen from './CheckoutScreen';
 import PaymentMethodsScreen from './PaymentMethodsScreen';
+import AddNewCardScreen from './AddNewCardScreen';
+import EditCardScreen from './EditCardScreen';
+import SettingsScreen from './SettingsScreen';
+import CategoriesScreen from './CategoriesScreen';
+import CatalogScreen from './CatalogScreen';
+import FilterScreen from './FilterScreen';
 
 export {
   HomeScreen,
@@ -31,4 +37,10 @@ export {
   RatingsReviewsScreen,
   CheckoutScreen,
   PaymentMethodsScreen,
+  AddNewCardScreen,
+  EditCardScreen,
+  SettingsScreen,
+  CategoriesScreen,
+  CatalogScreen,
+  FilterScreen,
 };

@@ -1,10 +1,8 @@
 import {View, Text, TouchableOpacity, Image} from 'react-native';
 import React from 'react';
 import {ItemDetails, ProductTypes} from '../constants/types';
-import images from '../constants/images';
 import {Rating} from 'react-native-ratings';
 import {useNavigation} from '@react-navigation/native';
-import {RootStackParamList} from '../screens/OnboardingScreen';
 import {StackNavigationProp} from '@react-navigation/stack';
 import {RouteStackParamList} from '../../App';
 

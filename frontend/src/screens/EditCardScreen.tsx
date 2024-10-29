@@ -35,7 +35,7 @@ const EditCardScreen = ({ route, navigation }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
-      <View className="px-4 pt-4 pb-2 flex-row items-center">
+      <View className="px-4 pb-2 flex-row items-center">
         <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
         <Text className="text-2xl font-bold ml-2">Edit Card</Text>
       </View>
