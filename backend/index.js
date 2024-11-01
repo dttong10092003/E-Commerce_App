@@ -5,7 +5,7 @@ const express = require('express');
 const cors = require('cors')
 const mongoose = require('mongoose')
 const authRoute = require('./routes/authRoute');
-
+const productRoute = require('./routes/productRoute'); 
 
 // initialize a new express application instance
 const app = express();
@@ -16,9 +16,8 @@ app.use(cors())
 
 
 // routes
-
 app.use("/api/auth/", authRoute);
-
+app.use('/api/products/', productRoute);
 
 
 // connect to DataBase (MONGODB)

@@ -1,14 +1,56 @@
 import {View, Text, Image, TouchableOpacity, ImageSourcePropType, FlatList, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {useNavigation} from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import icons from '../constants/icons';
 import images from '../constants/images';
 import { CustomSearch, ProductItem } from '../components';
 import { CategoriesData, ProductData } from '../constants/data';
+import BASE_URL from '../config';
+import axios from 'axios';
 
+type SubCategory = {
+  name: string;
+  image: string;
+};
 
+type Variant = {
+  size: string;
+  colors: {
+    color: string;
+    stock: number;
+    images: string[]; // Mảng hình ảnh cho mỗi màu (tối đa 5 ảnh)
+  }[];
+};
+
+type Ratings = {
+  1: number;
+  2: number;
+  3: number;
+  4: number;
+  5: number;
+};
+
+type Product = {
+  name: string;
+  description: string;
+  importPrice: number;
+  salePrice: number;
+  discount: number;
+  mainCategory: string;
+  subCategory: {
+    name: string;
+    image: string;
+  };
+  subSubCategory: string;
+  image: string; // Ảnh đại diện của sản phẩm
+  variants: Variant[];
+  isHeart: boolean;
+  reviews: number;
+  ratings: Ratings;
+  createdAt: string;
+};
 
 type Props = {};
 
@@ -17,6 +59,7 @@ const HomeTab = (props: Props) => {
 
   type RootStackParamList = {
     Setting: undefined;
+    ProductDetails: { itemDetails: Product };
   };
 
   const NavigateToProfile = () => {
@@ -35,6 +78,37 @@ const HomeTab = (props: Props) => {
     // Xu ly chuyen sang trang new arrival
   };
 
+  const [categories, setCategories] = useState<SubCategory[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get<SubCategory[]>(`${BASE_URL}/products/sub-categories`);
+        // const response = await axios.get<SubCategory[]>("http://192.168.1.2:4000/api/products/sub-categories");
+        setCategories(response.data);
+      } catch (error) {
+        console.error('Failed to fetch subcategories:', error);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get<Product[]>(`${BASE_URL}/products`);
+        setProducts(response.data);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
+      }
+    };
+    fetchProducts();
+  }, []);
+
+  console.log('categoriesData:', categories);
+
   const renderItem = ({item}) => (
       <TouchableOpacity onPress={handleSelectCategory}>
         <Image
@@ -42,7 +116,7 @@ const HomeTab = (props: Props) => {
           className='w-24 h-24 rounded-full'              
 
         />
-        <Text className='text-black-100/80 text-center text-lg font-medium'>{' '}{item.title}{' '}</Text>
+        <Text className='text-black-100/80 text-center text-lg font-medium'>{' '}{item.name}{' '}</Text>
       </TouchableOpacity>
   );
 
@@ -59,7 +133,6 @@ const HomeTab = (props: Props) => {
             </Image>
           </TouchableOpacity>
           
-
           <Image
             source={images.logo}
             className='w-14 h-14'
@@ -99,7 +172,7 @@ const HomeTab = (props: Props) => {
         {/* Categories */}
         <View>
         <FlatList
-            data={CategoriesData}
+            data={categories}
             renderItem={renderItem}
             // keyExtractor={(item) => `${item.id}`}
             horizontal
@@ -145,18 +218,18 @@ const HomeTab = (props: Props) => {
         {/* New Product */}
         <View className="my-6">
           <FlatList
-            data={ProductData}
+            data={products}
             renderItem={({item}) => (
             <ProductItem
-              // image={item.image[0]}
-              image={item.image}
-              title={item.title}
-              description={item.description}
-              price={item.price}
-              priceBeforeDeal={item.priceBeforeDeal}
-              priceOff={item.priceOff}
-              stars={item.stars}
-              numberOfReview={item.numberOfReview}
+              // // image={item.image[0]}
+              // image={item.image}
+              // title={item.name}
+              // description={item.description}
+              // price={item.salePrice}
+              // priceBeforeDeal={item.importPrice}
+              // priceOff={item.salePrice - item.importPrice}
+              // stars={item.ratings[5]}
+              // numberOfReview={item.reviews}
               itemDetails={item}
             />
             )}
@@ -198,18 +271,18 @@ const HomeTab = (props: Props) => {
         {/* Product */}
         <View className="my-6">
           <FlatList
-            data={ProductData}
+            data={products}
             renderItem={({item}) => (
             <ProductItem
               // image={item.image[0]}
-              image={item.image}
-              title={item.title}
-              description={item.description}
-              price={item.price}
-              priceBeforeDeal={item.priceBeforeDeal}
-              priceOff={item.priceOff}
-              stars={item.stars}
-              numberOfReview={item.numberOfReview}
+              // image={item.image}
+              // title={item.name}
+              // description={item.description}
+              // price={item.salePrice}
+              // priceBeforeDeal={item.importPrice}
+              // priceOff={item.discount}
+              // stars={item.ratings[5]}
+              // numberOfReview={item.reviews}
               itemDetails={item}
             />
             )}

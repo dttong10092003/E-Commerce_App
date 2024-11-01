@@ -11,6 +11,40 @@ type FeaturesTypes = {
   title: string;
 };
 type ItemDetails = ProductTypes;
+
+type Product = {
+  name: string;
+  description: string;
+  importPrice: number;
+  salePrice: number;
+  discount: number;
+  mainCategory: string;
+  subCategory: {
+    name: string;
+    image: string;
+  };
+  subSubCategory: string;
+  image: string;
+  variants: {
+    size: string;
+    colors: {
+      color: string;
+      stock: number;
+      images: string[];
+    }[];
+  }[];
+  isHeart: boolean;
+  reviews: number;
+  ratings: {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+  };
+  createdAt: string;
+};
+
 type ProductTypes = {
   image: string;
   title: string;
@@ -41,4 +75,5 @@ export type {
   ProductTypes,
   TabBarTypes,
   ItemDetails,
+  Product,
 };

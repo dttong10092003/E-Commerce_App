@@ -9,7 +9,8 @@ import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen,
   CheckoutScreen, PaymentMethodsScreen, MyOrdersScreen, OrderDetailScreen,
   ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen, AddNewCardScreen,
   EditCardScreen, SettingsScreen, CategoriesScreen, CatalogScreen, FilterScreen   } from './src/screens';
-import {ItemDetails} from './src/constants/types';
+import {ItemDetails, Product} from './src/constants/types';
+
 export type RouteStackParamList = {
   Onboarding: undefined;
   GetStarted: undefined;
@@ -20,7 +21,7 @@ export type RouteStackParamList = {
   Checkout: undefined;
   PlaceOrder: {itemDetails: ItemDetails} | undefined;
   ForgotPassword: undefined;
-  ProductDetails: {itemDetails: ItemDetails} | undefined;
+  ProductDetails: { itemDetails: Product } | undefined;
   Cart: {
     itemDetails: ItemDetails;
     selectedColor: string;
@@ -43,7 +44,7 @@ const App = () => {
         <NavigationContainer>
           <Stack.Navigator
             screenOptions={{headerShown: false}}
-            initialRouteName="Signup">
+            initialRouteName="HomeScreen">
             <Stack.Screen name="HomeScreen" component={HomeScreen} />
             <Stack.Screen name="GetStarted" component={GetStartedScreen} />
             <Stack.Screen name="Onboarding" component={OnboardingScreen} />

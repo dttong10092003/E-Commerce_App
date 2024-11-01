@@ -17,6 +17,10 @@ type RootStackParamList = {
   HomeScreen: undefined;
 };
 
+interface LoginResponse {
+  token: string;
+}
+
 const LoginScreen = (props: Props) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [emailError, setEmailError] = useState('');
@@ -48,7 +52,7 @@ const LoginScreen = (props: Props) => {
     setIsSubmitting(true);
   
     try {
-      const response = await axios.post(`${BASE_URL}/auth/login`, {
+      const response = await axios.post<LoginResponse>(`${BASE_URL}/auth/login`, {
         email: form.email,
         password: form.password,
       });
