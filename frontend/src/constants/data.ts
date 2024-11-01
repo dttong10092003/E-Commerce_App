@@ -88,6 +88,16 @@ const randomStars = (): number => (Math.random()  * 5);
 
 const randomNumberOfReview = (): number => Math.floor(Math.random() * 10000);
 
+const category = ['Shoes', 'Clothes', 'Accessories'];
+const randomCategory = (): string => category[Math.floor(Math.random() * category.length)];
+
+const subcategory = ['All', 'Men', 'Women','Kids']
+const randomSubCategory = (): string => subcategory[Math.floor(Math.random() * subcategory.length)];
+const size = ['S', 'M', 'L', 'XL', 'XXL','31','32','33','34','35','36','37','38','39','40','41','42','43','44','45'];
+const randomSize = (): string => size[Math.floor(Math.random() * size.length)];
+
+const quantity = (): number => quantity[Math.floor(Math.random() * quantity.length)];
+const randomQuantity = (): number => quantity[Math.floor(Math.random() * quantity.length)];
 const ProductData: ProductTypes[] = Array.from(
   {length: 10},
   (): ProductTypes => {
@@ -102,6 +112,10 @@ const ProductData: ProductTypes[] = Array.from(
       priceOff: randomPriceOff(price, priceBeforeDeal),
       stars: randomStars(),
       numberOfReview: randomNumberOfReview(),
+      category: randomCategory(),
+      subcategory: randomSubCategory(),
+      size: randomSize(),
+      quantity: randomQuantity(),
     };
   },
 );

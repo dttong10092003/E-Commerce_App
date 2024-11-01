@@ -1,121 +1,105 @@
 import {
-    View,
-    Text,
-    Animated,
-    Image,
-    TextInput,
-    TouchableOpacity,
-    Easing,
-  } from 'react-native';
-  import React, {useEffect, useState} from 'react';
-  import icons from '../constants/icons';
-  
-  type FormFieldProps = {
-    title: string;
-    value: string;
-    placeholder: string;
-    handleChangeText: (text: string) => void;
-    otherStyles?: string;
-    setError?: (error: string) => void;
-    error: string;
-    [key: string]: any; 
+  View,
+  Text,
+  Animated,
+  Image,
+  TextInput,
+  TouchableOpacity,
+  Easing,
+} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import icons from '../constants/icons';
+
+type FormFieldProps = {
+  title: string;
+  value: string;
+  placeholder: string;
+  handleChangeText: (text: string) => void;
+  otherStyles?: string;
+  setError?: (error: string) => void;
+  error: string;
+  [key: string]: any; 
+};
+
+const FormField: React.FC<FormFieldProps> = ({
+  title,
+  value,
+  placeholder,
+  handleChangeText,
+  otherStyles,
+  setError,
+  error,
+  ...props
+}) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [shakeAnimation] = useState(new Animated.Value(0));
+
+  const shake = () => {
+    shakeAnimation.setValue(0);
+    Animated.timing(shakeAnimation, {
+      toValue: 4,
+      duration: 400,
+      useNativeDriver: true,
+      easing: Easing.bounce,
+    }).start(() => {
+      setTimeout(() => {
+        setError?.('');
+      }, 3000);
+    });
   };
 
-  const FormField: React.FC<FormFieldProps> = ({
-    title,
-    value,
-    placeholder,
-    handleChangeText,
-    otherStyles,
-    setError,
-    error,
-    ...props
-  }) => {
-    // states
-    const [showPassword, setShowPassword] = useState(false);
-    const [shakeAnimation] = useState(new Animated.Value(0));
+  useEffect(() => {
+    if (error) {
+      shake();
+    }
+  }, [error]);
 
-    const shake = () => {
-      shakeAnimation.setValue(0);
-      Animated.timing(shakeAnimation, {
-        toValue: 4,
-        duration: 400,
-        useNativeDriver: true,
-        easing: Easing.bounce,
-      }).start(() => {
-        setTimeout(() => {
-          setError?.(''); 
-        }, 3000);
-      });
-    };
+  const getIconSource = () => {
+    if (title === 'Password' || title === 'Confirm Password') return icons.lock;
+    if (title === 'Email') return icons.mail;
+    return icons.user;
+  };
 
-    useEffect(() => {
-      if (error) {
-        shake();
-      }
-    }, [error]);
-  
-    // get Icon source
-    const getIconSource = () => {
-      if (title === 'Password') return icons.lock;
-      if (title === 'Email') return icons.mail;
-      return icons.user; // default (mặc định)
-    };
-  
-    return (
-      <View className={otherStyles + ' '}>
-        <Animated.View
-          style={{
-            transform: [
-              {
-                translateX: shakeAnimation.interpolate({
-                  inputRange: [0, 1, 2, 3, 4], 
-                  outputRange: [0, -10, 10, -10, 0],
-                }),
-              },
-            ],
-          }}
-
-          className={`flex flex-row items-center justify-center rounded-xl w-full h-[72px] px-4 bg-[#F3F3F3] border-2 border-[#A8A8A9] focus:border-black-200 ${
-            error ? 'border border-red-600  ' : ''
-          } `}>
-
-          <Image
-            source={getIconSource()}
-            className="w-8 h-8 mr-1 bg-b"
-            resizeMode="contain"
-          />
-
-          <TextInput
-            className="flex-1 text-black-100 font-semibold text-lg"
-            value={value}
-            placeholder={placeholder}
-            onChangeText={handleChangeText}
-            placeholderTextColor={'#676767'}
-            secureTextEntry={title === 'Password' && !showPassword} 
-            onBlur={() => error && shake()}
-            {...props}
-          />
-  
-          {title === 'Password' && (
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Image
-                source={!showPassword ? icons.eye : icons.eyeHide}
-                className="w-6 h-6"
-                resizeMode="contain"
-              />
-            </TouchableOpacity>
-          )}
-        </Animated.View>
-
-        {error && (
-          <Animated.View
-            className={`text-red-500 font-pregular text-sm mt-3 self-center`}>
-            {error}
-          </Animated.View>
+  return (
+    <View className={otherStyles}>
+      <Animated.View
+        style={{
+          transform: [
+            {
+              translateX: shakeAnimation.interpolate({
+                inputRange: [0, 1, 2, 3, 4],
+                outputRange: [0, -10, 10, -10, 0],
+              }),
+            },
+          ],
+        }}
+        className={`flex flex-row items-center justify-center rounded-xl w-full h-[72px] px-4 bg-[#F3F3F3] border-2 border-[#A8A8A9] focus:border-black-200 ${
+          error ? 'border-red-600' : ''
+        }`}>
+        <Image source={getIconSource()} className="w-8 h-8 mr-1" resizeMode="contain" />
+        <TextInput
+          className="flex-1 text-black-100 font-semibold text-lg"
+          value={value}
+          placeholder={placeholder}
+          onChangeText={handleChangeText}
+          placeholderTextColor="#676767"
+          secureTextEntry={(title === 'Password' || title === 'Confirm Password') && !showPassword}
+          onBlur={() => error && shake()}
+          {...props}
+        />
+        {(title === 'Password' || title === 'Confirm Password') && (
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Image
+              source={!showPassword ? icons.eye : icons.eyeHide}
+              className="w-6 h-6"
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         )}
-      </View>
-    );
-  };
-  
-  export default FormField;
+      </Animated.View>
+      {error && <Text className="text-red-500 mt-2">{error}</Text>}
+    </View>
+  );
+};
+
+export default FormField;

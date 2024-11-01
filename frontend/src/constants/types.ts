@@ -13,25 +13,17 @@ type FeaturesTypes = {
 type ItemDetails = ProductTypes;
 type ProductTypes = {
   image: string;
-  // status?: {
-  //   icon?: string;
-  //   name?: string;
-  // };
-  // _id: string;
   title: string;
   description: string;
   price: number;
   priceBeforeDeal: number;
   priceOff: number;
-  // finalPrice: number;
   stars: number;
   numberOfReview: number;
-  brand: string;
-  // ukSide?: string[] | number[];
-  // tags: string[];
-  // createdAt: string;
-  // updatedAt: string;
-  // __v: number;
+  category: string;
+  subcategory: string;
+  size: string;
+  quantity: number;
 };
 type TabBarTypes = {
   title?: string;
