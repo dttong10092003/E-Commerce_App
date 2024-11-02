@@ -35,6 +35,18 @@ exports.createProduct = async (req, res) => {
     }
 };
 
+// Hàm tạo nhiều sản phẩm
+exports.createMultipleProducts = async (req, res) => {
+    try {
+        const products = req.body;
+        const savedProducts = await Product.insertMany(products);
+        res.status(201).json(savedProducts);
+    } catch (error) {
+        console.error('Error creating multiple products:', error);
+        res.status(400).json({ message: 'Error creating multiple products', error });
+    }
+};
+
 // Cập nhật sản phẩm
 exports.updateProduct = async (req, res) => {
     try {
@@ -82,5 +94,36 @@ exports.getSubCategories = async (req, res) => {
     } catch (error) {
         console.error('Error fetching subcategories:', error);
         res.status(500).json({ message: 'Error fetching subcategories', error: error.message });
+    }
+};
+
+// Lấy danh sách subSubCategory theo subCategory.name
+// exports.getSubSubCategories = async (req, res) => {
+//     try {
+//         const { subCategoryName } = req.params;
+//         const subSubCategories = await Product.distinct("subSubCategory", { "subCategory.name": subCategoryName });
+//         res.status(200).json(subSubCategories);
+//     } catch (error) {
+//         console.error('Error fetching subSubCategories:', error);
+//         res.status(500).json({ message: 'Error fetching subSubCategories', error: error.message });
+//     }
+// };
+
+exports.getSubSubCategories = async (req, res) => {
+    try {
+        const { mainCategory, subCategoryName } = req.params;
+
+        // Xây dựng điều kiện lọc dựa trên mainCategory
+        const filter = { "subCategory.name": subCategoryName };
+        if (mainCategory !== 'All') {
+            filter.mainCategory = mainCategory; // Chỉ thêm mainCategory khi nó không phải là "All"
+        }
+
+        // Lấy danh sách subSubCategory dựa trên filter
+        const subSubCategories = await Product.distinct("subSubCategory", filter);
+        res.status(200).json(subSubCategories);
+    } catch (error) {
+        console.error('Error fetching subSubCategories:', error);
+        res.status(500).json({ message: 'Error fetching subSubCategories', error: error.message });
     }
 };

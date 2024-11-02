@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, RouteProp } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import BASE_URL from '../config';
+import axios from 'axios';
 
 // Định nghĩa RootStackParamList tại đây để đơn giản hoá
 type RootStackParamList = {
-  Categories: { mainCategory: string };
+  Categories: { mainCategory?: string; subCategoryName: string };
   Catalog: { category: string };
 };
 
@@ -19,27 +21,43 @@ interface CategoriesScreenProps {
   route: CategoriesScreenRouteProp;
 }
 
-const subCategories = [
-  'Tops', 'Shirts & Blouses', 'Cardigans & Sweaters', 'Knitwear', 'Blazers', 'Outerwear', 'Pants', 'Jeans', 'Shorts', 'Skirts', 'Dresses'
-];
+// const subCategories = [
+//   'Tops', 'Shirts & Blouses', 'Cardigans & Sweaters', 'Knitwear', 'Blazers', 'Outerwear', 'Pants', 'Jeans', 'Shorts', 'Skirts', 'Dresses'
+// ];
 
 const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ route }) => {
 
-
-    // type RootStackParamList = {
-    //     Categories: { mainCategory: string };
-    //     Catalog: { category: string };
-    // };
-    // const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-
   const navigation = useNavigation<CategoriesScreenNavigationProp>();
-  const { mainCategory } = route.params;
+  const { mainCategory = 'All', subCategoryName } = route.params;
+  // const { mainCategory, subCategoryName } = route.params;
+
+  // State để lưu danh sách subSubCategory
+  const [subSubCategories, setSubSubCategories] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Hàm gọi API để lấy danh sách subSubCategory theo subCategoryName
+    const fetchSubSubCategories = async () => {
+      try {
+        // const response = await axios.get<string[]>(`<API_URL>/subcategories/${subCategoryName}/sub-subcategories`);
+        const response = await axios.get<string[]>(`${BASE_URL}/products/${mainCategory}/${subCategoryName}/sub-subcategories`);
+        setSubSubCategories(response.data); // Giả sử API trả về một mảng các subSubCategory
+      } catch (error) {
+        console.error('Lỗi khi lấy subSubCategory:', error);
+      }
+    };
+
+    fetchSubSubCategories();
+  }, [mainCategory, subCategoryName]); // Chỉ gọi lại API khi subCategoryName thay đổi
+
+  console.log('mainCategory:', mainCategory);
+  console.log('subCategoryName:', subCategoryName);
+  console.log('subSubCategories:', subSubCategories);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="px-4 pb-4 flex-row items-center">
         <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
-        <Text className="text-3xl font-bold ml-2">{mainCategory}</Text>
+        <Text className="text-3xl font-bold ml-2">{subCategoryName}</Text>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}>
@@ -47,7 +65,7 @@ const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ route }) => {
           <Text className="text-white font-semibold">VIEW ALL ITEMS</Text>
         </TouchableOpacity>
 
-        {subCategories.map((category) => (
+        {subSubCategories.map((category) => (
           <TouchableOpacity
             key={category}
             className="bg-white p-4 border-b border-gray-200"

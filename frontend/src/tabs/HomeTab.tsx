@@ -60,14 +60,16 @@ const HomeTab = (props: Props) => {
   type RootStackParamList = {
     Setting: undefined;
     ProductDetails: { itemDetails: Product };
+    Categories: { subCategoryName: string };
   };
 
   const NavigateToProfile = () => {
     navigation.navigate('Setting');
   };
 
-  const handleSelectCategory = () => {
+  const handleSelectCategory = (subCategory: SubCategory) => {
     // Xu ly chuyen sang trang category duoc chon
+    navigation.navigate('Categories', { subCategoryName: subCategory.name });
   }
 
   const handleDealOff = () => {
@@ -109,8 +111,8 @@ const HomeTab = (props: Props) => {
 
   console.log('categoriesData:', categories);
 
-  const renderItem = ({item}) => (
-      <TouchableOpacity onPress={handleSelectCategory}>
+  const renderItem = ({item}: { item: SubCategory}) => (
+      <TouchableOpacity onPress={() => handleSelectCategory(item)}>
         <Image
           source={{uri: item.image}}
           className='w-24 h-24 rounded-full'              
@@ -152,22 +154,7 @@ const HomeTab = (props: Props) => {
         <CustomSearch initialQuery="" />
 
         {/* Features */}
-        <View className='flex my-5 flex-row mx-5 justify-between'>
-          <Text className='text-2xl font-bold '>All Features</Text>
-          <View className='flex flex-row gap-x-3'>
-            {
-              FeaturesData.map((item) => (
-                <View className='bg-white rounded-lg flex flex-row items-center px-2' key={item.id}>
-                  <Text className='text-black-100'>{item.title}</Text>
-                  <Image source={item.image}
-                    className='w-6 h-6'
-                    resizeMode='contain'
-                  />
-                </View>
-              ))
-            }
-          </View>
-        </View>
+        <Text className='text-2xl font-bold my-5 mx-5'>All Categories</Text>          
 
         {/* Categories */}
         <View>
@@ -221,15 +208,6 @@ const HomeTab = (props: Props) => {
             data={products}
             renderItem={({item}) => (
             <ProductItem
-              // // image={item.image[0]}
-              // image={item.image}
-              // title={item.name}
-              // description={item.description}
-              // price={item.salePrice}
-              // priceBeforeDeal={item.importPrice}
-              // priceOff={item.salePrice - item.importPrice}
-              // stars={item.ratings[5]}
-              // numberOfReview={item.reviews}
               itemDetails={item}
             />
             )}
@@ -274,15 +252,6 @@ const HomeTab = (props: Props) => {
             data={products}
             renderItem={({item}) => (
             <ProductItem
-              // image={item.image[0]}
-              // image={item.image}
-              // title={item.name}
-              // description={item.description}
-              // price={item.salePrice}
-              // priceBeforeDeal={item.importPrice}
-              // priceOff={item.discount}
-              // stars={item.ratings[5]}
-              // numberOfReview={item.reviews}
               itemDetails={item}
             />
             )}
@@ -309,21 +278,3 @@ const HomeTab = (props: Props) => {
 };
 
 export default HomeTab;
-
-type FeaturesDataProps = {
-  id: number;
-  title: string;
-  image: ImageSourcePropType;
-};
-export const FeaturesData: FeaturesDataProps[] = [
-  {
-    id: 1,
-    title: 'Sort',
-    image: icons.sort,
-  },
-  {
-    id: 2,
-    title: 'Filter',
-    image: icons.filter,
-  },
-];
