@@ -8,12 +8,13 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
-  Platform
+  Platform,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
-const ChangePasswordScreen = ({ isVisible, onClose }) => {
+const ChangePasswordScreen = ({ isVisible, onClose, onSave }) => {
   const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -27,12 +28,22 @@ const ChangePasswordScreen = ({ isVisible, onClose }) => {
     if (type === 'confirm') setShowConfirmPassword(!showConfirmPassword);
   };
 
-  const handleSavePassword = () => {
-    if (newPassword === confirmPassword) {
-      alert('Password changed successfully!');
+  const handleSavePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'New passwords do not match!');
+      return;
+    }
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      Alert.alert('Error', 'Please fill out all fields');
+      return;
+    }
+
+    try {
+      await onSave(oldPassword, newPassword); // Gọi hàm onSave với oldPassword và newPassword
+      Alert.alert('Success', 'Password changed successfully!');
       onClose();
-    } else {
-      alert('Passwords do not match!');
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Failed to update password');
     }
   };
 
@@ -67,11 +78,10 @@ const ChangePasswordScreen = ({ isVisible, onClose }) => {
                   />
                   <TouchableOpacity onPress={() => toggleShowPassword('old')}>
                     <Ionicons name={showOldPassword ? "eye" : "eye-off"} size={20} color="gray" />
+                    
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity className="mt-2 mb-4" onPress={() => alert('Forgot Password')}>
-                  <Text className="text-right text-blue-500">Forgot Password?</Text>
-                </TouchableOpacity>
+               
 
                 {/* New Password */}
                 <View className="flex-row items-center bg-gray-100 p-3 rounded-md mt-2">

@@ -40,6 +40,7 @@ const dhl = require('../assets/icons/dhl.png');
 const chip = require('../assets/icons/chip.png');
 const visa = require('../assets/icons/visa.png');
 const check = require('../assets/icons/check.png');
+const edit = require('../assets/icons/edit.png');
 export default {
   eyeHide,
   pen,
@@ -83,5 +84,5 @@ export default {
   mastercard2,
   visa,
   check,
-  
+  edit
 };
