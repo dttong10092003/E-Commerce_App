@@ -20,7 +20,7 @@ type Variant = {
   colors: {
     color: string;
     stock: number;
-    images: string[]; // Mảng hình ảnh cho mỗi màu (tối đa 5 ảnh)
+    image: string; // Single image for each color
   }[];
 };
 
@@ -44,7 +44,7 @@ type Product = {
     image: string;
   };
   subSubCategory: string;
-  image: string; // Ảnh đại diện của sản phẩm
+  images: string[]; // Array of 5 images for the main product images
   variants: Variant[];
   isHeart: boolean;
   reviews: number;

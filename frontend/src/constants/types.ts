@@ -24,13 +24,13 @@ type Product = {
     image: string;
   };
   subSubCategory: string;
-  image: string;
+  images: string[]; // Mảng gồm tối đa 5 ảnh đại diện chính của sản phẩm
   variants: {
     size: string;
     colors: {
       color: string;
       stock: number;
-      images: string[];
+      image: string; // Chỉ 1 ảnh duy nhất cho mỗi màu
     }[];
   }[];
   isHeart: boolean;

@@ -40,7 +40,7 @@ const ProductItem: React.FC<ProductItemProps> = ({ itemDetails }) => {
     <TouchableOpacity
       className="w-72 bg-white rounded-xl"
       onPress={NavigateToProductsDetails}>
-      <Image source={{ uri: itemDetails.image }} className="w-full rounded-t-xl h-40" />
+      <Image source={{ uri: itemDetails.images[0] }} className="w-full rounded-t-xl h-40" />
       <View className="px-3">
         <Text 
           className="text-2xl text-black-100 my-2 text-start font-bold"
