@@ -14,6 +14,9 @@ router.get('/sub-categories', productController.getSubCategories);
 // Route để lấy subSubCategory dựa trên mainCategory và subCategoryName
 router.get('/:mainCategory/:subCategoryName/sub-subcategories', productController.getSubSubCategories);
 
+// Route để lấy danh sách sản phẩm dựa trên mainCategory, subCategoryName, và subSubCategory
+router.get('/:mainCategory/:subCategoryName/:subSubCategory/products', productController.getProductsByCategory);
+
 // Định tuyến lấy tất cả sản phẩm
 router.get('/', productController.getAllProducts);
 

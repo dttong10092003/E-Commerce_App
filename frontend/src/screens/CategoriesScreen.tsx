@@ -10,7 +10,7 @@ import axios from 'axios';
 // Định nghĩa RootStackParamList tại đây để đơn giản hoá
 type RootStackParamList = {
   Categories: { mainCategory?: string; subCategoryName: string };
-  Catalog: { category: string };
+  Catalog: { mainCategory: string; subCategoryName: string; subSubCategory: string };
 };
 
 // Định nghĩa kiểu cho navigation và route
@@ -65,13 +65,13 @@ const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ route }) => {
           <Text className="text-white font-semibold">VIEW ALL ITEMS</Text>
         </TouchableOpacity>
 
-        {subSubCategories.map((category) => (
+        {subSubCategories.map((subSubCategory) => (
           <TouchableOpacity
-            key={category}
+            key={subSubCategory}
             className="bg-white p-4 border-b border-gray-200"
-            onPress={() => navigation.navigate('Catalog', { category })}
+            onPress={() => navigation.navigate('Catalog', { mainCategory: mainCategory, subCategoryName: subCategoryName, subSubCategory: subSubCategory })}
           >
-            <Text className="text-lg font-semibold">{category}</Text>
+            <Text className="text-lg font-semibold">{subSubCategory}</Text>
           </TouchableOpacity>
         ))}
       </ScrollView>

@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const CLOTHES_SUBCATEGORIES = ['Blazers', 'Pants', 'Jeans', 'Shorts', 'Shirts', 'Dresses'];
+const CLOTHES_SUBCATEGORIES = ['Blazers', 'Pants', 'Jeans', 'Shorts', 'Shirts', 'Dresses', 'Jackets', 'Coats', 'Hoodies', 'Cardigans'];
 const SHOES_SUBCATEGORIES = ['Sneakers', 'Boots', 'Sandals', 'Formal Shoes'];
-const ACCESSORIES_SUBCATEGORIES = ['Bags', 'Belts', 'Hats', 'Jewelry', 'Sunglasses'];
+const ACCESSORIES_SUBCATEGORIES = ['Bags', 'Belts', 'Hats', 'Jewelry', 'Sunglasses', 'Necklaces', 'Earrings', 'Bracelets', 'Rings'];
+const ACTIVEWEAR_SUBCATEGORIES = ['Yoga Pants', 'Shorts', 'Sports Bras', 'Tracksuits'];
+const SWIMWEAR_SUBCATEGORIES = ['Bikinis', 'One-Piece', 'Swim Trunks', 'Cover-Ups'];
+const UNDERGARMENTS_SUBCATEGORIES = ['Bras', 'Briefs', 'Boxers', 'Socks'];
 const NEW_SUBCATEGORIES = ['New Arrivals', 'Trending', 'Limited Edition'];
 
 const productSchema = new Schema({
@@ -20,7 +23,7 @@ const productSchema = new Schema({
     subCategory: {
         name: {
             type: String,
-            enum: ['New', 'Clothes', 'Shoes', 'Accessories'],
+            enum: ['New', 'Clothes', 'Shoes', 'Accessories', 'Activewear', 'Swimwear', 'Undergarments'],
             required: true
         },
         image: { type: String, required: true }
@@ -33,6 +36,9 @@ const productSchema = new Schema({
                     case 'Clothes': return CLOTHES_SUBCATEGORIES.includes(value);
                     case 'Shoes': return SHOES_SUBCATEGORIES.includes(value);
                     case 'Accessories': return ACCESSORIES_SUBCATEGORIES.includes(value);
+                    case 'Activewear': return ACTIVEWEAR_SUBCATEGORIES.includes(value);
+                    case 'Swimwear': return SWIMWEAR_SUBCATEGORIES.includes(value);
+                    case 'Undergarments': return UNDERGARMENTS_SUBCATEGORIES.includes(value);
                     case 'New': return NEW_SUBCATEGORIES.includes(value);
                     default: return false;
                 }

@@ -97,26 +97,20 @@ exports.getSubCategories = async (req, res) => {
     }
 };
 
-// Lấy danh sách subSubCategory theo subCategory.name
-// exports.getSubSubCategories = async (req, res) => {
-//     try {
-//         const { subCategoryName } = req.params;
-//         const subSubCategories = await Product.distinct("subSubCategory", { "subCategory.name": subCategoryName });
-//         res.status(200).json(subSubCategories);
-//     } catch (error) {
-//         console.error('Error fetching subSubCategories:', error);
-//         res.status(500).json({ message: 'Error fetching subSubCategories', error: error.message });
-//     }
-// };
 
 exports.getSubSubCategories = async (req, res) => {
     try {
         const { mainCategory, subCategoryName } = req.params;
 
-        // Xây dựng điều kiện lọc dựa trên mainCategory
-        const filter = { "subCategory.name": subCategoryName };
+        const filter = {};
+
+        // const filter = { "subCategory.name": subCategoryName };
         if (mainCategory !== 'All') {
             filter.mainCategory = mainCategory; // Chỉ thêm mainCategory khi nó không phải là "All"
+        }
+
+        if (subCategoryName !== 'New') { // New hoặc All
+            filter["subCategory.name"] = subCategoryName;
         }
 
         // Lấy danh sách subSubCategory dựa trên filter
@@ -125,5 +119,32 @@ exports.getSubSubCategories = async (req, res) => {
     } catch (error) {
         console.error('Error fetching subSubCategories:', error);
         res.status(500).json({ message: 'Error fetching subSubCategories', error: error.message });
+    }
+};
+
+// Lấy danh sách sản phẩm dựa trên mainCategory, subCategoryName, và subSubCategory
+exports.getProductsByCategory = async (req, res) => {
+    try {
+        const { mainCategory, subCategoryName, subSubCategory } = req.params;
+
+        const filter = {};
+
+        if (mainCategory && mainCategory !== 'All') {
+            filter.mainCategory = mainCategory;
+        }
+
+        if (subCategoryName && subCategoryName !== 'All') {
+            filter["subCategory.name"] = subCategoryName;
+        }
+
+        if (subSubCategory && subSubCategory !== 'All') {
+            filter.subSubCategory = subSubCategory;
+        }
+
+        const products = await Product.find(filter);
+        res.status(200).json(products);
+    } catch (error) {
+        console.error('Error fetching products by category:', error);
+        res.status(500).json({ message: 'Error fetching products by category', error: error.message });
     }
 };
