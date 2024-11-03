@@ -21,7 +21,7 @@ const WishlistTab = () => {
     setSearchQuery(text);
     if (text) {
       const filtered = ProductData.filter((item) =>
-        (item.title?.toLowerCase().includes(text.toLowerCase()) || item.brand?.toLowerCase().includes(text.toLowerCase()))
+        (item.title?.toLowerCase().includes(text.toLowerCase()))
       );
       setFilteredData(filtered);
     } else {

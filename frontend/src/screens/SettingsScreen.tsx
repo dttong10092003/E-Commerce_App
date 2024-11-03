@@ -66,6 +66,14 @@ const SettingsScreen = ({ navigation }) => {
       }
     }
   };
+  const handleLogout = async () => {
+    await AsyncStorage.removeItem('authToken');
+    Alert.alert('Logout', 'You have been logged out.');
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Login' }],
+    });
+  };
   
 
 
@@ -111,6 +119,7 @@ const SettingsScreen = ({ navigation }) => {
         </View>
 
         <Text className="text-lg font-semibold mt-6">Notifications</Text>
+
         <View className="bg-white p-4 mt-2 rounded-lg shadow-sm">
           <View className="flex-row justify-between items-center mb-4">
             <Text className="text-base">Sales</Text>
@@ -125,6 +134,9 @@ const SettingsScreen = ({ navigation }) => {
             <Switch value={notifications.deliveryStatus} onValueChange={() => toggleSwitch('deliveryStatus')} />
           </View>
         </View>
+        <TouchableOpacity onPress={handleLogout} className="bg-red-500 p-4 rounded-lg mt-6 shadow-sm">
+          <Text className="text-white text-center text-lg font-semibold">Logout</Text>
+        </TouchableOpacity>
       </ScrollView>
 
       <ChangePasswordScreen
