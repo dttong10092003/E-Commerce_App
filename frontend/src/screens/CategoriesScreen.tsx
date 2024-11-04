@@ -53,6 +53,14 @@ const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ route }) => {
   console.log('subCategoryName:', subCategoryName);
   console.log('subSubCategories:', subSubCategories);
 
+  const handleSubSubCategoryPress = (subSubCategory: string) => {
+    navigation.navigate('Catalog', {
+      mainCategory,
+      subCategoryName,
+      subSubCategory,
+    });
+  };
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       <View className="px-4 pb-4 flex-row items-center">
@@ -61,15 +69,17 @@ const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ route }) => {
       </View>
 
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 20 }}>
-        <TouchableOpacity className="bg-red-500 rounded-full py-3 mb-6 items-center">
-          <Text className="text-white font-semibold">VIEW ALL ITEMS</Text>
+        <TouchableOpacity
+          onPress={() => handleSubSubCategoryPress('All')}
+          className="bg-red-500 rounded-full py-3 mb-6 items-center">
+          <Text className="text-white font-semibold">VIEW ALL PRODUCTS</Text>
         </TouchableOpacity>
 
         {subSubCategories.map((subSubCategory) => (
           <TouchableOpacity
             key={subSubCategory}
             className="bg-white p-4 border-b border-gray-200"
-            onPress={() => navigation.navigate('Catalog', { mainCategory: mainCategory, subCategoryName: subCategoryName, subSubCategory: subSubCategory })}
+            onPress={() => handleSubSubCategoryPress(subSubCategory)}
           >
             <Text className="text-lg font-semibold">{subSubCategory}</Text>
           </TouchableOpacity>

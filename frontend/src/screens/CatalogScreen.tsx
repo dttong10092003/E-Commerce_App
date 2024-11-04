@@ -46,38 +46,61 @@ type Product = {
 };
 
 type RootStackParamList = {
-  CatalogScreen: { mainCategory: string; subCategoryName: string; subSubCategory: string; 
+  Catalog: { mainCategory: string; subCategoryName: string; subSubCategory: string; 
     filters?: {
       maxPrice?: number;
       selectedColor?: string;
       selectedSize?: string;
+      selectedDiscount?: number;
+      searchQuery?: string;
     };
    };
-  Filter: {
-    mainCategory: string;    
-    subCategoryName: string;  
+   Filter: {
+    mainCategory: string;
+    subCategoryName: string;
     subSubCategory: string;
-    maxPrice: number; allColors: string[]; allSizes: string[] };
+    maxPrice: number;
+    allColors: string[];
+    allSizes: string[];
+    allDiscounts: number[];
+  };
   ProductDetails: { itemDetails: Product };
 };
 
-type CatalogScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CatalogScreen'>;
-type CatalogScreenRouteProp = RouteProp<RootStackParamList, 'CatalogScreen'>;
+type CatalogScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Catalog'>;
+type CatalogScreenRouteProp = RouteProp<RootStackParamList, 'Catalog'>;
 
 interface CatalogScreenProps {
   route: CatalogScreenRouteProp;
 }
 
+const sortSizesAutomatically = (sizes) => {
+  return sizes.sort((a, b) => {
+    // Kiểm tra xem kích cỡ có phải là số
+    const isANumeric = /^\d+$/.test(a);
+    const isBNumeric = /^\d+$/.test(b);
 
-// const products = [
-//   { id: '1', name: 'Pullover', price: '51$', image: 'https://picsum.photos/200', rating: 4.5 },
-//   { id: '2', name: 'Blouse', price: '34$', image: 'https://picsum.photos/200', rating: 4.0 },
-//   { id: '3', name: 'T-shirt', price: '12$', image: 'https://picsum.photos/200', rating: 4.2 },
-//   { id: '4', name: 'Shirt', price: '51$', image: 'https://picsum.photos/200', rating: 3.5 },
-//   { id: '5', name: 'Sweater', price: '70$', image: 'https://picsum.photos/200', rating: 4.8 },
-// ];
+    // Sắp xếp số trước
+    if (isANumeric && isBNumeric) return parseInt(a) - parseInt(b);
+    if (isANumeric) return -1;
+    if (isBNumeric) return 1;
 
-const sortOptions = ['Popular', 'Newest', 'Customer review', 'Price: lowest to high', 'Price: highest to low'];
+    // Sắp xếp các kích cỡ dạng chữ cái theo thứ tự tự nhiên (XS, S, M, L...)
+    const order = ["XS", "S", "M", "L", "XL", "XXL", "Small", "Medium", "Large", "Extra Large"];
+    const indexA = order.indexOf(a);
+    const indexB = order.indexOf(b);
+
+    // Nếu cả hai đều nằm trong danh sách order, sắp xếp theo thứ tự trong danh sách
+    if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+
+    // Với các kích cỡ khác, sắp xếp theo thứ tự chữ cái
+    return a.localeCompare(b);
+  });
+};
+
+const sortOptions = ['Newest', 'Popular', 'Sort by rating', 'Price: lowest to high', 'Price: highest to low'];
 
 const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
   const { mainCategory, subCategoryName, subSubCategory, filters } = route.params;
@@ -87,12 +110,19 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isGridView, setIsGridView] = useState(false);
   const [isSortModalVisible, setSortModalVisible] = useState(false);
-  const [isFilterModalVisible, setFilterModalVisible] = useState(false);
-  const [selectedSort, setSelectedSort] = useState<string | null>(null);
+  const [selectedSort, setSelectedSort] = useState<string | null>('Newest');
 
   const maxPrice = Math.max(...products.map((product) => product.salePrice * (1 - product.discount / 100)));
-  // const allColors = products.map((product) => product.variants.map((variant) => variant.colors.map((colorObj) => colorObj.color))).flat();
-  const allSizes = products.map((product) => product.variants.map((variant) => variant.size)).flat();
+  const allDiscounts = Array.from(
+    new Set(products.map((product) => product.discount))
+  ).sort((a, b) => a - b);
+  // const allSizes = Array.from(
+  //   new Set(products.flatMap((product) => product.variants.map((variant) => variant.size)))
+  // );
+  const allSizes = sortSizesAutomatically(Array.from(
+    new Set(products.flatMap((product) => product.variants.map((variant) => variant.size)))
+    )
+  );
   const allColors = Array.from(
     new Set(
       products
@@ -105,7 +135,7 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
   );
 
   const handleFilterPress = () => {
-    navigation.navigate('Filter', {mainCategory, subCategoryName, subSubCategory, maxPrice, allColors, allSizes });
+    navigation.navigate('Filter', {mainCategory, subCategoryName, subSubCategory, maxPrice, allColors, allSizes, allDiscounts });
   };
 
   console.log('mainCategory:', mainCategory);
@@ -134,7 +164,29 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
       return false;
     }
 
+    if (filters?.selectedDiscount !== undefined && product.discount < filters.selectedDiscount) return false;
+
+    if (filters?.searchQuery) {
+      const query = filters.searchQuery.toLowerCase();
+      if (!product.name.toLowerCase().includes(query) && !product.description.toLowerCase().includes(query)) {
+        return false;
+      }
+    }
+
     return true;
+  });
+
+  // Apply sorting
+  const sortedProducts = filteredProducts.sort((a, b) => {
+    if (selectedSort === 'Popular') return b.reviews - a.reviews;
+    if (selectedSort === 'Price: lowest to high') return (a.salePrice * (1 - a.discount / 100)) - (b.salePrice * (1 - b.discount / 100));
+    if (selectedSort === 'Price: highest to low') return (b.salePrice * (1 - b.discount / 100)) - (a.salePrice * (1 - a.discount / 100));
+    if (selectedSort === 'Sort by rating') {
+      const avgRatingA = calculateAverageRating(a.ratings);
+      const avgRatingB = calculateAverageRating(b.ratings);
+      return avgRatingB - avgRatingA;
+    }
+    return 0; // Newest or no sorting
   });
 
   useEffect(() => {
@@ -315,12 +367,11 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-row justify-between items-center p-4">
+      <View className="flex-row items-center p-4">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text className="text-2xl font-bold">{subSubCategory}</Text>
-        <Ionicons name="search" size={24} color="black" />
+        <Text className="text-2xl font-bold ml-2">{subSubCategory === 'All' ? 'All Products' : subSubCategory}</Text>
       </View>
 
       <View className="flex-row justify-between items-center px-4 mb-4">
@@ -340,7 +391,7 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
       </View>
 
       <FlatList
-        data={filteredProducts}
+        data={sortedProducts}
         // keyExtractor={(item) => item.id}
         renderItem={isGridView ? renderGridItem : renderListItem}
         numColumns={isGridView ? 2 : 1}
@@ -351,19 +402,23 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
 
       {/* Sort Modal */}
       <Modal visible={isSortModalVisible} animationType="slide" transparent>
-        <View className="flex-1 bg-black bg-opacity-50 justify-end">
-          <View className="bg-white p-4 rounded-t-lg">
-            <Text className="text-xl font-bold mb-4">Sort By</Text>
-            {sortOptions.map((option) => (
-              <TouchableOpacity key={option} onPress={() => { setSelectedSort(option); setSortModalVisible(false); }} className={`p-2 ${selectedSort === option ? 'bg-red-500 text-white' : 'text-black'}`}>
-                <Text className={`text-lg ${selectedSort === option ? 'text-white' : 'text-black'}`}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity onPress={() => setSortModalVisible(false)} className="mt-4">
-              <Text className="text-red-500 text-lg font-bold">Close</Text>
+        <TouchableOpacity style={{ flex: 1 }} onPress={() => setSortModalVisible(false)} activeOpacity={1}>
+          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <TouchableOpacity activeOpacity={1}>
+              <View className="bg-white p-4 rounded-t-lg">
+                <Text className="text-xl font-bold mb-4">Sort By</Text>
+                {sortOptions.map((option) => (
+                  <TouchableOpacity key={option} onPress={() => { setSelectedSort(option); setSortModalVisible(false); }} className={`p-2 ${selectedSort === option ? 'bg-red-500 text-white' : 'text-black'}`}>
+                    <Text className={`text-lg ${selectedSort === option ? 'text-white' : 'text-black'}`}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity onPress={() => setSortModalVisible(false)} className="mt-4">
+                  <Text className="text-red-500 text-lg font-bold">Close</Text>
+                </TouchableOpacity>
+              </View>
             </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
       </Modal>
 
       

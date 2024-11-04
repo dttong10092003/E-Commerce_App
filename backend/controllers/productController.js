@@ -133,7 +133,7 @@ exports.getProductsByCategory = async (req, res) => {
             filter.mainCategory = mainCategory;
         }
 
-        if (subCategoryName && subCategoryName !== 'All') {
+        if (subCategoryName && subCategoryName !== 'New') {
             filter["subCategory.name"] = subCategoryName;
         }
 

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
@@ -16,6 +16,8 @@ type RootStackParamList = {
       maxPrice: number;
       selectedColor: string | null;
       selectedSize: string | null;
+      selectedDiscount?: number;
+      searchQuery?: string;
     };
   };
   Filter: {
@@ -23,6 +25,7 @@ type RootStackParamList = {
     maxPrice: number;
     allColors: string[];
     allSizes: string[];
+    allDiscounts: number[];
   };
   ProductDetails: {
     itemDetails: Product;
@@ -37,12 +40,13 @@ const FilterScreen: React.FC = () => {
   const navigation = useNavigation<FilterScreenNavigationProp>();
 
   // Nhận giá trị maxPrice, minPrice, allColors, và allSizes từ route
-  const { maxPrice, allColors, allSizes, mainCategory, subCategoryName, subSubCategory } = route.params;
+  const { maxPrice, allColors, allSizes, allDiscounts, mainCategory, subCategoryName, subSubCategory } = route.params;
 
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  // const [selectedCategory, setSelectedCategory] = useState<string | null>('All');
-  const [priceRange, setPriceRange] = useState(maxPrice/2);
+  const [priceRange, setPriceRange] = useState(maxPrice);
+  const [selectedDiscount, setSelectedDiscount] = useState<number | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   const handleApplyFilters = () => {
     navigation.navigate('Catalog', {
@@ -53,6 +57,8 @@ const FilterScreen: React.FC = () => {
         maxPrice: priceRange,
         selectedColor,
         selectedSize,
+        selectedDiscount,
+        searchQuery,
       },
     });
   };
@@ -61,7 +67,13 @@ const FilterScreen: React.FC = () => {
     setSelectedColor(null);
     setSelectedSize(null);
     setPriceRange(maxPrice);
-    navigation.navigate('Catalog');
+    setSelectedDiscount(null);
+    setSearchQuery('');
+    navigation.navigate('Catalog', {
+      mainCategory,
+      subCategoryName,
+      subSubCategory,
+    });
   };
 
   return (
@@ -74,6 +86,22 @@ const FilterScreen: React.FC = () => {
       </View>
       
       <ScrollView className="px-4">
+        {/* Search Input */}
+        <Text className="text-lg font-semibold mt-4">Search</Text>
+        <TextInput
+          placeholder="Search by name or description"
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          style={{
+            padding: 8,
+            borderWidth: 1,
+            borderColor: '#ddd',
+            borderRadius: 8,
+            marginTop: 8,
+            backgroundColor: 'white',
+          }}
+        />
+        
         {/* Price Range */}
         <Text className="text-lg font-semibold mt-4">Price range</Text>
         <Slider
@@ -93,7 +121,7 @@ const FilterScreen: React.FC = () => {
 
         {/* Colors */}
         <Text className="text-lg font-semibold mt-4">Colors</Text>
-        <View className="flex-row mt-2">
+        <View className="flex-row mt-2 flex-wrap">
         {allColors.map((color) => (
             <TouchableOpacity
               key={color}
@@ -104,7 +132,7 @@ const FilterScreen: React.FC = () => {
                 borderRadius: 15,
                 margin: 4,
                 borderWidth: selectedColor === color ? 2 : 0,
-                borderColor: 'red',
+                borderColor: '#43d854',
               }}
               onPress={() => setSelectedColor(color)}
             />
@@ -113,7 +141,7 @@ const FilterScreen: React.FC = () => {
 
         {/* Sizes */}
         <Text className="text-lg font-semibold mt-4">Sizes</Text>
-        <View className="flex-row mt-2">
+        <View className="flex-row mt-2 flex-wrap">
           {allSizes.map((size) => (
             <TouchableOpacity
               key={size}
@@ -124,10 +152,33 @@ const FilterScreen: React.FC = () => {
                 borderRadius: 8,
                 borderColor: selectedSize === size ? 'red' : '#ddd',
                 backgroundColor: selectedSize === size ? 'red' : 'white',
-                marginRight: 8,
+                margin: 4,
               }}
             >
               <Text style={{ color: selectedSize === size ? 'white' : 'black' }}>{size}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Discounts */}
+        <Text className="text-lg font-semibold mt-4">Discounts</Text>
+        <View className="flex-row mt-2 flex-wrap">
+          {allDiscounts.map((discount) => (
+            <TouchableOpacity
+              key={discount}
+              onPress={() => setSelectedDiscount(discount)}
+              style={{
+                padding: 8,
+                borderWidth: 1,
+                borderRadius: 8,
+                borderColor: selectedDiscount === discount ? 'red' : '#ddd',
+                backgroundColor: selectedDiscount === discount ? 'red' : 'white',
+                margin: 4,
+              }}
+            >
+              <Text style={{ color: selectedDiscount === discount ? 'white' : 'black' }}>
+                {discount}%
+              </Text>
             </TouchableOpacity>
           ))}
         </View>

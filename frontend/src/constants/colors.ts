@@ -9,5 +9,9 @@ export const colorMap = {
     "Black": "#000000",
     "White": "#FFFFFF",
     "Beige": "#F5F5DC",
+    "Brown": "#A52A2A",
+    "Gold": "#FFD700",
+    "Silver": "#C0C0C0",
+    "Pink": "#FFC0CB",
     
   };
