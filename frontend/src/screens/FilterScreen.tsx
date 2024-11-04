@@ -4,24 +4,64 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import Slider from '@react-native-community/slider';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
+import { Product } from '../constants/types';
+import { colorMap } from '../constants/colors';
 
+type RootStackParamList = {
+  Catalog: {
+    mainCategory: string; subCategoryName: string; subSubCategory: string;
+    filters?: {
+      maxPrice: number;
+      selectedColor: string | null;
+      selectedSize: string | null;
+    };
+  };
+  Filter: {
+    mainCategory: string; subCategoryName: string; subSubCategory: string;
+    maxPrice: number;
+    allColors: string[];
+    allSizes: string[];
+  };
+  ProductDetails: {
+    itemDetails: Product;
+  };
+};
+
+type FilterRouteProp = RouteProp<RootStackParamList, 'Filter'>;
+type FilterScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Filter'>;
 
 const FilterScreen: React.FC = () => {
-  const navigation = useNavigation();
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>('All');
-  const [priceRange, setPriceRange] = useState(500);
+  const route = useRoute<FilterRouteProp>();
+  const navigation = useNavigation<FilterScreenNavigationProp>();
 
-  // Hàm toggle chọn kích thước
-  const toggleSizeSelection = (size: string) => {
-    setSelectedSizes((prevSelectedSizes) => {
-      if (prevSelectedSizes.includes(size)) {
-        return prevSelectedSizes.filter((s) => s !== size);
-      } else {
-        return [...prevSelectedSizes, size];
-      }
+  // Nhận giá trị maxPrice, minPrice, allColors, và allSizes từ route
+  const { maxPrice, allColors, allSizes, mainCategory, subCategoryName, subSubCategory } = route.params;
+
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  // const [selectedCategory, setSelectedCategory] = useState<string | null>('All');
+  const [priceRange, setPriceRange] = useState(maxPrice/2);
+
+  const handleApplyFilters = () => {
+    navigation.navigate('Catalog', {
+      mainCategory,
+      subCategoryName,
+      subSubCategory,
+      filters: {
+        maxPrice: priceRange,
+        selectedColor,
+        selectedSize,
+      },
     });
+  };
+
+  const handleDiscardFilters = () => {
+    setSelectedColor(null);
+    setSelectedSize(null);
+    setPriceRange(maxPrice);
+    navigation.navigate('Catalog');
   };
 
   return (
@@ -38,7 +78,7 @@ const FilterScreen: React.FC = () => {
         <Text className="text-lg font-semibold mt-4">Price range</Text>
         <Slider
           minimumValue={0}
-          maximumValue={1000}
+          maximumValue={maxPrice}
           value={priceRange}
           onValueChange={(value) => setPriceRange(value)}
           className="mt-2"
@@ -54,11 +94,11 @@ const FilterScreen: React.FC = () => {
         {/* Colors */}
         <Text className="text-lg font-semibold mt-4">Colors</Text>
         <View className="flex-row mt-2">
-          {['#000000', '#FFFFFF', '#FF0000', '#D3BEBE', '#FFD700', '#0000FF'].map((color) => (
+        {allColors.map((color) => (
             <TouchableOpacity
               key={color}
               style={{
-                backgroundColor: color,
+                backgroundColor: colorMap[color] || '#ddd',
                 width: 30,
                 height: 30,
                 borderRadius: 15,
@@ -74,26 +114,26 @@ const FilterScreen: React.FC = () => {
         {/* Sizes */}
         <Text className="text-lg font-semibold mt-4">Sizes</Text>
         <View className="flex-row mt-2">
-          {['XS', 'S', 'M', 'L', 'XL'].map((size) => (
+          {allSizes.map((size) => (
             <TouchableOpacity
               key={size}
-              onPress={() => toggleSizeSelection(size)}
+              onPress={() => setSelectedSize(size)}
               style={{
                 padding: 8,
                 borderWidth: 1,
-                borderRadius: 8, // Giảm độ tròn của border
-                borderColor: selectedSizes.includes(size) ? 'red' : '#ddd',
-                backgroundColor: selectedSizes.includes(size) ? 'red' : 'white',
+                borderRadius: 8,
+                borderColor: selectedSize === size ? 'red' : '#ddd',
+                backgroundColor: selectedSize === size ? 'red' : 'white',
                 marginRight: 8,
               }}
             >
-              <Text style={{ color: selectedSizes.includes(size) ? 'white' : 'black' }}>{size}</Text>
+              <Text style={{ color: selectedSize === size ? 'white' : 'black' }}>{size}</Text>
             </TouchableOpacity>
           ))}
         </View>
 
         {/* Category */}
-        <Text className="text-lg font-semibold mt-4">Category</Text>
+        {/* <Text className="text-lg font-semibold mt-4">Category</Text>
         <View className="flex-row mt-2 flex-wrap">
           {['All', 'Women', 'Men', 'Boys', 'Girls'].map((category) => (
             <TouchableOpacity
@@ -112,14 +152,14 @@ const FilterScreen: React.FC = () => {
               <Text style={{ color: selectedCategory === category ? 'white' : 'black' }}>{category}</Text>
             </TouchableOpacity>
           ))}
-        </View>
+        </View> */}
 
         {/* Discard and Apply Buttons */}
         <View className="flex-row mt-6 mb-4">
-          <TouchableOpacity className="flex-1 bg-gray-300 py-4 rounded-full mr-2" onPress={() => navigation.goBack()}>
+          <TouchableOpacity className="flex-1 bg-gray-300 py-4 rounded-full mr-2" onPress={handleDiscardFilters}>
             <Text className="text-center text-black">Discard</Text>
           </TouchableOpacity>
-          <TouchableOpacity className="flex-1 bg-red-500 py-4 rounded-full ml-2" onPress={() => navigation.goBack()}>
+          <TouchableOpacity className="flex-1 bg-red-500 py-4 rounded-full ml-2" onPress={handleApplyFilters}>
             <Text className="text-center text-white">Apply</Text>
           </TouchableOpacity>
         </View>

@@ -33,7 +33,6 @@ type Product = {
       image: string; // Chỉ 1 ảnh duy nhất cho mỗi màu
     }[];
   }[];
-  isHeart: boolean;
   reviews: number;
   ratings: {
     1: number;

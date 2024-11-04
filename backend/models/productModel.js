@@ -60,7 +60,6 @@ const productSchema = new Schema({
             image: { type: String, required: true }
         }]
     }],
-    isHeart: { type: Boolean, default: false },
     reviews: { type: Number, default: 0 },
     ratings: {
         1: { type: Number, default: 0 },

@@ -46,7 +46,6 @@ type Product = {
   subSubCategory: string;
   images: string[]; // Array of 5 images for the main product images
   variants: Variant[];
-  isHeart: boolean;
   reviews: number;
   ratings: Ratings;
   createdAt: string;

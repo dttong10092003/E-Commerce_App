@@ -40,15 +40,24 @@ type Product = {
   subSubCategory: string;
   images: string[]; // Array of 5 images for the main product images
   variants: Variant[];
-  isHeart: boolean;
   reviews: number;
   ratings: Ratings;
   createdAt: string;
 };
 
 type RootStackParamList = {
-  CatalogScreen: { mainCategory: string; subCategoryName: string, subSubCategory: string };
-  Filter: undefined;
+  CatalogScreen: { mainCategory: string; subCategoryName: string; subSubCategory: string; 
+    filters?: {
+      maxPrice?: number;
+      selectedColor?: string;
+      selectedSize?: string;
+    };
+   };
+  Filter: {
+    mainCategory: string;    
+    subCategoryName: string;  
+    subSubCategory: string;
+    maxPrice: number; allColors: string[]; allSizes: string[] };
   ProductDetails: { itemDetails: Product };
 };
 
@@ -71,8 +80,9 @@ interface CatalogScreenProps {
 const sortOptions = ['Popular', 'Newest', 'Customer review', 'Price: lowest to high', 'Price: highest to low'];
 
 const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
-  const { mainCategory, subCategoryName, subSubCategory } = route.params;
+  const { mainCategory, subCategoryName, subSubCategory, filters } = route.params;
   const navigation = useNavigation<CatalogScreenNavigationProp>();
+  
 
   const [products, setProducts] = useState<Product[]>([]);
   const [isGridView, setIsGridView] = useState(false);
@@ -80,9 +90,52 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const [selectedSort, setSelectedSort] = useState<string | null>(null);
 
+  const maxPrice = Math.max(...products.map((product) => product.salePrice * (1 - product.discount / 100)));
+  // const allColors = products.map((product) => product.variants.map((variant) => variant.colors.map((colorObj) => colorObj.color))).flat();
+  const allSizes = products.map((product) => product.variants.map((variant) => variant.size)).flat();
+  const allColors = Array.from(
+    new Set(
+      products
+        .flatMap((product) => 
+          product.variants.flatMap((variant) => 
+            variant.colors.map((colorObj) => colorObj.color)
+          )
+        )
+    ) 
+  );
+
+  const handleFilterPress = () => {
+    navigation.navigate('Filter', {mainCategory, subCategoryName, subSubCategory, maxPrice, allColors, allSizes });
+  };
+
   console.log('mainCategory:', mainCategory);
   console.log('subCategoryName:', subCategoryName);
   console.log('subSubCategory:', subSubCategory);
+
+  // Áp dụng filter nếu tồn tại
+  const filteredProducts = products.filter((product) => {
+    // Filter theo giá
+    const price = product.salePrice * (1 - product.discount / 100);
+    if (filters?.maxPrice && price > filters.maxPrice) {
+      return false;
+    }
+
+    // Filter theo màu sắc
+    const productColors = product.variants.flatMap(variant =>
+      variant.colors.map(colorObj => colorObj.color)
+    );
+    if (filters?.selectedColor && !productColors.includes(filters.selectedColor)) {
+      return false;
+    }
+
+    // Filter theo kích thước
+    const productSizes = product.variants.map(variant => variant.size);
+    if (filters?.selectedSize && !productSizes.includes(filters.selectedSize)) {
+      return false;
+    }
+
+    return true;
+  });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -182,9 +235,9 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
       </View>
   
       {/* Favorite Icon */}
-      <TouchableOpacity>
+      {/* <TouchableOpacity>
         <Ionicons name={item.isHeart ? "heart" : "heart-outline"} size={24} color={item.isHeart ? "red" : "gray"} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </TouchableOpacity>
   );
 
@@ -254,9 +307,9 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
       </View>
   
       {/* Favorite Icon */}
-      <TouchableOpacity>
+      {/* <TouchableOpacity>
         <Ionicons name={item.isHeart ? "heart" : "heart-outline"} size={24} color={item.isHeart ? "red" : "gray"} style={{ alignSelf: 'flex-end' }}/>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </TouchableOpacity>
   );
 
@@ -276,7 +329,7 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
             <Ionicons name="filter" size={18} color="black" />
             <Text className="ml-2">Sort By</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Filter')} className="flex-row items-center p-2 border border-gray-300 rounded-full mr-2">
+          <TouchableOpacity onPress={handleFilterPress} className="flex-row items-center p-2 border border-gray-300 rounded-full mr-2">
             <Ionicons name="options-outline" size={18} color="black" />
             <Text className="ml-2">Filter</Text>
           </TouchableOpacity>
@@ -287,7 +340,7 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
       </View>
 
       <FlatList
-        data={products}
+        data={filteredProducts}
         // keyExtractor={(item) => item.id}
         renderItem={isGridView ? renderGridItem : renderListItem}
         numColumns={isGridView ? 2 : 1}
