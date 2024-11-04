@@ -6,7 +6,8 @@ const cors = require('cors')
 const mongoose = require('mongoose')
 const authRoute = require('./routes/authRoute');
 const productRoute = require('./routes/productRoute'); 
-
+const shippingAddressRoute = require('./routes/shippingAddressRoute');
+const paymentMethodRoute = require('./routes/paymentMethodRoute');
 // initialize a new express application instance
 const app = express();
 
@@ -18,7 +19,8 @@ app.use(cors())
 // routes
 app.use("/api/auth/", authRoute);
 app.use('/api/products/', productRoute);
-
+app.use('/api/shipping-addresses', shippingAddressRoute);
+app.use('/api/payment-methods', paymentMethodRoute);
 
 // connect to DataBase (MONGODB)
 const PORT = process.env.PORT // http://localhost:4000/api/auth/  -> POST

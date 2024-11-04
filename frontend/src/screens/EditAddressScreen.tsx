@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../config';
 const EditAddressScreen = ({ route, navigation }) => {
   const { address } = route.params;
   
@@ -15,26 +17,59 @@ const EditAddressScreen = ({ route, navigation }) => {
   const [country, setCountry] = useState(address.country);
   const [isDefault, setIsDefault] = useState(address.isDefault);
 
-  // Hàm cập nhật địa chỉ
-  const updateAddress = () => {
-    Alert.alert("Update Address", "Address updated successfully!");
-    navigation.goBack();
+// Hàm cập nhật địa chỉ
+const updateAddress = async () => {
+  const token = await AsyncStorage.getItem('authToken');
+  const updatedAddress = {
+    name: recipientName,
+    phoneNumber,
+    street,
+    district,
+    city,
+    country,
+    isDefault
   };
 
-  // Hàm xóa địa chỉ
-  const deleteAddress = () => {
-    Alert.alert("Delete Address", "Are you sure you want to delete this address?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: () => {
+  try {
+    await axios.patch(`${BASE_URL}/shipping-addresses/${address._id}`, updatedAddress, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    Alert.alert("Success", "Address updated successfully!");
+    navigation.goBack(); // Quay lại màn hình ShippingAddressesScreen
+  } catch (error) {
+    console.error(error);
+    Alert.alert("Error", "Failed to update address");
+  }
+};
+
+// Hàm xóa địa chỉ
+const deleteAddress = async () => {
+  Alert.alert("Delete Address", "Are you sure you want to delete this address?", [
+    { text: "Cancel", style: "cancel" },
+    {
+      text: "Delete",
+      style: "destructive",
+      onPress: async () => {
+        const token = await AsyncStorage.getItem('authToken');
+        try {
+          await axios.delete(`${BASE_URL}/shipping-addresses/${address._id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
           Alert.alert("Deleted", "Address has been deleted.");
-          navigation.goBack();
-        },
+          navigation.goBack(); // Quay lại màn hình ShippingAddressesScreen
+        } catch (error) {
+          console.error(error);
+          Alert.alert("Error", "Failed to delete address");
+        }
       },
-    ]);
-  };
+    },
+  ]);
+};
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">

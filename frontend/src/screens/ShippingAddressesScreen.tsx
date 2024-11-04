@@ -1,58 +1,99 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import axios from 'axios';
+import BASE_URL from '../config';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const initialAddresses = [
-  {
-    id: '1',
-    name: 'John Doe',
-    phoneNumber: '+1 234 567 890',
-    street: '3 Newbridge Court',
-    district: 'Chino Hills',
-    city: 'CA 91709',
-    country: 'United States',
-    isDefault: true,
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    phoneNumber: '+1 987 654 321',
-    street: '1200 West 7th Street',
-    district: 'Los Angeles',
-    city: 'CA 90017',
-    country: 'United States',
-    isDefault: false,
-  },
-  {
-    id: '3',
-    name: 'Michael Johnson',
-    phoneNumber: '+1 555 123 456',
-    street: '15 Oak Lane',
-    district: 'Irvine',
-    city: 'CA 92620',
-    country: 'United States',
-    isDefault: false,
-  },
-];
+type ShippingAddress = {
+  _id: string;
+  name: string;
+  phoneNumber: string;
+  street: string;
+  district: string;
+  city: string;
+  country: string;
+  isDefault: boolean;
+};
 
 const ShippingAddressesScreen = ({ navigation }) => {
-  const [addresses, setAddresses] = useState(initialAddresses);
+  const [addresses, setAddresses] = useState<ShippingAddress[]>([]);
+
+  useEffect(() => {
+    fetchShippingAddresses();
+  }, []);
+
+  const fetchShippingAddresses = async () => {
+    const token = await AsyncStorage.getItem('authToken');
+    try {
+      const response = await axios.get<ShippingAddress[]>(`${BASE_URL}/shipping-addresses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setAddresses(response.data); 
+    } catch (error) {
+      Alert.alert('Error', 'Failed to fetch shipping addresses');
+    }
+  };
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('focus', () => {
+      fetchShippingAddresses();
+    });
+
+    return unsubscribe;
+  }, [navigation]);
 
   const addNewAddress = () => {
     navigation.navigate('AddNewAddress');
   };
 
-  // Hàm tạo chuỗi địa chỉ từ các phần nhỏ
-  const formatAddress = (address) => {
-    const { street, district, city, country } = address;
-    return `${street}, ${district}, ${city}, ${country}`;
+  const deleteAddress = async (addressId) => {
+    Alert.alert("Delete Address", "Are you sure you want to delete this address?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          const token = await AsyncStorage.getItem('authToken');
+          try {
+            await axios.delete(`${BASE_URL}/shipping-addresses/${addressId}`, {
+              headers: { Authorization: `Bearer ${token}` }
+            });
+            Alert.alert("Success", "Address deleted successfully");
+            fetchShippingAddresses(); 
+          } catch (error) {
+            Alert.alert("Error", "Failed to delete shipping address");
+          }
+        },
+      },
+    ]);
   };
 
-  // Component hiển thị từng địa chỉ
+  const editAddress = (address) => {
+    navigation.navigate('EditAddress', { address });
+  };
+
+  // Hàm đặt địa chỉ làm mặc định
+  const setDefaultAddress = async (addressId) => {
+    const token = await AsyncStorage.getItem('authToken');
+    try {
+      await axios.patch(
+        `${BASE_URL}/shipping-addresses/${addressId}/set-default`,
+        {},
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchShippingAddresses(); // Cập nhật danh sách địa chỉ sau khi thay đổi
+    } catch (error) {
+      console.error("Failed to set default address:", error.response ? error.response.data : error.message);
+      Alert.alert("Error", "Failed to set default address");
+    }
+  };
+  
+
   const AddressItem = ({ address }) => (
     <TouchableOpacity
-      onPress={() => navigation.navigate('EditAddress', { address })}
+      onPress={() => editAddress(address)} 
       className="bg-white p-4 rounded-lg my-2 mx-4 shadow-sm flex-row justify-between items-center"
     >
       <View className="flex-1">
@@ -61,24 +102,35 @@ const ShippingAddressesScreen = ({ navigation }) => {
           <Ionicons name="call-outline" size={16} color="gray" style={{ marginHorizontal: 6 }} />
           <Text className="text-lg">{address.phoneNumber}</Text>
         </View>
-        <Text className="text-gray-600 mt-1">{formatAddress(address)}</Text>
+        <Text className="text-gray-600 mt-1">{`${address.street}, ${address.district}, ${address.city}, ${address.country}`}</Text>
         {address.isDefault && <Text className="text-green-500 font-medium mt-2">Default</Text>}
+      </View>
+
+      <View className="flex-row items-center">
+        <TouchableOpacity onPress={() => setDefaultAddress(address._id)}>
+          <Ionicons
+            name={address.isDefault ? "checkmark-circle" : "ellipse-outline"}
+            size={24}
+            color={address.isDefault ? "green" : "gray"}
+            style={{ marginRight: 10 }}
+          />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => deleteAddress(address._id)}>
+          <Ionicons name="trash-outline" size={24} color="red" />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
-      {/* Header */}
       <View className="px-4 pb-2 flex-row items-center">
         <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
         <Text className="text-2xl font-bold ml-2">Shipping Addresses</Text>
       </View>
 
-      {/* Danh sách địa chỉ */}
       <FlatList
         data={addresses}
-        keyExtractor={(item) => item.id}
         renderItem={({ item }) => <AddressItem address={item} />}
         contentContainerStyle={{ paddingBottom: 16 }}
         ListEmptyComponent={() => (
@@ -88,7 +140,6 @@ const ShippingAddressesScreen = ({ navigation }) => {
         )}
       />
 
-      {/* Nút thêm địa chỉ mới */}
       <View className="p-4">
         <TouchableOpacity
           onPress={addNewAddress}

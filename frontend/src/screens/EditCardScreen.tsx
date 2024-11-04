@@ -3,6 +3,9 @@ import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'reac
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Picker } from '@react-native-picker/picker';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../config';
 
 const EditCardScreen = ({ route, navigation }) => {
   const { card } = route.params;
@@ -12,13 +15,47 @@ const EditCardScreen = ({ route, navigation }) => {
   const [expiryDate, setExpiryDate] = useState(card.expiryDate);
   const [cvv, setCvv] = useState(card.cvv);
   const [cardType, setCardType] = useState(card.cardType);
+  const validateInputs = () => {
+    if (!/^\d{16}$/.test(cardNumber)) {
+      Alert.alert('Error', 'Card number must contain exactly 16 digits.');
+      return false;
+    }
+    if (!/^[A-Za-z\s]+$/.test(cardHolder.trim())) {
+      Alert.alert('Error', 'Card holder name should not contain special characters.');
+      return false;
+    }
+    if (!/^(0[1-9]|1[0-2])\d{2}$/.test(expiryDate)) {
+      Alert.alert("Error", "Expiry date should be in MMYY format.");
+      return false;
+    }
+    if (!/^\d{3}$/.test(cvv)) {
+      Alert.alert('Error', 'CVV should contain exactly 3 digits.');
+      return false;
+    }
+    return true;
+  };
+  // Hàm cập nhật thẻ xuống MongoDB
+  const updateCard = async () => {
+    if (!validateInputs()) return;
+    const token = await AsyncStorage.getItem('authToken');
+    try {
+      const response = await axios.patch(
+        `${BASE_URL}/payment-methods/${card._id}`,
+        { cardNumber, cardHolder, expiryDate, cvv, cardType },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-  const updateCard = () => {
-    const updatedCard = { ...card, cardNumber, cardHolder, expiryDate, cvv, cardType };
-    navigation.navigate('PaymentMethods', { updatedCard });
+      if (response.status === 200) {
+        Alert.alert('Success', 'Card updated successfully');
+        navigation.navigate('PaymentMethods', { refresh: true }); 
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Failed to update card');
+    }
   };
 
-  const deleteCard = () => {
+  // Hàm xóa thẻ khỏi MongoDB
+  const deleteCard = async () => {
     Alert.alert(
       "Delete Card",
       "Are you sure you want to delete this card?",
@@ -27,7 +64,22 @@ const EditCardScreen = ({ route, navigation }) => {
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => navigation.navigate('PaymentMethods', { deletedCardId: card.id }),
+          onPress: async () => {
+            const token = await AsyncStorage.getItem('authToken');
+            try {
+              const response = await axios.delete(
+                `${BASE_URL}/payment-methods/${card._id}`,
+                { headers: { Authorization: `Bearer ${token}` } }
+              );
+
+              if (response.status === 200) {
+                Alert.alert('Deleted', 'Card deleted successfully');
+                navigation.navigate('PaymentMethods', { refresh: true });
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to delete card');
+            }
+          },
         },
       ]
     );

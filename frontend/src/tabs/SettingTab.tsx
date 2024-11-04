@@ -9,6 +9,8 @@ import { createStackNavigator } from '@react-navigation/stack';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../config';
+import { useIsFocused } from '@react-navigation/native';
+
 type Props = {};
 
 const Stack = createStackNavigator();
@@ -28,7 +30,10 @@ const SettingTab = (props: Props) => {
   const [email, setEmail] = useState('');
   const [userId, setUserId] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  useEffect(() => {
+  const [addressCount, setAddressCount] = useState(0);
+  const [paymentMethodCount, setPaymentMethodCount] = useState(0);
+  const isFocused = useIsFocused();
+ 
     const fetchUserData = async () => {
       const token = await AsyncStorage.getItem('authToken');
       if (token) {
@@ -50,8 +55,60 @@ const SettingTab = (props: Props) => {
         }
       }
     };
-    fetchUserData();
-  }, []);
+    const fetchAddressCount = async () => {
+      const token = await AsyncStorage.getItem('authToken');
+      if (token) {
+        try {
+          const response = await axios.get(`${BASE_URL}/shipping-addresses`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          if (response.status === 200) {
+            setAddressCount((response.data as any[]).length);
+          }
+        } catch (error) {
+          console.error('Failed to fetch addresses:', error);
+          Alert.alert('Error', 'Failed to load addresses');
+        }
+      }
+    };
+ // Fetch payment methods count
+ const fetchPaymentMethodCount = async () => {
+  const token = await AsyncStorage.getItem('authToken');
+  if (token) {
+    try {
+      const response = await axios.get(`${BASE_URL}/payment-methods`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (response.status === 200) {
+        setPaymentMethodCount((response.data as any[]).length);
+      }
+    } catch (error) {
+      console.error('Failed to fetch payment methods:', error);
+      Alert.alert('Error', 'Failed to load payment methods');
+    }
+  }
+};
+    useEffect(() => {
+      fetchUserData();
+      fetchAddressCount();
+      fetchPaymentMethodCount();
+
+    }, []);
+
+    useEffect(() => {
+      if (isFocused) {
+        fetchAddressCount();
+        fetchPaymentMethodCount();
+
+      }
+    }, [isFocused]);
+
+
+
   
   const handleEditToggle = () => {
     setIsEditing(!isEditing);
@@ -138,7 +195,7 @@ const SettingTab = (props: Props) => {
         >
           <View>
             <Text className="text-lg font-bold">Shipping addresses</Text>
-            <Text className="text-sm text-gray-400">3 addresses</Text>
+            <Text className="text-sm text-gray-400">{addressCount} addresses</Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#A0A0A0" />
         </TouchableOpacity>
@@ -149,7 +206,7 @@ const SettingTab = (props: Props) => {
         >
           <View>
             <Text className="text-lg font-bold">Payment methods</Text>
-            <Text className="text-sm text-gray-400">Visa **34</Text>
+            <Text className="text-sm text-gray-400">{paymentMethodCount} payment methods</Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#A0A0A0" />
         </TouchableOpacity>

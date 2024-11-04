@@ -2,7 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../config';
 const AddNewAddressScreen = ({ navigation, route }) => {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -13,26 +15,44 @@ const AddNewAddressScreen = ({ navigation, route }) => {
   const [isDefault, setIsDefault] = useState(false);
 
   // Hàm lưu địa chỉ mới
-  const saveAddress = () => {
-    // if (!name || !phoneNumber || !street || !district || !city || !country) {
-    //   Alert.alert("Error", "Please fill in all the fields.");
-    //   return;
-    // }
+  const saveAddress = async () => {
+    // Kiểm tra nếu có trường nào bị bỏ trống
+    if (!name || !phoneNumber || !street || !district || !city || !country) {
+      Alert.alert("Error", "Please fill in all the fields.");
+      return;
+    }
 
-    // const newAddress = {
-    //   id: Date.now().toString(),
-    //   name,
-    //   phoneNumber,
-    //   street,
-    //   district,
-    //   city,
-    //   country,
-    //   isDefault,
-    // };
+    // Lấy token từ AsyncStorage
+    const token = await AsyncStorage.getItem('authToken');
 
-    // // Gửi dữ liệu mới trở lại `ShippingAddressesScreen`
-    // navigation.navigate('ShippingAddresses', { newAddress });
-    navigation.navigate('ShippingAddresses');
+    // Tạo đối tượng địa chỉ mới
+    const newAddress = {
+      name,
+      phoneNumber,
+      street,
+      district,
+      city,
+      country,
+      isDefault,
+    };
+
+    try {
+      // Gửi yêu cầu POST đến API để lưu địa chỉ
+      await axios.post(`${BASE_URL}/shipping-addresses`, newAddress, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      Alert.alert("Success", "Address added successfully");
+      
+      // Điều hướng trở lại màn hình ShippingAddressesScreen và tự động làm mới dữ liệu
+      navigation.navigate('ShippingAddresses');
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to save address");
+    }
   };
 
   return (
