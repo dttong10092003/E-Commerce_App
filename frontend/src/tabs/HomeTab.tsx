@@ -1,7 +1,7 @@
-import {View, Text, Image, TouchableOpacity, ImageSourcePropType, FlatList, ScrollView } from 'react-native';
+import {View, Text, Image, TouchableOpacity, ImageSourcePropType, FlatList, ScrollView,Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import React, { useEffect, useState } from 'react';
-import {useNavigation} from '@react-navigation/native';
+import React, { useEffect, useState, useCallback } from 'react';
+import {useNavigation,useFocusEffect } from '@react-navigation/native';
 import {StackNavigationProp} from '@react-navigation/stack';
 import icons from '../constants/icons';
 import images from '../constants/images';
@@ -9,7 +9,7 @@ import { CustomSearch, ProductItem } from '../components';
 import { CategoriesData, ProductData } from '../constants/data';
 import BASE_URL from '../config';
 import axios from 'axios';
-
+import AsyncStorage from '@react-native-async-storage/async-storage';
 type SubCategory = {
   name: string;
   image: string;
@@ -50,7 +50,11 @@ type Product = {
   ratings: Ratings;
   createdAt: string;
 };
-
+type User = {
+  username: string;
+  email: string;
+  avatar: string; 
+};
 type Props = {};
 
 const HomeTab = (props: Props) => {
@@ -81,8 +85,39 @@ const HomeTab = (props: Props) => {
 
   const [categories, setCategories] = useState<SubCategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [user, setUser] = useState<User | null>(null); // Thêm state cho thông tin người dùng
+ 
+// Lấy thông tin người dùng (bao gồm avatar) từ server khi component tải
 
-  useEffect(() => {
+  const fetchUserData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (token) {
+        const response = await axios.get(`${BASE_URL}/auth/user`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        
+        if (response.status === 200) {
+          const { username, email, avatar } = response.data as User;
+          setUser({
+            username,
+            email,
+            avatar: avatar ? `data:image/png;base64,${avatar}` : '', // Xử lý avatar với chuỗi Base64
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch user data:', error);
+      Alert.alert('Error', 'Failed to load user data');
+    }
+  };
+
+
+
+
+
     const fetchCategories = async () => {
       try {
         const response = await axios.get<SubCategory[]>(`${BASE_URL}/products/sub-categories`);
@@ -93,10 +128,8 @@ const HomeTab = (props: Props) => {
       }
     };
 
-    fetchCategories();
-  }, []);
-
-  useEffect(() => {
+ 
+  
     const fetchProducts = async () => {
       try {
         const response = await axios.get<Product[]>(`${BASE_URL}/products`);
@@ -105,8 +138,7 @@ const HomeTab = (props: Props) => {
         console.error('Failed to fetch products:', error);
       }
     };
-    fetchProducts();
-  }, []);
+   
 
   console.log('categoriesData:', categories);
 
@@ -120,7 +152,19 @@ const HomeTab = (props: Props) => {
         <Text className='text-black-100/80 text-center text-lg font-medium'>{' '}{item.name}{' '}</Text>
       </TouchableOpacity>
   );
+// Hàm refresh toàn bộ trang
+const refreshHomePage = async () => {
+  await fetchUserData();
+  await fetchCategories();
+  await fetchProducts();
+};
 
+// Gọi refreshHomePage khi màn hình được focus
+useFocusEffect(
+  useCallback(() => {
+    refreshHomePage();
+  }, [])
+);
   return (
     <SafeAreaView>
       <ScrollView>
@@ -142,9 +186,9 @@ const HomeTab = (props: Props) => {
 
           <TouchableOpacity onPress={NavigateToProfile}>
             <Image
-              source={icons.profile}
-              className='w-8 h-8'
-              resizeMode='contain'>         
+               source={user?.avatar ? { uri: user.avatar } : icons.profile}
+               className="w-8 h-8 rounded-full"
+              resizeMode='cover'>         
             </Image>
           </TouchableOpacity>
         </View>

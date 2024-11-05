@@ -15,6 +15,10 @@ const userSchema = new Schema({
   username: {
     type: String,
     required: true
+  },
+  avatar: {
+    type: String, // URL hoặc base64 của ảnh đại diện
+    default: '', // Có thể thêm avatar mặc định nếu cần
   }
 } );
 

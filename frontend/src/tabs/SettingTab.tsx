@@ -10,6 +10,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../config';
 import { useIsFocused } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 
 type Props = {};
 
@@ -32,8 +33,14 @@ const SettingTab = (props: Props) => {
   const [isEditing, setIsEditing] = useState(false);
   const [addressCount, setAddressCount] = useState(0);
   const [paymentMethodCount, setPaymentMethodCount] = useState(0);
+  const [avatar, setAvatar] = useState('');
   const isFocused = useIsFocused();
- 
+  useEffect(() => {
+    fetchUserData();
+    fetchAddressCount();
+    fetchPaymentMethodCount();
+
+  }, []);
     const fetchUserData = async () => {
       const token = await AsyncStorage.getItem('authToken');
       if (token) {
@@ -44,10 +51,11 @@ const SettingTab = (props: Props) => {
             },
           });
           if (response.status === 200) {
-            const { _id, username, email } = response.data as { _id: string; username: string; email: string };
+            const { _id, username, email, avatar } = response.data as { _id: string; username: string; email: string, avatar: string};
             setUserId(_id); // Cập nhật userId vào state
             setUsername(username);
             setEmail(email);
+            setAvatar(avatar ? `data:image/png;base64,${avatar}` : ''); // Hiển thị ảnh từ chuỗi Base64
           }
         } catch (error) {
           console.error('Failed to fetch user data:', error);
@@ -92,12 +100,7 @@ const SettingTab = (props: Props) => {
     }
   }
 };
-    useEffect(() => {
-      fetchUserData();
-      fetchAddressCount();
-      fetchPaymentMethodCount();
 
-    }, []);
 
     useEffect(() => {
       if (isFocused) {
@@ -142,6 +145,61 @@ const SettingTab = (props: Props) => {
       Alert.alert('Error', 'User ID or Token not found');
     }
   };
+
+  const handleSelectAvatar = async () => {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      Alert.alert("Permission Denied", "You've refused to allow this app to access your photos.");
+      return;
+    }
+  
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 0.7,
+    });
+  
+    if (!result.canceled && result.assets && result.assets.length > 0) {
+      const selectedImageUri = result.assets[0].uri;
+  
+      // Tải ảnh từ URI và chuyển đổi sang chuỗi Base64
+      const response = await fetch(selectedImageUri);
+      const blob = await response.blob();
+  
+      const reader = new FileReader();
+      reader.readAsDataURL(blob); // Đọc blob dưới dạng chuỗi Base64
+      reader.onloadend = () => {
+        // Ép kiểu reader.result thành chuỗi và sử dụng split
+        const base64String = (reader.result as string).split(',')[1];
+        updateAvatar(base64String); // Gọi hàm lưu Base64 vào MongoDB
+      };
+    }
+  };
+  
+  
+  
+  const updateAvatar = async (base64Image) => {
+    const token = await AsyncStorage.getItem('authToken');
+    if (token && userId) {
+      try {
+        const response = await axios.patch(
+          `${BASE_URL}/auth/users/${userId}/avatar`,
+          { avatar: base64Image },
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+  
+        if (response.status === 200) {
+          Alert.alert('Success', 'Avatar updated successfully');
+          setAvatar(`data:image/png;base64,${base64Image}`); // Cập nhật UI với Base64 mới
+        }
+      } catch (error) {
+        console.error('Failed to update avatar:', error);
+        Alert.alert('Error', 'Failed to update avatar');
+      }
+    }
+  };
+  
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       {/* Header Section */}
@@ -151,10 +209,12 @@ const SettingTab = (props: Props) => {
 
       {/* Profile Info */}
       <View className="flex-row items-center px-4 pb-4">
-        <Image
-          source={icons.profile} 
-          className="w-16 h-16 rounded-full mr-4"
-        />
+      <TouchableOpacity onPress={handleSelectAvatar}>
+          <Image
+            source={avatar ? { uri: avatar } : icons.profile}
+            className="w-16 h-16 rounded-full mr-4"
+          />
+        </TouchableOpacity>
         <View>
         <View className="flex-row items-center space-x-2">
             {isEditing ? (

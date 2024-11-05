@@ -1,6 +1,6 @@
 // routes/authRoute.js
 const express = require('express');
-const { registerUser, loginUser, getAllUsers, getSingleUser,updateUsername,getCurrentUser,updatePassword,authenticateToken,forgotPassword } = require('../controllers/authController');
+const { registerUser, loginUser, getAllUsers, getSingleUser,updateUsername,getCurrentUser,updatePassword,authenticateToken,forgotPassword,updateAvatar } = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -23,4 +23,6 @@ router.get('/user', getCurrentUser);
 
 router.patch('/update-password', authenticateToken, updatePassword);
 router.post('/forgot-password', forgotPassword);
+router.patch('/users/:id/avatar', updateAvatar);
+
 module.exports = router;
