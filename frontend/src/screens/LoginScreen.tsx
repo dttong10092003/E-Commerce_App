@@ -29,7 +29,6 @@ const LoginScreen = (props: Props) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     email: '',
-    username: '', // Có thể bỏ username chỉ lấy email thôi
     password: '',
   });
 
@@ -104,7 +103,7 @@ const LoginScreen = (props: Props) => {
               setEmailError('');
               setForm({ ...form, email: e });
             }}
-            placeholder="username or email"
+            placeholder="Email"
             otherStyles="my-5"
           />
           {emailError ? (
