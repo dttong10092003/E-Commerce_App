@@ -6,16 +6,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RouteStackParamList } from '../../App';
+import { Ratings } from '../constants/types';
 
-type Ratings = {
-    1: number;
-    2: number;
-    3: number;
-    4: number;
-    5: number;
-  };
 
-  type RatingsReviewsScreenRouteProp = RouteProp<RouteStackParamList, 'RatingsReviews'>;
+type RatingsReviewsScreenRouteProp = RouteProp<RouteStackParamList, 'RatingsReviews'>;
 
 const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = ({ route }) => {
     const navigation = useNavigation();
@@ -57,11 +51,11 @@ const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = (
     ];
 
     const starData = [
-        { stars: 5, count: itemDetails?.ratings?.['5'] || 0 },
-        { stars: 4, count: itemDetails?.ratings?.['4'] || 0 },
-        { stars: 3, count: itemDetails?.ratings?.['3'] || 0 },
-        { stars: 2, count: itemDetails?.ratings?.['2'] || 0 },
-        { stars: 1, count: itemDetails?.ratings?.['1'] || 0 },
+        { stars: 5, count: itemDetails?.ratings?.[5] || 0 },
+        { stars: 4, count: itemDetails?.ratings?.[4] || 0 },
+        { stars: 3, count: itemDetails?.ratings?.[3] || 0 },
+        { stars: 2, count: itemDetails?.ratings?.[2] || 0 },
+        { stars: 1, count: itemDetails?.ratings?.[1] || 0 },
     ];
 
     const totalRatings = Object.values(itemDetails?.ratings || {}).reduce((a, b) => a + b, 0); // Tổng số đánh giá

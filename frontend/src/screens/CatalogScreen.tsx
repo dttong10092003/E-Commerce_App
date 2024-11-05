@@ -8,43 +8,7 @@ import { Rating } from 'react-native-ratings';
 import BASE_URL from '../config';
 import axios from 'axios';
 import { colorMap } from '../constants/colors';
-
-type Variant = {
-  size: string;
-  colors: {
-    color: string;
-    stock: number;
-    image: string; // Single image for each color
-  }[];
-};
-
-type Ratings = {
-  1: number;
-  2: number;
-  3: number;
-  4: number;
-  5: number;
-};
-
-type Product = {
-  _id: string;
-  name: string;
-  description: string;
-  importPrice: number;
-  salePrice: number;
-  discount: number;
-  mainCategory: string;
-  subCategory: {
-    name: string;
-    image: string;
-  };
-  subSubCategory: string;
-  images: string[]; // Array of 5 images for the main product images
-  variants: Variant[];
-  reviews: number;
-  ratings: Ratings;
-  createdAt: string;
-};
+import { Product, Ratings } from '../constants/types';
 
 type RootStackParamList = {
   Catalog: { mainCategory: string; subCategoryName: string; subSubCategory: string; 

@@ -13,17 +13,11 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../config';
 import axios from 'axios';
+import { Ratings } from '../constants/types';
 
 
 const { width } = Dimensions.get('window');
 
-type Ratings = {
-  1: number;
-  2: number;
-  3: number;
-  4: number;
-  5: number;
-};
 
 type WishlistType = {
   products: { _id: string }[];

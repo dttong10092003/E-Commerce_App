@@ -12,6 +12,14 @@ type FeaturesTypes = {
 };
 type ItemDetails = ProductTypes;
 
+type Ratings = {
+  1: number;
+  2: number;
+  3: number;
+  4: number;
+  5: number;
+};
+
 type Product = {
   _id: string;
   name: string;
@@ -35,13 +43,7 @@ type Product = {
     }[];
   }[];
   reviews: number;
-  ratings: {
-    1: number;
-    2: number;
-    3: number;
-    4: number;
-    5: number;
-  };
+  ratings: Ratings;
   createdAt: string;
 };
 
@@ -76,4 +78,5 @@ export type {
   TabBarTypes,
   ItemDetails,
   Product,
+  Ratings,
 };
