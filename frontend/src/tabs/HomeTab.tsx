@@ -33,6 +33,7 @@ type Ratings = {
 };
 
 type Product = {
+  _id: string;
   name: string;
   description: string;
   importPrice: number;

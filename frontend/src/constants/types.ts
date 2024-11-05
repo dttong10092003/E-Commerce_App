@@ -13,6 +13,7 @@ type FeaturesTypes = {
 type ItemDetails = ProductTypes;
 
 type Product = {
+  _id: string;
   name: string;
   description: string;
   importPrice: number;

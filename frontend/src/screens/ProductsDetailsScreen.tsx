@@ -1,14 +1,33 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Image, ScrollView, Text, TouchableOpacity, View, FlatList, Animated, Dimensions, Modal, Pressable } from 'react-native';
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteTabsParamList } from './HomeScreen';
 import { RouteStackParamList } from '../../App';
-import { Rating } from 'react-native-ratings'; // Import thêm AirbnbRating
+import { Rating } from 'react-native-ratings';
 import icons from '../constants/icons';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { CategoriesData, ProductData } from '../constants/data';
+import { colorMap } from '../constants/colors';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../config';
+import axios from 'axios';
+
+
 const { width } = Dimensions.get('window');
+
+type Ratings = {
+  1: number;
+  2: number;
+  3: number;
+  4: number;
+  5: number;
+};
+
+type WishlistType = {
+  products: { _id: string }[];
+};
 
 type ScreenRouteProps = RouteProp<RouteStackParamList, 'ProductDetails'>;
 
@@ -17,36 +36,110 @@ type ProductDetailsProps = {
 };
 
 const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
-  const { itemDetails } = route.params || {};
+  const { itemDetails } = route.params; // nhận dữ liệu từ trang Catalog
   const navigation = useNavigation<StackNavigationProp<RouteTabsParamList, 'Cart'>>();
-  const [selectedSize, setSelectedSize] = useState<number | null>(40); // Default selected size
-  const [selectedColor, setSelectedColor] = useState<string>('red'); // Default selected color
-  const [quantity, setQuantity] = useState<number>(1); // Default quantity
-  const [currentIndex, setCurrentIndex] = useState<number>(0); // Current image index
-  const [modalVisible, setModalVisible] = useState(false); // Modal visibility state
+  
+  const [userID, setUserID] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState(itemDetails.variants[0]?.size || ''); 
+  const [selectedColor, setSelectedColor] = useState(itemDetails.variants[0]?.colors[0]?.color || ''); 
+  const [quantity, setQuantity] = useState<number>(1); 
+  const [currentIndex, setCurrentIndex] = useState<number>(0); 
+  const [modalVisible, setModalVisible] = useState(false); 
   const [isFavorited, setIsFavorited] = useState(false);
-  const finalPrice = itemDetails.price * quantity;
-
-  const colors = ['red', 'yellow', 'blue', 'black', 'white'];
-
-  const images = [
-    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/dc16a201-3c3c-4ba6-815e-26da4030dd35/W+PEGASUS+TRAIL+5+GTX.png',
-    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/2dbee938-c814-4f63-9995-b52fbc851bb6/W+PEGASUS+TRAIL+5+GTX.png',
-    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/8589a490-f175-4c2e-ab5f-cd1a4fde4c2e/W+PEGASUS+TRAIL+5+GTX.png',
-    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/fdf0cfaf-29e2-455f-8f34-0577ce7f78c5/W+PEGASUS+TRAIL+5+GTX.png',
-    'https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/26e88cb3-a856-40e8-a256-a33861691188/W+PEGASUS+TRAIL+5+GTX.png',
-  ];
+  const finalPrice = itemDetails.salePrice * (1 - itemDetails.discount / 100) * quantity;
 
   const scrollX = useRef(new Animated.Value(0)).current;
+
+  // Lấy tất cả màu sắc duy nhất từ các variants của sản phẩm
+  const uniqueColors = Array.from(
+    new Set(itemDetails.variants.flatMap(variant => variant.colors.map(colorObj => colorObj.color)))
+  );
+
+  // Tạo mảng các kích cỡ duy nhất
+  const uniqueSizes = Array.from(new Set(itemDetails.variants.map(variant => variant.size)));
+
+
+  useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        if (token) {
+          const response = await axios.get<{ _id: string }>(`${BASE_URL}/auth/user`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.status === 200) {
+            const user = response.data;  // Chỉ lấy _id từ response
+            setUserID(user._id);
+            checkIfFavorited(user._id);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+
+    fetchUserID();
+  }, []);
+
+  console.log("userID:", userID);
+  console.log("itemDetails.id:", itemDetails._id);
+
+  // Check if product is in the wishlist
+  const checkIfFavorited = async (userId: string) => {
+    try {
+      const response = await axios.get<WishlistType>(`${BASE_URL}/wishlist/${userId}`);
+      const wishlist = response.data;
+      if (wishlist.products.some((product: { _id: string }) => product._id === itemDetails._id)) {
+        setIsFavorited(true);
+      }
+    } catch (error) {
+      console.error("Error checking if product is in wishlist:", error);
+    }
+  };
+
+   // Add product to wishlist
+   const addToWishlist = async () => {
+    if (userID) {
+      try {
+        await axios.post(`${BASE_URL}/wishlist/${userID}/add`, { productId: itemDetails._id });
+        setIsFavorited(true);
+      } catch (error) {
+        console.error("Error adding product to wishlist:", error);
+      }
+    }
+  };
+
+  // Remove product from wishlist
+  const removeFromWishlist = async () => {
+    if (userID) {
+      try {
+        await axios.post(`${BASE_URL}/wishlist/${userID}/remove`, { productId: itemDetails._id });
+        setIsFavorited(false);
+      } catch (error) {
+        console.error("Error removing product from wishlist:", error);
+      }
+    }
+  };
+
+  // Toggle favorite state and update wishlist
+  const toggleFavorite = () => {
+    if (isFavorited) {
+      removeFromWishlist();
+      console.log("Removed from wishlist");
+    } else {
+      addToWishlist();
+      console.log("Added to wishlist");
+    }
+  };
 
   const GoBack = () => {
     navigation.goBack();
   };
   const NavigateToCart = () => {
-    navigation.navigate('Cart', { itemDetails: itemDetails!, selectedColor, selectedSize, quantity });
+    navigation.navigate('Cart', { itemDetails: itemDetails });
   };
   const NavigateToRatingsReviews = () => {
-    navigation.navigate('RatingsReviews');
+    navigation.navigate('RatingsReviews', { itemDetails: itemDetails });
   };
   const handleIncrease = () => setQuantity(prev => prev + 1);
   const handleDecrease = () => {
@@ -62,16 +155,33 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   const handleAddToCart = () => {
     setModalVisible(true); // Show modal to choose size
   };
-  const toggleFavorite = () => {
-    setIsFavorited(!isFavorited);
+
+  function calculateAverageRating(ratings: Ratings): number {
+    const totalRatings = ratings[1] + ratings[2] + ratings[3] + ratings[4] + ratings[5];
+    const weightedSum =
+      ratings[1] * 1 +
+      ratings[2] * 2 +
+      ratings[3] * 3 +
+      ratings[4] * 4 +
+      ratings[5] * 5;
+  
+    return totalRatings > 0 ? weightedSum / totalRatings : 0;
+  }
+
+  // Hàm để lấy hình ảnh dựa trên màu sắc được chọn
+  const getImageForSelectedColor = () => {
+    const selectedVariant = itemDetails.variants.find(variant =>
+      variant.colors.some(colorObj => colorObj.color === selectedColor)
+    );
+
+    const colorObj = selectedVariant?.colors.find(colorObj => colorObj.color === selectedColor);
+    return colorObj?.image || itemDetails.images[0]; // Nếu không tìm thấy, dùng hình ảnh mặc định
   };
-
-
 
   return (
     <View className="flex-1">
       {/* Header - Fixed at the top */}
-      <View className="absolute top-0 left-0 right-0 px-4 py-3 flex flex-row justify-between items-center z-10 mt-8 ">
+      <View className="absolute top-0 left-0 right-0 px-4 py-3 flex flex-row justify-between items-center z-10 mt-8">
         <TouchableOpacity onPress={GoBack}>
           <Image source={icons.next1} className="rotate-180 w-8 h-8" resizeMode="contain" />
         </TouchableOpacity>
@@ -85,7 +195,7 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
         {/* Product Image Slider */}
         <View className="">
           <FlatList
-            data={images}
+            data={itemDetails.images}
             horizontal
             showsHorizontalScrollIndicator={false}
             pagingEnabled
@@ -108,14 +218,14 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
           />
           {/* Pagination Dots */}
           <View className="absolute bottom-2 left-0 right-0 flex flex-row justify-center">
-            {images.map((_, index) => (
+            {itemDetails.images.map((_, index) => (
               <View
                 key={index}
                 style={{
                   height: 8,
                   width: 8,
                   borderRadius: 4,
-                  backgroundColor: currentIndex === index ? 'blue' : 'gray',
+                  backgroundColor: currentIndex === index ? 'red' : 'gray',
                   marginHorizontal: 4,
                 }}
               />
@@ -125,12 +235,13 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
 
         {/* Product Details */}
         <View className="mt-6">
-          <Text className="text-3xl font-bold text-gray-900 mt-2">{itemDetails?.title || 'Nike Pegasus Trail 5'}</Text>
+          <Text className="text-3xl font-bold text-gray-900 mt-2">{itemDetails.name}</Text>
           {/* Price Details with Heart Icon */}
           <View className="flex flex-row items-center justify-between mt-4">
             <View className="flex flex-row items-center">
-              <Text className="text-2xl font-bold text-gray-900">${itemDetails?.price || '200.00'}</Text>
-              <Text className="text-xl font-thin text-gray-500 line-through ml-2">${itemDetails?.priceBeforeDeal || '250.00'}</Text>
+              <Text className="text-3xl font-bold text-gray-900">${(itemDetails.salePrice * (1 - itemDetails.discount / 100))}</Text>
+              <Text className="text-2xl font-thin text-gray-500 line-through ml-2">${itemDetails.salePrice}</Text>
+              <Text className="text-xl text-red-500 ml-2">{itemDetails.discount}%</Text>
             </View>
 
             {/* Heart Icon for Favorite */}
@@ -149,16 +260,16 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
               type="custom"
               ratingCount={5}
               imageSize={20}
-              startingValue={itemDetails?.stars || 0}
+              startingValue={calculateAverageRating(itemDetails.ratings)}
               readonly={true}
               ratingBackgroundColor="#EEEEEE"
             />
             <Text className="text-xl font-thin text-black-100/90 ml-3">
-              {'('}{itemDetails?.numberOfReview || 0} reviews{')'}
+              {'('}{itemDetails.reviews} reviews{')'}
             </Text>
           </View>
-          <Text className="text-gray-500 font-medium mt-2 leading-relaxed">
-            {itemDetails?.description || 'Air Jordan is an American brand of basketball shoes, athletic, casual, and style clothing produced by Nike.'}
+          <Text numberOfLines={2} className="text-gray-500 font-medium mt-2 leading-relaxed">
+            {itemDetails.description}
           </Text>
 
 
@@ -168,16 +279,16 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
               onPress={NavigateToRatingsReviews}
             >
               <Text className="text-lg text-gray-800">Ratings & reviews</Text>
-              <Text className="text-lg text-gray-400">{'>'}</Text>
+              <Ionicons name="chevron-forward" size={20} color="black" />
             </TouchableOpacity>
 
             <TouchableOpacity className="py-4 flex flex-row justify-between items-center   border-gray-300">
               <Text className="text-lg text-gray-800">Shipping info</Text>
-              <Text className="text-lg text-gray-400">{'>'}</Text>
+              <Ionicons name="chevron-forward" size={20} color="black" />
             </TouchableOpacity>
             <TouchableOpacity className="py-4 flex flex-row justify-between items-center border-gray-300">
               <Text className="text-lg text-gray-800">Support</Text>
-              <Text className="text-lg text-gray-400">{'>'}</Text>
+              <Ionicons name="chevron-forward" size={20} color="black" />
             </TouchableOpacity>
           </View>
 
@@ -252,24 +363,24 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
     {/* Product image and price */}
     <View className="flex flex-row items-center mb-4">
       {/* Left: Product Image */}
-      <Image source={{ uri: itemDetails.image }} className="w-24 h-24 rounded-lg" resizeMode="cover" />
+      <Image source={{ uri: getImageForSelectedColor() }} className="w-24 h-24 rounded-lg" resizeMode="cover" />
       
       {/* Right: Price Details */}
-      <View className="ml-4">
-        <Text className="text-lg font-bold text-gray-900">${itemDetails.price}</Text>
-        <Text className="text-sm text-gray-500 line-through">${itemDetails.priceBeforeDeal}</Text>
+      <View className="ml-4"> 
+        <Text className="text-3xl font-bold text-gray-900">${itemDetails.salePrice * (1 - itemDetails.discount / 100)}</Text>
+        <Text className="text-xl text-gray-500 line-through">${itemDetails.salePrice}</Text>
       </View>
     </View>
 
     <Text className="text-lg font-semibold mb-4">Select size</Text>
 
     {/* Size Selection */}
-    <View className="flex flex-row justify-between items-center mt-3">
-      {[38, 39, 40, 41, 42, 43].map(size => (
+    <View className="flex flex-row items-center mt-3">
+      {uniqueSizes.map(size => (
         <TouchableOpacity
           key={size}
           onPress={() => setSelectedSize(size)}
-          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${selectedSize === size ? 'bg-blue-500' : 'bg-gray-200'
+          className={`w-10 h-10 rounded-full flex items-center ml-2 justify-center transition-all ${selectedSize === size ? 'bg-blue-500 border-2 border-[#43d854]' : 'bg-gray-200'
             } shadow-md`}
         >
           <Text className={`${selectedSize === size ? 'text-white' : 'text-gray-900'}`}>{size}</Text>
@@ -283,13 +394,13 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
       <View>
         <Text className="text-lg font-semibold text-gray-700">Colors available</Text>
         <View className="flex flex-row mt-4 space-x-2">
-          {colors.map(color => (
+          {uniqueColors.map(color => (
             <TouchableOpacity
               key={color}
               onPress={() => setSelectedColor(color)}
-              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'border-2 border-blue-500' : 'border border-gray-300'
+              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'border-2 border-[#43d854]' : 'border border-gray-300'
                 } shadow-md`}
-              style={{ backgroundColor: color }}
+              style={{ backgroundColor: colorMap[color] || "gray" }}
             >
               {selectedColor === color && (
                 <Text className="text-white text-xs">✓</Text>

@@ -4,7 +4,7 @@ import {Image, Text, View} from 'react-native';
 import icons from '../constants/icons';
 import {HomeTab, WishlistTab, CartTab, SearchTab, SettingTab} from '../tabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ItemDetails } from '../constants/types';
+import { ItemDetails, Product } from '../constants/types';
 type TabBarItemProps = {
   source: any; 
   focused: boolean;
@@ -62,14 +62,13 @@ export type RouteTabsParamList = {
   Home: undefined;
   WishlistTab: undefined;
   Cart: {
-    itemDetails: ItemDetails;
-    selectedColor: string;
-    selectedSize: number;
-    quantity: number;
-  } | undefined;
+    itemDetails: Product;
+  };
   Search: {query: string} | undefined;
   Setting: undefined;
-  RatingsReviews: undefined;
+  RatingsReviews: {
+    itemDetails: Product;
+  };
 };
 const HomeScreen = (props: Props) => {
   const Tab = createBottomTabNavigator();

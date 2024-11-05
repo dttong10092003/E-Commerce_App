@@ -19,9 +19,9 @@ export type RouteStackParamList = {
   HomeScreen: undefined;
   Profile: undefined;
   Checkout: undefined;
-  PlaceOrder: {itemDetails: ItemDetails} | undefined;
+  PlaceOrder: {itemDetails: ItemDetails};
   ForgotPassword: undefined;
-  ProductDetails: { itemDetails: Product } | undefined;
+  ProductDetails: { itemDetails: Product };
   Cart: {
     itemDetails: ItemDetails;
     selectedColor: string;
@@ -29,6 +29,7 @@ export type RouteStackParamList = {
     quantity: number;
   };
   PaymentMethods: undefined;
+  RatingsReviews: { itemDetails: Product };
 };
 
 const App = () => {

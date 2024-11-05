@@ -27,6 +27,7 @@ type Ratings = {
 };
 
 type Product = {
+  _id: string;
   name: string;
   description: string;
   importPrice: number;
@@ -264,32 +265,27 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
         {/* Variants */}
         <View className="flex-row mt-2">
           <Text className="text-gray-500 text-xs mr-1">Sizes:</Text>
-          <Text className="text-xs">{item.variants.map(variant => variant.size).join(', ')}</Text>
+          <Text className="text-xs">{Array.from(new Set(item.variants.map(variant => variant.size))).join(', ')}</Text>
         </View>
 
         {/* Available Colors */}
         <View className="flex-row mt-2">
           <Text className="text-gray-500 text-xs mr-2">Colors:</Text>
           <View className="flex-row">
-            {item.variants.slice(0, 3).map((variant, index) => (
-              <View key={index} className="mr-2 flex-row">
-                {variant.colors.map((colorObj, colorIndex) => (
-                  <View
-                    key={colorIndex}
-                    style={{ backgroundColor: colorMap[colorObj.color] || "gray" }}
-                    className="w-4 h-4 rounded-full border border-gray-300 mr-1"
-                  />
-                ))}
-              </View>
+            {Array.from(
+              new Set(
+                item.variants.flatMap(variant => variant.colors.map(colorObj => colorObj.color))
+              )
+            ).map((uniqueColor: string, index) => (
+              <View
+                key={index}
+                style={{ backgroundColor: colorMap[uniqueColor] || "gray" }}
+                className="w-4 h-4 rounded-full border border-gray-300 mr-1"
+              />
             ))}
           </View>
         </View>
       </View>
-  
-      {/* Favorite Icon */}
-      {/* <TouchableOpacity>
-        <Ionicons name={item.isHeart ? "heart" : "heart-outline"} size={24} color={item.isHeart ? "red" : "gray"} />
-      </TouchableOpacity> */}
     </TouchableOpacity>
   );
 
@@ -337,37 +333,32 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
       {/* Available Sizes */}
       <View className="flex-row mt-2">
         <Text className="text-gray-500 text-xs mr-1">Sizes:</Text>
-        <Text className="text-xs">{item.variants.map(variant => variant.size).join(', ')}</Text>
+        <Text className="text-xs">{Array.from(new Set(item.variants.map(variant => variant.size))).join(', ')}</Text>
       </View>
 
       {/* Available Colors */}
       <View className="flex-row mt-2">
         <Text className="text-gray-500 text-xs mr-1">Colors:</Text>
         <View className="flex-row">
-          {item.variants.slice(0, 3).map((variant, index) => (
-            <View key={index} className="mr-1 flex-row">
-              {variant.colors.map((colorObj, colorIndex) => (
-                <View
-                  key={colorIndex}
-                  style={{ backgroundColor: colorMap[colorObj.color] || "gray" }}
-                  className="w-4 h-4 rounded-full border border-gray-300 mr-1"
-                />
-              ))}
-            </View>
-          ))}
+            {Array.from(
+              new Set(
+                item.variants.flatMap(variant => variant.colors.map(colorObj => colorObj.color))
+              )
+            ).map((uniqueColor: string, index) => (
+              <View
+                key={index}
+                style={{ backgroundColor: colorMap[uniqueColor] || "gray" }}
+                className="w-4 h-4 rounded-full border border-gray-300 mr-1"
+              />
+            ))}
         </View>
       </View>
-  
-      {/* Favorite Icon */}
-      {/* <TouchableOpacity>
-        <Ionicons name={item.isHeart ? "heart" : "heart-outline"} size={24} color={item.isHeart ? "red" : "gray"} style={{ alignSelf: 'flex-end' }}/>
-      </TouchableOpacity> */}
     </TouchableOpacity>
   );
 
   return (
     <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-row items-center p-4">
+      <View className="flex-row items-center px-4 pb-4">
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="black" />
         </TouchableOpacity>

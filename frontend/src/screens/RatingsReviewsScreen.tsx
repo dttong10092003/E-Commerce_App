@@ -1,13 +1,37 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, ScrollView, FlatList, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {RouteProp, useNavigation } from '@react-navigation/native';
 import { AirbnbRating } from 'react-native-ratings';
 import { SafeAreaView } from 'react-native-safe-area-context';
-// Import icon (sử dụng react-native-vector-icons hoặc thay bằng ảnh cây viết)
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { RouteStackParamList } from '../../App';
 
-const RatingsReviewsScreen: React.FC = () => {
+type Ratings = {
+    1: number;
+    2: number;
+    3: number;
+    4: number;
+    5: number;
+  };
+
+  type RatingsReviewsScreenRouteProp = RouteProp<RouteStackParamList, 'RatingsReviews'>;
+
+const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = ({ route }) => {
     const navigation = useNavigation();
+    const { itemDetails } = route.params; 
+
+    function calculateAverageRating(ratings: Ratings): number {
+        const totalRatings = ratings[1] + ratings[2] + ratings[3] + ratings[4] + ratings[5];
+        const weightedSum =
+          ratings[1] * 1 +
+          ratings[2] * 2 +
+          ratings[3] * 3 +
+          ratings[4] * 4 +
+          ratings[5] * 5;
+      
+        return totalRatings > 0 ? weightedSum / totalRatings : 0;
+      }
 
     // Sample data for ratings and reviews
     const reviews = [
@@ -33,27 +57,27 @@ const RatingsReviewsScreen: React.FC = () => {
     ];
 
     const starData = [
-        { stars: 5, count: 12 },
-        { stars: 4, count: 5 },
-        { stars: 3, count: 4 },
-        { stars: 2, count: 2 },
-        { stars: 1, count: 0 },
+        { stars: 5, count: itemDetails?.ratings?.['5'] || 0 },
+        { stars: 4, count: itemDetails?.ratings?.['4'] || 0 },
+        { stars: 3, count: itemDetails?.ratings?.['3'] || 0 },
+        { stars: 2, count: itemDetails?.ratings?.['2'] || 0 },
+        { stars: 1, count: itemDetails?.ratings?.['1'] || 0 },
     ];
 
-    const totalRatings = 23; // Tổng số đánh giá
+    const totalRatings = Object.values(itemDetails?.ratings || {}).reduce((a, b) => a + b, 0); // Tổng số đánh giá
 
     return (
-        <SafeAreaView className="flex-1 bg-white px-4 py-6">
+        <SafeAreaView className="flex-1 bg-white px-4">
             {/* Header */}
-            <TouchableOpacity onPress={() => navigation.goBack()}>
-                <Text className="text-lg font-semibold">{"<"}</Text>
-            </TouchableOpacity>
+            <View className="pb-2 flex-row items-center">
+                <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
+                <Text className="text-2xl font-bold ml-2">Ratings & Reviews</Text>
+            </View>
 
             {/* Ratings Summary */}
-            <View className="my-4">
-                <Text className="text-3xl font-bold">Ratings & Reviews</Text>
+            <View className="my-4">               
                 <View className="flex flex-row items-center mt-3">
-                    <Text className="text-5xl font-bold">4.3</Text>
+                    <Text className="text-5xl font-bold">{calculateAverageRating(itemDetails.ratings)}</Text>
                     <View className="ml-6">
                         {starData.map(({ stars, count }) => (
                             <View key={stars} className="flex flex-row items-center mb-1">
@@ -80,7 +104,7 @@ const RatingsReviewsScreen: React.FC = () => {
             </View>
 
             {/* Reviews Section */}
-            <Text className="text-xl font-semibold mb-3">8 reviews</Text>
+            <Text className="text-xl font-semibold mb-3">{itemDetails.reviews} reviews</Text>
             <ScrollView>
                 {reviews.map((review) => (
                     <View key={review.id} className="flex flex-row items-start mb-6">
