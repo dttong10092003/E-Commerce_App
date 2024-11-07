@@ -20,6 +20,7 @@ import SettingsScreen from './SettingsScreen';
 import CategoriesScreen from './CategoriesScreen';
 import CatalogScreen from './CatalogScreen';
 import FilterScreen from './FilterScreen';
+import PromocodesScreen from './PromocodesScreen';
 
 export {
   HomeScreen,
@@ -43,4 +44,5 @@ export {
   CategoriesScreen,
   CatalogScreen,
   FilterScreen,
+  PromocodesScreen
 };

@@ -6,6 +6,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const createUserReward = require('./userRewardController').createUserReward;
 
 // Đăng ký người dùng
 const registerUser = async (req, res) => {
@@ -26,6 +27,10 @@ const registerUser = async (req, res) => {
 
     // Tạo người dùng mới với username mặc định
     const user = await User.create({ email, password: hashedPassword, username: defaultUsername });
+
+    // Khởi tạo UserReward cho người dùng mới
+    await createUserReward(user._id);
+
     res.status(201).json({ message: 'User registered successfully', user });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -41,6 +41,12 @@ const chip = require('../assets/icons/chip.png');
 const visa = require('../assets/icons/visa.png');
 const check = require('../assets/icons/check.png');
 const edit = require('../assets/icons/edit.png');
+const deliver = require('../assets/icons/deliver.png');
+const coupon = require('../assets/icons/coupon.png');
+const wheel = require('../assets/icons/wheel.png');
+const gift = require('../assets/icons/gift.gif');
+const firework = require('../assets/icons/fireworks.gif');
+const sad = require('../assets/icons/sad.png');
 export default {
   eyeHide,
   pen,
@@ -84,5 +90,11 @@ export default {
   mastercard2,
   visa,
   check,
-  edit
+  edit,
+  deliver,
+  coupon,
+  wheel,
+  gift,
+  firework,
+  sad
 };
