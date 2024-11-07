@@ -10,6 +10,7 @@ const shippingAddressRoute = require('./routes/shippingAddressRoute');
 const paymentMethodRoute = require('./routes/paymentMethodRoute');
 const wishlistRoute = require('./routes/wishlistRoute');
 const userRewardRoute = require('./routes/userRewardRoute'); 
+const cartRoute = require('./routes/cartRoute');
 
 // initialize a new express application instance
 const app = express();
@@ -26,6 +27,7 @@ app.use('/api/shipping-addresses', shippingAddressRoute);
 app.use('/api/payment-methods', paymentMethodRoute);
 app.use('/api/wishlist', wishlistRoute);
 app.use('/api/user-rewards', userRewardRoute); 
+app.use('/api/cart', cartRoute);
 
 // connect to DataBase (MONGODB)
 const PORT = process.env.PORT // http://localhost:4000/api/auth/  -> POST

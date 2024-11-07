@@ -1,6 +1,6 @@
 // CheckoutScreen.js
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
+import {TextInput, View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '../constants/icons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -88,6 +88,14 @@ const CheckoutScreen = ({ navigation }) => {
                             <Image source={icons.dhl} className="w-20 h-8 mb-2" resizeMode="contain" />
                             <Text className="text-gray-600">5-7 days</Text>
                         </TouchableOpacity>
+                    </View>
+
+                    {/* Promo Code Section */}
+                    <View className="flex-row bg-white rounded-lg p-3 mb-2 items-center shadow-md">
+                    <TextInput placeholder="Enter your promo code" className="flex-1 text-base" />
+                    <TouchableOpacity className="bg-black rounded-full p-2 ml-2">
+                        <Image source={icons.next1} style={{ width: 16, height: 16 }} />
+                    </TouchableOpacity>
                     </View>
                 </ScrollView>
 

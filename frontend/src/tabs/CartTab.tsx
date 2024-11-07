@@ -1,82 +1,210 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, FlatList, TextInput, Modal } from 'react-native';
 import icons from '../constants/icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import BASE_URL from '../config';
 
-const cartData = [
-  { id: '1', title: 'Pullover', color: 'Black', size: 'L', price: 51, quantity: 1, image: 'https://picsum.photos/200' },
-  { id: '2', title: 'T-Shirt', color: 'Gray', size: 'L', price: 30, quantity: 1, image: 'https://picsum.photos/200' },
-  { id: '3', title: 'Sport Dress', color: 'Black', size: 'M', price: 43, quantity: 1, image: 'https://picsum.photos/200' },
-];
+type CartItem = {
+  product: {
+    _id: string;
+    name: string;
+    images: string[];
+    salePrice: number;
+    variants: {
+      size: string;
+      colors: { color: string; stock: number; image: string }[];
+    }[];
+  };
+  quantity: number;
+  selectedColor: string;
+  selectedSize: string;
+  subTotal: number;
+};
+
+type CartData = {
+  products: CartItem[];
+  totalAmount: number;
+};
 
 const CartTab = ({navigation}) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [filteredCartData, setFilteredCartData] = useState(cartData);
+  const [userID, setUserID] = useState<string | null>(null);
+  const [cartData, setCartData] = useState<CartItem[]>([]);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalPosition, setModalPosition] = useState({ top: 0, right: 0 });
+  const [totalAmount, setTotalAmount] = useState(0);
 
-  const handleSearch = (text) => {
-    setSearchQuery(text);
-    if (text) {
-      const filtered = cartData.filter((item) =>
-        item.title.toLowerCase().includes(text.toLowerCase())
-      );
-      setFilteredCartData(filtered);
-    } else {
-      setFilteredCartData(cartData);
+  // Fetch userID from token and then fetch cart data
+  useEffect(() => {
+    const fetchUserID = async () => {
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        if (token) {
+          const response = await axios.get<{ _id: string }>(`${BASE_URL}/auth/user`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (response.status === 200) {
+            const user = response.data;
+            setUserID(user._id);
+            fetchCartData(user._id); // Fetch cart data once userID is obtained
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching user ID:", error);
+      }
+    };
+    fetchUserID();
+  }, []);
+
+  // Fetch cart data from backend
+  const fetchCartData = async (userId) => {
+    try {
+      const response = await axios.get<CartData>(`${BASE_URL}/cart/${userId}`);
+      if (response.status === 200) {
+        setCartData(response.data.products); // Set products from cart
+        setTotalAmount(response.data.totalAmount);
+      }
+    } catch (error) {
+      console.error("Error fetching cart data:", error);
     }
   };
 
-  const totalAmount = filteredCartData.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  console.log('Selected Item:', selectedItem?._id, selectedItem?.product.name, selectedItem?.selectedColor, selectedItem?.selectedSize);
 
-  const handleDotsPress = (item, position) => {
-    setSelectedItem(item);
-    setModalPosition(position);
-    setModalVisible(true);
+  const increaseQuantity = async (item: CartItem) => {
+    if (!userID) return; // Kiểm tra userID
+    console.log('productID:', item.product._id);
+    const variant = item.product.variants.find(v => v.size === item.selectedSize);
+    const colorOption = variant?.colors.find(c => c.color === item.selectedColor);
+  
+    console.log(`${BASE_URL}/cart/${userID}/update`);
+    if (colorOption && item.quantity < colorOption.stock) {
+      try {
+        const updatedQuantity = item.quantity + 1;
+        await axios.patch(`${BASE_URL}/cart/${userID}/update`, {
+          productId: item.product._id,
+          quantity: updatedQuantity,
+          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor,
+        });
+        fetchCartData(userID); // Refresh cart data nếu thành công
+      } catch (error) {
+        console.error("Error updating cart quantity:", error);
+      }
+    } else {
+      alert("Not enough stock available");
+    }
   };
 
-  const renderCartItem = ({ item }) => (
-    <View className="flex-row bg-white rounded-lg p-5 mb-4 items-center shadow-md relative">
-      {/* Icon dấu ba chấm ở góc trên bên phải */}
-      <TouchableOpacity
-        className="absolute top-3 right-3"
-        onPress={(event) => {
-          const position = { top: event.nativeEvent.pageY - 60, right: 15 };
-          handleDotsPress(item, position);
-        }}
-      >
-        <Image source={icons.dots} className="w-5 h-5 opacity-60" resizeMode="contain" />
-      </TouchableOpacity>
+  const decreaseQuantity = async (item: CartItem) => {
+    if (item.quantity > 1) {
+      try {
+        const updatedQuantity = item.quantity - 1;
+        await axios.patch(`${BASE_URL}/cart/${userID}/update`, {
+          productId: item.product._id,
+          quantity: updatedQuantity,
+          selectedSize: item.selectedSize,
+          selectedColor: item.selectedColor,
+        });
+        fetchCartData(userID);
+      } catch (error) {
+        console.error("Error updating cart quantity:", error);
+      }
+    } else {
+      handleDelete(item);
+    }
+  };
+  
+  const handleDelete = async (item: CartItem) => {
+    if (!userID) return; 
+    
+    try {
+      await axios.post(`${BASE_URL}/cart/${userID}/remove`, {
+        productId: item.product._id,
+        selectedSize: item.selectedSize,
+        selectedColor: item.selectedColor,
+      });
+      fetchCartData(userID); 
+    } catch (error) {
+      console.error("Error removing product from cart:", error);
+    }
+  };
 
-      {/* Hình ảnh sản phẩm */}
-      <Image source={{ uri: item.image }} className="w-20 h-20 rounded-lg mr-4" resizeMode="cover" />
+  const renderCartItem = ({ item }) => {
+    const selectedVariant = item.product.variants.find(variant =>
+      variant.colors.some(colorObj => colorObj.color === item.selectedColor)
+    );
 
-      {/* Thông tin sản phẩm */}
-      <View className="flex-1">
-        <Text className="text-lg font-bold">{item.title}</Text>
-        <Text className="text-gray-500">
-          Color: <Text className="font-bold">{item.color || 'Pink'}</Text>{' '}
-          Size: <Text className="font-bold">{item.size || 'M'}</Text>
-        </Text>
+    const colorImage = selectedVariant
+    ? selectedVariant.colors.find(colorObj => colorObj.color === item.selectedColor)?.image
+    : item.product.images[0];
+    const discountedPrice = item.product.salePrice * (1 - item.product.discount / 100);
+    const originalSubTotal = item.product.salePrice * item.quantity;
+    return (
+      <View className="flex-row bg-white rounded-lg p-5 mb-4 items-center shadow-md relative">
+        {/* Icon dấu ba chấm ở góc trên bên phải */}
+        <TouchableOpacity
+          className="absolute top-3 right-3"
+          onPress={(event) => {
+            const position = { top: event.nativeEvent.pageY - 60, right: 15 };
+            setSelectedItem(item);
+            setModalPosition(position);
+            setModalVisible(true);
+          }}
+        >
+          <Image source={icons.dots} className="w-5 h-5 opacity-60" resizeMode="contain" />
+        </TouchableOpacity>
+  
+        {/* Hình ảnh sản phẩm */}
+        <Image source={{ uri: colorImage  }} className="w-20 h-20 rounded-lg mr-4" resizeMode="cover" />
+  
+        {/* Thông tin sản phẩm */}
+        <View className="flex-1">
+          <Text numberOfLines={1} className="text-lg font-bold">{item.product.name}</Text>
+          <Text className="text-gray-500">
+            Color: <Text className="font-bold">{item.selectedColor}</Text>{' '}
+            Size: <Text className="font-bold">{item.selectedSize}</Text>
+          </Text>
 
-        <View className="flex-row items-center mt-2 space-x-2">
-          <TouchableOpacity className="w-8 h-8 bg-gray-200 rounded-full justify-center items-center">
-            <Text className="text-lg font-bold text-gray-600">-</Text>
-          </TouchableOpacity>
-
-          <Text className="text-lg font-semibold">{item.quantity}</Text>
-
-          <TouchableOpacity className="w-8 h-8 bg-gray-200 rounded-full justify-center items-center">
-            <Text className="text-lg font-bold text-gray-600">+</Text>
-          </TouchableOpacity>
+          {/* Hiển thị giá với gạch ngang nếu có giảm giá */}
+        <View className="flex-row items-center mt-2">          
+          <Text className="font-bold mr-2">${discountedPrice}</Text>
+          {item.product.discount > 0 && (
+            <Text style={{ textDecorationLine: 'line-through', fontSize: 12}}>
+              ${item.product.salePrice}
+            </Text>
+          )}
         </View>
+  
+          <View className="flex-row items-center mt-2 space-x-2">
+            <TouchableOpacity onPress={() => decreaseQuantity(item)} className="w-8 h-8 bg-gray-200 rounded-full justify-center items-center">
+              <Text className="text-lg font-bold text-gray-600">-</Text>
+            </TouchableOpacity>
+  
+            <Text className="text-lg font-semibold">{item.quantity}</Text>
+  
+            <TouchableOpacity onPress={() => increaseQuantity(item)} className="w-8 h-8 bg-gray-200 rounded-full justify-center items-center">
+              <Text className="text-lg font-bold text-gray-600">+</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+  
+        {/* Giá ở góc dưới bên phải */}
+        {/* <Text className="absolute bottom-3 right-3 text-lg font-bold">${item.subTotal}</Text> */}
+        <View className='absolute bottom-3 right-3'>
+        {item.product.discount > 0 && (
+          <Text style={{ textDecorationLine: 'line-through', color: 'gray', fontSize: 14 }}>
+            ${originalSubTotal.toFixed(1)}
+          </Text>
+        )}
+        <Text className="text-lg font-bold">${item.subTotal.toFixed(1)}</Text>
       </View>
-
-      {/* Giá ở góc dưới bên phải */}
-      <Text className="absolute bottom-3 right-3 text-lg font-bold">${item.price}</Text>
-    </View>
-  );
+        
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
@@ -85,27 +213,11 @@ const CartTab = ({navigation}) => {
 
       {/* Search and Products Section */}
       <View className="flex-1 px-4">
-        {/* Search Bar */}
-        <View className="flex-row items-center bg-gray-200 rounded-full px-5 py-2 h-12 mb-3 shadow-md">
-          <Image source={icons.search} className="w-5 h-5 mr-2 opacity-60" resizeMode="contain" />
-          <TextInput
-            placeholder="Search in cart..."
-            placeholderTextColor="#6b7280"
-            value={searchQuery}
-            onChangeText={handleSearch}
-            className="flex-1 text-base"
-            style={{ color: '#374151' }}
-          />
-          <TouchableOpacity className="bg-black rounded-full p-2 ml-2">
-            <Image source={icons.mic} className="w-5 h-5" />
-          </TouchableOpacity>
-        </View>
-
         {/* Cart Items List */}
         <FlatList
-          data={filteredCartData}
+          data={cartData}
           renderItem={renderCartItem}
-          keyExtractor={(item) => item.id}
+          keyExtractor={(item) => item._id}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
         />
@@ -113,18 +225,19 @@ const CartTab = ({navigation}) => {
 
       {/* Footer Section */}
       <View className="px-4 pb-4">
-        {/* Promo Code Section */}
-        <View className="flex-row bg-white rounded-lg p-3 mb-2 items-center shadow-md">
-          <TextInput placeholder="Enter your promo code" className="flex-1 text-base" />
-          <TouchableOpacity className="bg-black rounded-full p-2 ml-2">
-            <Image source={icons.next1} style={{ width: 16, height: 16 }} />
-          </TouchableOpacity>
-        </View>
 
         {/* Total Amount */}
         <View className="flex-row justify-between mb-4">
           <Text className="text-lg">Total amount:</Text>
-          <Text className="text-lg font-bold">${totalAmount}</Text>
+          {/* <Text className="text-lg font-bold">${totalAmount}</Text> */}
+          <View>
+            {totalAmount < cartData.reduce((sum, item) => sum + item.product.salePrice * item.quantity, 0) && (
+              <Text className='line-through text-gray-500'>
+                ${cartData.reduce((sum, item) => sum + item.product.salePrice * item.quantity, 0).toFixed(1)}
+              </Text>
+            )}
+            <Text className="text-lg font-bold text-red-500">${totalAmount.toFixed(1)}</Text>
+          </View>
         </View>
 
         {/* Checkout Button */}
@@ -155,7 +268,7 @@ const CartTab = ({navigation}) => {
             elevation: 5,
           }}
         >
-          <TouchableOpacity
+          {/* <TouchableOpacity
             onPress={() => {
               setModalVisible(false);
               console.log('Add to favorites:', selectedItem?.title);
@@ -164,11 +277,14 @@ const CartTab = ({navigation}) => {
           >
             <Text className="text-base">Add to favorites</Text>
           </TouchableOpacity>
-          <View style={{ height: 1, backgroundColor: '#E5E7EB' }} />
+          <View style={{ height: 1, backgroundColor: '#E5E7EB' }} /> */}
           <TouchableOpacity
             onPress={() => {
               setModalVisible(false);
-              console.log('Delete from the list:', selectedItem?.title);
+              if (selectedItem) {
+                handleDelete(selectedItem);
+              } 
+              console.log('Delete from the list:', selectedItem?._id);
             }}
             className="py-2 px-4"
           >
