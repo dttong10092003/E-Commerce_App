@@ -6,28 +6,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import BASE_URL from '../config';
 import { useFocusEffect } from '@react-navigation/native';
+import { CartItem } from '../constants/types';
 
-type CartItem = {
-  product: {
-    _id: string;
-    name: string;
-    images: string[];
-    salePrice: number;
-    discount: number;
-    variants: {
-      color: string;
-      image: string;
-      sizes: {
-        size: string;
-        stock: number;
-      }[];
-    }[];
-  };
-  quantity: number;
-  selectedColor: string;
-  selectedSize: string;
-  subTotal: number;
-};
 
 type CartData = {
   products: CartItem[];
@@ -251,7 +231,7 @@ const CartTab = ({navigation}) => {
         </View>
 
         {/* Checkout Button */}
-        <TouchableOpacity className="bg-red-500 rounded-full py-4 items-center shadow-md"  onPress={() => navigation.navigate('Checkout')}>
+        <TouchableOpacity className="bg-red-500 rounded-full py-4 items-center shadow-md"  onPress={() => navigation.navigate('Checkout', {cartData, totalAmount })}>
           <Text className="text-white font-bold text-lg">CHECK OUT</Text>
         </TouchableOpacity>
       </View>
@@ -278,16 +258,6 @@ const CartTab = ({navigation}) => {
             elevation: 5,
           }}
         >
-          {/* <TouchableOpacity
-            onPress={() => {
-              setModalVisible(false);
-              console.log('Add to favorites:', selectedItem?.title);
-            }}
-            className="py-2 px-4"
-          >
-            <Text className="text-base">Add to favorites</Text>
-          </TouchableOpacity>
-          <View style={{ height: 1, backgroundColor: '#E5E7EB' }} /> */}
           <TouchableOpacity
             onPress={() => {
               setModalVisible(false);

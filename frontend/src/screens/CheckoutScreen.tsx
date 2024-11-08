@@ -11,7 +11,10 @@ const formatAddress = (address) => {
     return `${street}, ${district}, ${city}, ${country}`;
 };
 
-const CheckoutScreen = ({ navigation }) => {
+const CheckoutScreen = ({ route, navigation }) => {
+    const { cartData, totalAmount } = route.params;
+
+    const SHIPPING_COST = 15;
     const [promoModalVisible, setPromoModalVisible] = useState(false);
     const [availableVouchers, setAvailableVouchers] = useState([]);
     const [showAll, setShowAll] = useState(false);
@@ -133,15 +136,15 @@ const CheckoutScreen = ({ navigation }) => {
                     <View className="mt-4 mb-6">
                         <View className="flex-row justify-between mb-1">
                             <Text className="text-base text-gray-600">Order:</Text>
-                            <Text className="text-base font-semibold">$112</Text>
+                            <Text className="text-base font-semibold">${totalAmount}</Text>
                         </View>
                         <View className="flex-row justify-between mb-1">
                             <Text className="text-base text-gray-600">Delivery:</Text>
-                            <Text className="text-base font-semibold">$15</Text>
+                            <Text className="text-base font-semibold">${SHIPPING_COST}</Text>
                         </View>
                         <View className="flex-row justify-between">
                             <Text className="text-base text-gray-600">Summary:</Text>
-                            <Text className="text-base font-bold text-red-500">$127</Text>
+                            <Text className="text-base font-bold text-red-500">${totalAmount + SHIPPING_COST}</Text>
                         </View>
                     </View>
 

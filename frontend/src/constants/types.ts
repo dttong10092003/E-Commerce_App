@@ -47,6 +47,28 @@ type Product = {
   createdAt: string;
 };
 
+type CartItem = {
+  product: {
+    _id: string;
+    name: string;
+    images: string[];
+    salePrice: number;
+    discount: number;
+    variants: {
+      color: string;
+      image: string;
+      sizes: {
+        size: string;
+        stock: number;
+      }[];
+    }[];
+  };
+  quantity: number;
+  selectedColor: string;
+  selectedSize: string;
+  subTotal: number;
+};
+
 type ProductTypes = {
   image: string;
   title: string;
@@ -79,4 +101,5 @@ export type {
   ItemDetails,
   Product,
   Ratings,
+  CartItem,
 };

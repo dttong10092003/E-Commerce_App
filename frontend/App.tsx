@@ -9,7 +9,7 @@ import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen,
   CheckoutScreen, PaymentMethodsScreen, MyOrdersScreen, OrderDetailScreen,
   ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen, AddNewCardScreen,
   EditCardScreen, SettingsScreen, CategoriesScreen, CatalogScreen, FilterScreen, PromocodesScreen  } from './src/screens';
-import {ItemDetails, Product} from './src/constants/types';
+import {ItemDetails, Product, CartItem} from './src/constants/types';
 
 export type RouteStackParamList = {
   Onboarding: undefined;
@@ -18,8 +18,7 @@ export type RouteStackParamList = {
   Signup: undefined;
   HomeScreen: undefined;
   Profile: undefined;
-  Checkout: undefined;
-  PlaceOrder: {itemDetails: ItemDetails};
+  Checkout: {cartData: CartItem[], totalAmount: number};
   ForgotPassword: undefined;
   ProductDetails: { itemDetails: Product };
   Cart: {
