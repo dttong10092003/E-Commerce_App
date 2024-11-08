@@ -146,3 +146,41 @@ exports.removeProductFromCart = async (req, res) => {
       res.status(500).json({ message: 'Error removing product from cart', error });
     }
   };
+
+  // Lấy số lượng sản phẩm trong giỏ hàng của người dùng
+  exports.getCartItemCount = async (req, res) => {
+    const { userId } = req.params;
+    try {
+      const cart = await Cart.findOne({ user: userId });
+      const itemCount = cart ? cart.products.length : 0;
+      res.status(200).json({ itemCount });
+    } catch (error) {
+      console.error("Error fetching cart item count:", error);
+      res.status(500).json({ message: "Error fetching cart item count", error });
+    }
+  };
+
+  exports.getCartItemQuantity = async (req, res) => {
+    const { userId } = req.params;
+    const { productId, selectedSize, selectedColor } = req.query;
+  
+    try {
+      const cart = await Cart.findOne({ user: userId });
+      if (!cart) {
+        return res.status(200).json({ quantity: 0 });
+      }
+  
+      const item = cart.products.find(
+        p => 
+          p.product.toString() === productId &&
+          p.selectedSize === selectedSize &&
+          p.selectedColor === selectedColor
+      );
+  
+      const quantity = item ? item.quantity : 0;
+      res.status(200).json({ quantity });
+    } catch (error) {
+      console.error("Error fetching cart item quantity:", error);
+      res.status(500).json({ message: "Error fetching cart item quantity" });
+    }
+  };

@@ -54,11 +54,11 @@ const productSchema = new Schema({
         required: true 
     },
     variants: [{
-        size: { type: String, required: true },
-        colors: [{
-            color: { type: String, required: true },
-            stock: { type: Number, default: 0 },
-            image: { type: String, required: true }
+        color: { type: String, required: true },
+        image: { type: String, required: true },
+        sizes: [{
+            size: { type: String, required: true },
+            stock: { type: Number, default: 0 }
         }]
     }],
     reviews: { type: Number, default: 0 },

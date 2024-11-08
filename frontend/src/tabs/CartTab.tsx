@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, Image, TouchableOpacity, FlatList, TextInput, Modal } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, Image, TouchableOpacity, FlatList, Modal } from 'react-native';
 import icons from '../constants/icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import BASE_URL from '../config';
+import { useFocusEffect } from '@react-navigation/native';
 
 type CartItem = {
   product: {
@@ -12,9 +13,14 @@ type CartItem = {
     name: string;
     images: string[];
     salePrice: number;
+    discount: number;
     variants: {
-      size: string;
-      colors: { color: string; stock: number; image: string }[];
+      color: string;
+      image: string;
+      sizes: {
+        size: string;
+        stock: number;
+      }[];
     }[];
   };
   quantity: number;
@@ -71,16 +77,23 @@ const CartTab = ({navigation}) => {
     }
   };
 
-  console.log('Selected Item:', selectedItem?._id, selectedItem?.product.name, selectedItem?.selectedColor, selectedItem?.selectedSize);
+  // Reload cart data each time CartTab is focused
+  useFocusEffect(
+    useCallback(() => {
+      if (userID) {
+        fetchCartData(userID);
+      }
+    }, [userID])
+  );
 
   const increaseQuantity = async (item: CartItem) => {
     if (!userID) return; // Kiểm tra userID
     console.log('productID:', item.product._id);
-    const variant = item.product.variants.find(v => v.size === item.selectedSize);
-    const colorOption = variant?.colors.find(c => c.color === item.selectedColor);
+    const selectedVariant = item.product.variants.find(v => v.color === item.selectedColor);
+    const sizeOption = selectedVariant?.sizes.find(s => s.size === item.selectedSize);
   
     console.log(`${BASE_URL}/cart/${userID}/update`);
-    if (colorOption && item.quantity < colorOption.stock) {
+    if (sizeOption && item.quantity < sizeOption.stock) {
       try {
         const updatedQuantity = item.quantity + 1;
         await axios.patch(`${BASE_URL}/cart/${userID}/update`, {
@@ -134,12 +147,10 @@ const CartTab = ({navigation}) => {
 
   const renderCartItem = ({ item }) => {
     const selectedVariant = item.product.variants.find(variant =>
-      variant.colors.some(colorObj => colorObj.color === item.selectedColor)
+      variant.color === item.selectedColor
     );
 
-    const colorImage = selectedVariant
-    ? selectedVariant.colors.find(colorObj => colorObj.color === item.selectedColor)?.image
-    : item.product.images[0];
+    const colorImage = selectedVariant?.image || item.product.images[0];
     const discountedPrice = item.product.salePrice * (1 - item.product.discount / 100);
     const originalSubTotal = item.product.salePrice * item.quantity;
     return (
@@ -229,7 +240,6 @@ const CartTab = ({navigation}) => {
         {/* Total Amount */}
         <View className="flex-row justify-between mb-4">
           <Text className="text-lg">Total amount:</Text>
-          {/* <Text className="text-lg font-bold">${totalAmount}</Text> */}
           <View>
             {totalAmount < cartData.reduce((sum, item) => sum + item.product.salePrice * item.quantity, 0) && (
               <Text className='line-through text-gray-500'>

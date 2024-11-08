@@ -35,11 +35,11 @@ type Product = {
   subSubCategory: string;
   images: string[]; // Mảng gồm tối đa 5 ảnh đại diện chính của sản phẩm
   variants: {
-    size: string;
-    colors: {
-      color: string;
+    color: string;
+    image: string; // Ảnh đại diện cho mỗi màu
+    sizes: {
+      size: string;
       stock: number;
-      image: string; // Chỉ 1 ảnh duy nhất cho mỗi màu
     }[];
   }[];
   reviews: number;

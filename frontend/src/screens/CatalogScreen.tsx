@@ -81,22 +81,36 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
   const allDiscounts = Array.from(
     new Set(products.map((product) => product.discount))
   ).sort((a, b) => a - b);
-  // const allSizes = Array.from(
+
+  // const allSizes = sortSizesAutomatically(Array.from(
   //   new Set(products.flatMap((product) => product.variants.map((variant) => variant.size)))
+  //   )
   // );
-  const allSizes = sortSizesAutomatically(Array.from(
-    new Set(products.flatMap((product) => product.variants.map((variant) => variant.size)))
+  // const allColors = Array.from(
+  //   new Set(
+  //     products
+  //       .flatMap((product) => 
+  //         product.variants.flatMap((variant) => 
+  //           variant.colors.map((colorObj) => colorObj.color)
+  //         )
+  //       )
+  //   ) 
+  // );
+  const allSizes = sortSizesAutomatically(
+    Array.from(
+      new Set(
+        products.flatMap((product) =>
+          product.variants.flatMap((variant) => variant.sizes.map((sizeObj) => sizeObj.size))
+        )
+      )
     )
   );
   const allColors = Array.from(
     new Set(
-      products
-        .flatMap((product) => 
-          product.variants.flatMap((variant) => 
-            variant.colors.map((colorObj) => colorObj.color)
-          )
-        )
-    ) 
+      products.flatMap((product) =>
+        product.variants.map((variant) => variant.color)
+      )
+    )
   );
 
   const handleFilterPress = () => {
@@ -116,26 +130,18 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
     }
 
     // Filter theo màu sắc
-    const productColors = product.variants.flatMap(variant =>
-      variant.colors.map(colorObj => colorObj.color)
-    );
-    if (filters?.selectedColor && !productColors.includes(filters.selectedColor)) {
-      return false;
-    }
+    const productColors = product.variants.map((variant) => variant.color);
+    if (filters?.selectedColor && !productColors.includes(filters.selectedColor)) return false;
 
     // Filter theo kích thước
-    const productSizes = product.variants.map(variant => variant.size);
-    if (filters?.selectedSize && !productSizes.includes(filters.selectedSize)) {
-      return false;
-    }
+    const productSizes = product.variants.flatMap((variant) => variant.sizes.map((sizeObj) => sizeObj.size));
+    if (filters?.selectedSize && !productSizes.includes(filters.selectedSize)) return false;
 
     if (filters?.selectedDiscount !== undefined && product.discount < filters.selectedDiscount) return false;
 
     if (filters?.searchQuery) {
       const query = filters.searchQuery.toLowerCase();
-      if (!product.name.toLowerCase().includes(query) && !product.description.toLowerCase().includes(query)) {
-        return false;
-      }
+      if (!product.name.toLowerCase().includes(query) && !product.description.toLowerCase().includes(query)) return false;
     }
 
     return true;
@@ -229,24 +235,20 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
         {/* Variants */}
         <View className="flex-row mt-2">
           <Text className="text-gray-500 text-xs mr-1">Sizes:</Text>
-          <Text className="text-xs">{Array.from(new Set(item.variants.map(variant => variant.size))).join(', ')}</Text>
+          <Text className="text-xs">{Array.from(new Set(item.variants.flatMap((variant) => variant.sizes.map((sizeObj) => sizeObj.size)))).join(', ')}</Text>
         </View>
 
         {/* Available Colors */}
         <View className="flex-row mt-2">
           <Text className="text-gray-500 text-xs mr-2">Colors:</Text>
           <View className="flex-row">
-            {Array.from(
-              new Set(
-                item.variants.flatMap(variant => variant.colors.map(colorObj => colorObj.color))
-              )
-            ).map((uniqueColor: string, index) => (
-              <View
-                key={index}
-                style={{ backgroundColor: colorMap[uniqueColor] || "gray" }}
-                className="w-4 h-4 rounded-full border border-gray-300 mr-1"
-              />
-            ))}
+          {Array.from(new Set(item.variants.map((variant) => variant.color))).map((uniqueColor: string, index) => (
+            <View
+              key={index}
+              style={{ backgroundColor: colorMap[uniqueColor as string] || "gray" }}
+              className="w-4 h-4 rounded-full border border-gray-300 mr-1"
+            />
+          ))}
           </View>
         </View>
       </View>
@@ -297,24 +299,20 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
       {/* Available Sizes */}
       <View className="flex-row mt-2">
         <Text className="text-gray-500 text-xs mr-1">Sizes:</Text>
-        <Text className="text-xs">{Array.from(new Set(item.variants.map(variant => variant.size))).join(', ')}</Text>
+        <Text className="text-xs">{Array.from(new Set(item.variants.flatMap((variant) => variant.sizes.map((sizeObj) => sizeObj.size)))).join(', ')}</Text>
       </View>
 
       {/* Available Colors */}
       <View className="flex-row mt-2">
         <Text className="text-gray-500 text-xs mr-1">Colors:</Text>
         <View className="flex-row">
-            {Array.from(
-              new Set(
-                item.variants.flatMap(variant => variant.colors.map(colorObj => colorObj.color))
-              )
-            ).map((uniqueColor: string, index) => (
-              <View
-                key={index}
-                style={{ backgroundColor: colorMap[uniqueColor] || "gray" }}
-                className="w-4 h-4 rounded-full border border-gray-300 mr-1"
-              />
-            ))}
+        {Array.from(new Set(item.variants.map((variant) => variant.color))).map((uniqueColor: string, index) => (
+          <View
+            key={index}
+            style={{ backgroundColor: colorMap[uniqueColor as string] || "gray" }}
+            className="w-4 h-4 rounded-full border border-gray-300 mr-1"
+          />
+        ))}
         </View>
       </View>
     </TouchableOpacity>

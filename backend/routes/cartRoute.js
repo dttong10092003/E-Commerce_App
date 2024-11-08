@@ -5,6 +5,10 @@ const cartController = require('../controllers/cartController');
 // Lấy giỏ hàng của người dùng
 router.get('/:userId', cartController.getCart);
 
+router.get('/:userId/item-count', cartController.getCartItemCount);
+
+router.get('/:userId/item-quantity', cartController.getCartItemQuantity);
+
 // Thêm sản phẩm vào giỏ hàng
 router.post('/:userId/add', cartController.addProductToCart);
 

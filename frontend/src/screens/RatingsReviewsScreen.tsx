@@ -71,7 +71,7 @@ const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = (
             {/* Ratings Summary */}
             <View className="my-4">               
                 <View className="flex flex-row items-center mt-3">
-                    <Text className="text-5xl font-bold">{calculateAverageRating(itemDetails.ratings)}</Text>
+                    <Text className="text-5xl font-bold">{calculateAverageRating(itemDetails.ratings).toFixed(1)}</Text>
                     <View className="ml-6">
                         {starData.map(({ stars, count }) => (
                             <View key={stars} className="flex flex-row items-center mb-1">

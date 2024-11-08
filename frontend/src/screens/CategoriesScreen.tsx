@@ -21,15 +21,10 @@ interface CategoriesScreenProps {
   route: CategoriesScreenRouteProp;
 }
 
-// const subCategories = [
-//   'Tops', 'Shirts & Blouses', 'Cardigans & Sweaters', 'Knitwear', 'Blazers', 'Outerwear', 'Pants', 'Jeans', 'Shorts', 'Skirts', 'Dresses'
-// ];
-
 const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ route }) => {
 
   const navigation = useNavigation<CategoriesScreenNavigationProp>();
   const { mainCategory = 'All', subCategoryName } = route.params;
-  // const { mainCategory, subCategoryName } = route.params;
 
   // State để lưu danh sách subSubCategory
   const [subSubCategories, setSubSubCategories] = useState<string[]>([]);
@@ -38,9 +33,8 @@ const CategoriesScreen: React.FC<CategoriesScreenProps> = ({ route }) => {
     // Hàm gọi API để lấy danh sách subSubCategory theo subCategoryName
     const fetchSubSubCategories = async () => {
       try {
-        // const response = await axios.get<string[]>(`<API_URL>/subcategories/${subCategoryName}/sub-subcategories`);
         const response = await axios.get<string[]>(`${BASE_URL}/products/${mainCategory}/${subCategoryName}/sub-subcategories`);
-        setSubSubCategories(response.data); // Giả sử API trả về một mảng các subSubCategory
+        setSubSubCategories(response.data); 
       } catch (error) {
         console.error('Lỗi khi lấy subSubCategory:', error);
       }
