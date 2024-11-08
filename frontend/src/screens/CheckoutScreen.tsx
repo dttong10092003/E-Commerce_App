@@ -1,17 +1,44 @@
-// CheckoutScreen.js
-import React from 'react';
-import {TextInput, View, Text, Image, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { TextInput, View, Text, Image, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '../constants/icons';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../config';
 const formatAddress = (address) => {
     const { street, district, city, country } = address;
     return `${street}, ${district}, ${city}, ${country}`;
 };
 
 const CheckoutScreen = ({ navigation }) => {
+    const [promoModalVisible, setPromoModalVisible] = useState(false);
+    const [availableVouchers, setAvailableVouchers] = useState([]);
+    const [showAll, setShowAll] = useState(false);
 
+    useEffect(() => {
+        fetchAvailableVouchers();
+    }, []);
+    const fetchAvailableVouchers = async () => {
+        const token = await AsyncStorage.getItem('authToken');
+        try {
+            const response = await axios.get(`${BASE_URL}/user-rewards`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            const { availableVouchers } = response.data as any || {};
+            const updatedAvailableVouchers = (availableVouchers || []).map(voucher => ({
+                ...voucher,
+                icon: voucher.type === 'deliver' ? icons.deliver : icons.coupon,
+                name: voucher.name || (voucher.type === 'deliver' ? 'Delivery Voucher' : 'Discount Voucher')
+            })).sort((a, b) => new Date(b.receivedAt).getTime() - new Date(a.receivedAt).getTime());
+
+            setAvailableVouchers(updatedAvailableVouchers);
+        } catch (error) {
+            console.error('Error fetching available vouchers:', error);
+            Alert.alert('Error', 'Failed to fetch available vouchers');
+        }
+    };
     const address = {
         name: 'Jane Doe',
         phoneNumber: '+1 234 567 890',
@@ -23,7 +50,7 @@ const CheckoutScreen = ({ navigation }) => {
 
     const card = {
         cardType: 'mastercard',
-        cardNumber: '123456789012', // 12 chữ số mẫu
+        cardNumber: '123456789012',
         cardHolder: 'Jennyfer Doe',
         expiryDate: '05/23',
         cvv: '122223',
@@ -35,10 +62,9 @@ const CheckoutScreen = ({ navigation }) => {
             <View className="px-4 flex-1">
                 {/* Header */}
                 <View className="flex-row items-center mb-2">
-                <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
+                    <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
                     <Text className="text-2xl font-bold ml-2">Checkout</Text>
                 </View>
-
 
                 {/* Content Scrollable Area */}
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}>
@@ -92,10 +118,13 @@ const CheckoutScreen = ({ navigation }) => {
 
                     {/* Promo Code Section */}
                     <View className="flex-row bg-white rounded-lg p-3 mb-2 items-center shadow-md">
-                    <TextInput placeholder="Enter your promo code" className="flex-1 text-base" />
-                    <TouchableOpacity className="bg-black rounded-full p-2 ml-2">
-                        <Image source={icons.next1} style={{ width: 16, height: 16 }} />
-                    </TouchableOpacity>
+                        <TextInput placeholder="Enter your promo code" className="flex-1 text-base" />
+                        <TouchableOpacity
+                            className="bg-black rounded-full p-2 ml-2"
+                            onPress={() => setPromoModalVisible(true)}
+                        >
+                            <Image source={icons.next1} style={{ width: 16, height: 16 }} />
+                        </TouchableOpacity>
                     </View>
                 </ScrollView>
 
@@ -121,6 +150,77 @@ const CheckoutScreen = ({ navigation }) => {
                         <Text className="text-white font-bold text-lg">SUBMIT ORDER</Text>
                     </TouchableOpacity>
                 </View>
+
+                {/* Promo Code Modal */}
+                <Modal
+                    visible={promoModalVisible}
+                    transparent={true}
+                    animationType="slide"
+                    onRequestClose={() => setPromoModalVisible(false)}
+                >
+                    <View
+                        style={{
+                            flex: 1,
+                            justifyContent: 'flex-end',
+                            backgroundColor: 'rgba(0, 0, 0, 0.6)', // Làm mờ nền
+                        }}
+                    >
+                        <View className="bg-white rounded-t-2xl p-5 w-full shadow-xl max-h-[80%]">
+                            {/* Nút đóng modal */}
+                            <TouchableOpacity
+                                onPress={() => setPromoModalVisible(false)}
+                                style={{
+                                    position: 'absolute',
+                                    top: 10,
+                                    right: 15,
+                                    zIndex: 1,
+                                }}
+                            >
+                                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#333' }}>✕</Text>
+                            </TouchableOpacity>
+
+                            <Text className="text-2xl font-bold mb-5 text-center">Your Promo Codes</Text>
+
+                            {/* Hiển thị 7 voucher đầu tiên nếu không nhấn View More */}
+                            {(showAll ? availableVouchers : availableVouchers.slice(0, 7)).map((voucher, index) => (
+                                <View
+                                    key={index}
+                                    className="flex-row justify-between items-center p-4 bg-gray-100 rounded-xl mb-3"
+                                >
+                                    <View className="w-12 h-12 flex items-center justify-center">
+                                        <Image
+                                            source={voucher.type === 'deliver' ? icons.deliver : icons.coupon}
+                                            style={{ width: 48, height: 48 }}
+                                            resizeMode="contain"
+                                        />
+                                    </View>
+                                    <View className="flex-1 ml-4">
+                                        <Text className="text-base font-semibold">{voucher.name}</Text>
+                                        <Text className="text-sm text-gray-500">{voucher.code}</Text>
+                                        <Text className="text-sm text-gray-500">{voucher.daysRemaining} days remaining</Text>
+                                    </View>
+                                    <TouchableOpacity className="bg-red-500 rounded-lg px-4 py-2">
+                                        <Text className="text-white font-semibold">Apply</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ))}
+
+                            {/* Nút "View More" */}
+                            {!showAll && availableVouchers.length > 7 && (
+                                <TouchableOpacity
+                                    onPress={() => setShowAll(true)}
+                                    className="bg-blue-500 rounded-lg px-4 py-2 mt-3"
+                                >
+                                    <Text className="text-white font-semibold text-center">View More</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    </View>
+                </Modal>
+
+
+
+
             </View>
         </SafeAreaView>
     );

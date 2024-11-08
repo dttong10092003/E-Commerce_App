@@ -80,19 +80,19 @@ const PromocodesScreen = ({ navigation }) => {
         if (lastCheckInTime) {
             const currentDate = new Date();
             const lastCheckInDate = new Date(lastCheckInTime);
-    
+
             // So sánh ngày, tháng và năm của thời điểm hiện tại với thời điểm điểm danh cuối cùng
             const isNewDay =
                 currentDate.getFullYear() !== lastCheckInDate.getFullYear() ||
                 currentDate.getMonth() !== lastCheckInDate.getMonth() ||
                 currentDate.getDate() !== lastCheckInDate.getDate();
-    
+
             setCanCheckIn(isNewDay);
         } else {
             setCanCheckIn(true);
         }
     };
-    
+
 
     // Hàm điểm danh
     const handleCheckIn = async () => {
@@ -138,7 +138,7 @@ const PromocodesScreen = ({ navigation }) => {
                 if (reward.text === "Good luck next time") {
                     setReward({
                         ...reward,
-                        icon: icons.sad, 
+                        icon: icons.sad,
                         name: "Good Luck",
                     });
                     setSpinCount(spinCount);
@@ -205,9 +205,14 @@ const PromocodesScreen = ({ navigation }) => {
                     <Image source={icons.wheel} className="w-8 h-8 mr-2" resizeMode="contain" />
                     <Text className="text-lg font-semibold text-gray-800">{spinCount}</Text>
                 </View>
-                <TouchableOpacity onPress={() => setHistoryModalVisible(true)}>
-                    <Text className="text-lg font-semibold text-blue-500">History &gt;</Text>
+                <TouchableOpacity
+                    onPress={() => setHistoryModalVisible(true)}
+                    className="flex-row items-center"
+                >
+                    <Text className="text-lg font-semibold text-blue-500">History</Text>
+                    <Ionicons name="chevron-forward" size={18} color="#3b82f6" />
                 </TouchableOpacity>
+
             </View>
 
             <FlatList
