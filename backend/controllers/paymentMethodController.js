@@ -74,5 +74,16 @@ const setDefaultPaymentMethod = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
-
-module.exports = { getUserPaymentMethods, addPaymentMethod, updatePaymentMethod, deletePaymentMethod,setDefaultPaymentMethod };
+const getDefaultPaymentMethod = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const defaultMethod = await PaymentMethod.findOne({ userId, isDefault: true });
+    if (!defaultMethod) {
+      return res.status(404).json({ message: 'No default payment method found' });
+    }
+    res.status(200).json(defaultMethod);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+module.exports = { getUserPaymentMethods, addPaymentMethod, updatePaymentMethod, deletePaymentMethod,setDefaultPaymentMethod,getDefaultPaymentMethod };

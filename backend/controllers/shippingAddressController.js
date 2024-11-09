@@ -74,4 +74,17 @@ const setDefaultAddress = async (req, res) => {
     res.status(500).json({ error: "Failed to set default address" });
   }
 };
-module.exports = { getUserShippingAddresses, addShippingAddress, updateShippingAddress, deleteShippingAddress,setDefaultAddress };
+
+const getDefaultAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const defaultAddress = await ShippingAddress.findOne({ userId, isDefault: true });
+    if (!defaultAddress) {
+      return res.status(404).json({ message: 'No default address found' });
+    }
+    res.status(200).json(defaultAddress);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+module.exports = { getUserShippingAddresses, addShippingAddress, updateShippingAddress, deleteShippingAddress,setDefaultAddress,getDefaultAddress  };

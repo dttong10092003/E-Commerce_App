@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { TextInput, View, Text, Image, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '../constants/icons';
@@ -6,6 +6,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../config';
+import { useFocusEffect } from '@react-navigation/native';
+
 const formatAddress = (address) => {
     const { street, district, city, country } = address;
     return `${street}, ${district}, ${city}, ${country}`;
@@ -14,14 +16,94 @@ const formatAddress = (address) => {
 const CheckoutScreen = ({ route, navigation }) => {
     const { cartData, totalAmount } = route.params;
 
-    const SHIPPING_COST = 15;
+    // const SHIPPING_COST = 15;
     const [promoModalVisible, setPromoModalVisible] = useState(false);
     const [availableVouchers, setAvailableVouchers] = useState([]);
     const [showAll, setShowAll] = useState(false);
+    const [address, setAddress] = useState(null);
+    const [paymentMethod, setPaymentMethod] = useState(null);
+    const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(null);
+    const [selectedVouchers, setSelectedVouchers] = useState({ deliver: null, coupon: null });
 
-    useEffect(() => {
-        fetchAvailableVouchers();
-    }, []);
+    const [shippingCost, setShippingCost] = useState(15); // Biến động để lưu phí giao hàng hiện tại
+    const [discountedTotal, setDiscountedTotal] = useState(totalAmount); // Biến lưu tổng giá sau khi giảm giá
+
+
+    const applyVoucher = (voucher) => {
+        if (voucher.type === 'deliver') {
+            setSelectedVouchers(prevState => ({ ...prevState, deliver: voucher }));
+            setShippingCost(0); // Nếu voucher là free delivery, đặt phí giao hàng thành 0
+        } else if (voucher.type === 'coupon') {
+            setSelectedVouchers(prevState => ({ ...prevState, coupon: voucher }));
+            const discountRate = parseFloat(voucher.discount) / 100; // Tính phần trăm giảm giá từ voucher
+            setDiscountedTotal(totalAmount * (1 - discountRate)); // Áp dụng giảm giá vào tổng tiền
+        }
+        setPromoModalVisible(false);
+    };
+
+
+    const removeVoucher = (type) => {
+        setSelectedVouchers(prevState => ({ ...prevState, [type]: null }));
+        if (type === 'deliver') {
+            setShippingCost(15); // Khôi phục phí giao hàng nếu hủy voucher free delivery
+        } else if (type === 'coupon') {
+            setDiscountedTotal(totalAmount); // Khôi phục tổng giá nếu hủy voucher giảm giá
+        }
+    };
+
+    const handleSelectMethod = (method) => {
+        setSelectedDeliveryMethod(method);
+    };
+    const fetchUserRewards = async () => {
+        const token = await AsyncStorage.getItem('authToken');
+        try {
+            const response = await axios.get(`${BASE_URL}/user-rewards`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            const { availableVouchers } = response.data as any || {};
+            setAvailableVouchers(availableVouchers);
+        } catch (error) {
+            console.error('Error fetching user rewards:', error);
+        }
+    };
+
+    const fetchDefaultPaymentMethod = async () => {
+        const token = await AsyncStorage.getItem('authToken');
+        try {
+            const response = await axios.get(`${BASE_URL}/payment-methods/default`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (response.data) {
+                setPaymentMethod(response.data);
+            } else {
+                setPaymentMethod(null);
+            }
+        } catch (error) {
+            setPaymentMethod(null);
+        }
+    };
+    const fetchDefaultAddress = async () => {
+        const token = await AsyncStorage.getItem('authToken');
+        try {
+            const response = await axios.get(`${BASE_URL}/shipping-addresses/default`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (response.data) {
+                setAddress(response.data); // Cập nhật địa chỉ mặc định từ API
+            }
+        } catch (error) {
+        }
+    };
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchDefaultAddress();
+            fetchAvailableVouchers();
+            fetchDefaultPaymentMethod();
+            fetchUserRewards();
+        }, [])
+    );
     const fetchAvailableVouchers = async () => {
         const token = await AsyncStorage.getItem('authToken');
         try {
@@ -42,23 +124,7 @@ const CheckoutScreen = ({ route, navigation }) => {
             Alert.alert('Error', 'Failed to fetch available vouchers');
         }
     };
-    const address = {
-        name: 'Jane Doe',
-        phoneNumber: '+1 234 567 890',
-        street: '3 Newbridge Court',
-        district: 'Chino Hills',
-        city: 'CA 91709',
-        country: 'United States'
-    };
 
-    const card = {
-        cardType: 'mastercard',
-        cardNumber: '123456789012',
-        cardHolder: 'Jennyfer Doe',
-        expiryDate: '05/23',
-        cvv: '122223',
-        logo: icons.mastercard2,
-    }
 
     return (
         <SafeAreaView className="flex-1 bg-white">
@@ -73,29 +139,47 @@ const CheckoutScreen = ({ route, navigation }) => {
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}>
                     {/* Shipping Address Section */}
                     <Text className="text-lg font-semibold mb-3">Shipping address</Text>
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('ShippingAddresses')}
+                    <View
+                        // onPress={() => navigation.navigate('ShippingAddresses')}
                         className="bg-white p-4 rounded-lg mb-6 shadow-sm flex-row justify-between items-center border border-gray-200"
                     >
                         <View className="flex-1">
-                            <View className="flex-row items-center">
-                                <Text className="text-lg font-semibold">{address.name}</Text>
-                                <Ionicons name="call-outline" size={16} color="gray" style={{ marginHorizontal: 6 }} />
-                                <Text className="text-lg">{address.phoneNumber}</Text>
-                            </View>
-                            <Text className="text-gray-600 mt-1">{formatAddress(address)}</Text>
+                            {address ? (
+                                <>
+                                    <View className="flex-row items-center">
+                                        <Text className="text-lg font-semibold">{address.name}</Text>
+                                        <Ionicons name="call-outline" size={16} color="gray" style={{ marginHorizontal: 6 }} />
+                                        <Text className="text-lg">{address.phoneNumber}</Text>
+                                    </View>
+                                    <Text className="text-gray-600 mt-1">{formatAddress(address)}</Text>
+                                </>
+                            ) : (
+                                <Text className="text-gray-600">Address not found</Text>
+                            )}
                         </View>
-                        <TouchableOpacity onPress={() => navigation.navigate('EditAddress', { address })}>
+                        {/* <TouchableOpacity onPress={() => navigation.navigate('EditAddress', { address })}> */}
+                        <TouchableOpacity onPress={() => navigation.navigate('ShippingAddresses')}>
                             <Text className="text-red-500 font-medium">Change</Text>
                         </TouchableOpacity>
-                    </TouchableOpacity>
+                    </View>
 
                     {/* Payment Section */}
                     <Text className="text-lg font-semibold mb-3">Payment</Text>
-                    <View className="flex-row items-center justify-between bg-white p-4 rounded-lg mb-6 shadow-sm border border-gray-200">
+                    <View
+                        // onPress={() => navigation.navigate('PaymentMethods')}
+                        className="flex-row items-center justify-between bg-white p-4 rounded-lg mb-6 shadow-sm border border-gray-200">
                         <View className="flex-row items-center space-x-4">
-                            <Image source={icons.mastercard} className="w-10 h-10" resizeMode="contain" />
-                            <Text className="text-gray-600">**** **** **** {card.cardNumber.slice(-4)}</Text>
+                            {paymentMethod ? (
+                                <>
+                                    <Image
+                                        source={paymentMethod.cardType === 'mastercard' ? icons.mastercard : icons.visa}
+
+                                        className="w-10 h-10" resizeMode="contain" />
+                                    <Text className="text-gray-600">**** **** **** {paymentMethod.cardNumber.slice(-4)}</Text>
+                                </>
+                            ) : (
+                                <Text className="text-gray-600">Not found payment method</Text>
+                            )}
                         </View>
                         <TouchableOpacity onPress={() => navigation.navigate('PaymentMethods')}>
                             <Text className="text-red-500 font-medium">Change</Text>
@@ -105,46 +189,86 @@ const CheckoutScreen = ({ route, navigation }) => {
                     {/* Delivery Method Section */}
                     <Text className="text-lg font-semibold mb-3">Delivery method</Text>
                     <View className="flex-row justify-between mb-6">
-                        <TouchableOpacity className="flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border border-gray-200">
+                        <TouchableOpacity
+                            onPress={() => handleSelectMethod('fedex')}
+                            className={`flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border ${selectedDeliveryMethod === 'fedex' ? 'border-black' : 'border-gray-200'}`}
+                        >
                             <Image source={icons.fedex} className="w-20 h-8 mb-2" resizeMode="contain" />
                             <Text className="text-gray-600">1-2 days</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity className="flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border border-gray-200">
+
+                        <TouchableOpacity
+                            onPress={() => handleSelectMethod('usps')}
+                            className={`flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border ${selectedDeliveryMethod === 'usps' ? 'border-black' : 'border-gray-200'}`}
+                        >
                             <Image source={icons.usps} className="w-20 h-8 mb-2" resizeMode="contain" />
                             <Text className="text-gray-600">2-3 days</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity className="flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border border-gray-200">
+
+                        <TouchableOpacity
+                            onPress={() => handleSelectMethod('dhl')}
+                            className={`flex-1 bg-white rounded-lg p-3 shadow-sm items-center mx-1 border ${selectedDeliveryMethod === 'dhl' ? 'border-black' : 'border-gray-200'}`}
+                        >
                             <Image source={icons.dhl} className="w-20 h-8 mb-2" resizeMode="contain" />
                             <Text className="text-gray-600">5-7 days</Text>
                         </TouchableOpacity>
                     </View>
-
-                    {/* Promo Code Section */}
-                    <View className="flex-row bg-white rounded-lg p-3 mb-2 items-center shadow-md">
-                        <TextInput placeholder="Enter your promo code" className="flex-1 text-base" />
-                        <TouchableOpacity
-                            className="bg-black rounded-full p-2 ml-2"
-                            onPress={() => setPromoModalVisible(true)}
-                        >
-                            <Image source={icons.next1} style={{ width: 16, height: 16 }} />
-                        </TouchableOpacity>
-                    </View>
                 </ScrollView>
+
+                {/* Promo Code Section */}
+                <View className="flex-row bg-white rounded-lg p-3 mb-2 items-center shadow-md">
+                    {!selectedVouchers.deliver && !selectedVouchers.coupon ? (
+                        <TextInput
+                            placeholder="Enter your promo code"
+                            className="flex-1 text-base h-10"
+                        />
+                    ) : (
+                        <View className="flex-1 flex-row items-center h-10">
+                            {selectedVouchers.deliver && (
+                                <View className="flex-row items-center mr-2 bg-gray-100 p-2 rounded-lg">
+                                    <Image source={icons.deliver} className="w-4 h-4 mr-2" resizeMode="contain" />
+                                    <Text className="text-sm mr-2">{selectedVouchers.deliver.name}</Text>
+                                    <TouchableOpacity onPress={() => removeVoucher('deliver')}>
+                                        <Text className="text-gray-500 font-bold">✕</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                            {selectedVouchers.coupon && (
+                                <View className="flex-row items-center bg-gray-100 p-2 rounded-lg">
+                                    <Image source={icons.coupon} className="w-4 h-4 mr-2" resizeMode="contain" />
+                                    <Text className="text-sm mr-2">{selectedVouchers.coupon.name}</Text>
+                                    <TouchableOpacity onPress={() => removeVoucher('coupon')}>
+                                        <Text className="text-gray-500 font-bold">✕</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            )}
+                        </View>
+                    )}
+                    <TouchableOpacity
+                        className="bg-black rounded-full p-2 ml-2"
+                        onPress={() => setPromoModalVisible(true)}
+                    >
+                        <Image source={icons.next1} className="w-5 h-5" />
+                    </TouchableOpacity>
+                </View>
+
+
+
 
                 {/* Order Summary Section and Submit Button */}
                 <View className="px-4 pb-4">
                     <View className="mt-4 mb-6">
                         <View className="flex-row justify-between mb-1">
                             <Text className="text-base text-gray-600">Order:</Text>
-                            <Text className="text-base font-semibold">${totalAmount}</Text>
+                            <Text className="text-base font-semibold">${totalAmount.toFixed(2)}</Text>
                         </View>
                         <View className="flex-row justify-between mb-1">
                             <Text className="text-base text-gray-600">Delivery:</Text>
-                            <Text className="text-base font-semibold">${SHIPPING_COST}</Text>
+                            <Text className="text-base font-semibold">${shippingCost.toFixed(2)}</Text>
                         </View>
                         <View className="flex-row justify-between">
                             <Text className="text-base text-gray-600">Summary:</Text>
-                            <Text className="text-base font-bold text-red-500">${totalAmount + SHIPPING_COST}</Text>
+                            <Text className="text-base font-bold text-red-500">${(discountedTotal + shippingCost).toFixed(2)}</Text>
                         </View>
                     </View>
 
@@ -202,7 +326,7 @@ const CheckoutScreen = ({ route, navigation }) => {
                                         <Text className="text-sm text-gray-500">{voucher.code}</Text>
                                         <Text className="text-sm text-gray-500">{voucher.daysRemaining} days remaining</Text>
                                     </View>
-                                    <TouchableOpacity className="bg-red-500 rounded-lg px-4 py-2">
+                                    <TouchableOpacity onPress={() => applyVoucher(voucher)} className="bg-red-500 rounded-lg px-4 py-2">
                                         <Text className="text-white font-semibold">Apply</Text>
                                     </TouchableOpacity>
                                 </View>
