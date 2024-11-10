@@ -9,6 +9,7 @@ import { Rating } from 'react-native-ratings';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../config';
+import { Ratings } from '../constants/types';
 
 const { width } = Dimensions.get('window');
 type SubCategory = {
@@ -81,7 +82,7 @@ const WishlistTab = () => {
           console.error("Error fetching user ID:", error);
         }
       };
-  
+
       fetchUserID();
       fetchSubCategories();
     }, [])
@@ -89,7 +90,7 @@ const WishlistTab = () => {
 
   const handleSearch = (text) => {
     setSearchQuery(text);
-  
+
     // Lọc sản phẩm theo tên trong danh sách thuộc sub-category đã chọn
     if (text) {
       const filtered = filteredData.filter((item) =>
@@ -101,54 +102,63 @@ const WishlistTab = () => {
       filterProductsBySubCategory(selectedSubCategory);
     }
   };
-  
 
+  function calculateAverageRating(ratings: Ratings): number {
+    const totalRatings = ratings[1] + ratings[2] + ratings[3] + ratings[4] + ratings[5];
+    const weightedSum =
+      ratings[1] * 1 +
+      ratings[2] * 2 +
+      ratings[3] * 3 +
+      ratings[4] * 4 +
+      ratings[5] * 5;
+
+    return totalRatings > 0 ? weightedSum / totalRatings : 0;
+  }
   const renderItem = ({ item }) => (
     <TouchableOpacity
       onPress={() => navigation.navigate('ProductDetails', { itemDetails: item })}
       style={{ width: ITEM_WIDTH }}
       className="bg-white rounded-lg p-2 shadow-md relative"
     >
-      {item?.images?.[0] ? (
-        <Image
-          source={{ uri: item.images[0] }}
-          className="w-full h-56 rounded-lg"
-          resizeMode="cover"
-        />
-      ) : (
-        <Image
-          source={{ uri: 'https://picsum.photos/200' }}
-          className="w-full h-56 rounded-lg"
-          resizeMode="cover"
-        />
-      )}
+      <Image
+        source={{ uri: item.images[0] }}
+        className="w-full h-56 rounded-lg"
+        resizeMode="cover"
+      />
+
       {item?.discount > 0 && (
         <View className="absolute top-3 left-3 bg-red-500 rounded-full px-2 py-1">
           <Text className="text-white text-xs font-bold">{item.discount}%</Text>
         </View>
       )}
       <Text className="text-base font-bold mt-1" numberOfLines={1} ellipsizeMode="tail">
-        {item?.name || 'No Name'}
+        {item?.name}
       </Text>
-      <Text className="text-lg font-bold text-black">
-        ${((item.salePrice * (100 - item.discount)) / 100).toFixed(2)}
-      </Text>
-      {item.discount > 0 && (
-        <View className="flex flex-row items-center gap-x-3">
-          <Text className="text-sm line-through text-gray-400">${item.salePrice.toFixed(2)}</Text>
-        </View>
-      )}
+
+      <View className='flex-row '>
+
+        <Text className="text-lg font-bold text-black">
+          ${((item.salePrice * (100 - item.discount)) / 100).toFixed(2)}
+        </Text>
+        {item.discount > 0 && (
+          <View className="flex flex-row items-center gap-x-3 ml-1">
+            <Text className="text-sm line-through text-gray-400">${item.salePrice.toFixed(2)}</Text>
+          </View>
+        )}
+      </View>
+
+
       <View className="flex-row items-center mt-2">
         <Rating
           type="custom"
           ratingCount={5}
           imageSize={18}
-          startingValue={item.ratings ? item.ratings.average : 0}
+          startingValue={calculateAverageRating(item.ratings)}
           readonly={true}
           tintColor="#fff"
           ratingBackgroundColor="#EEEEEE"
         />
-        <Text className="text-base text-gray-500 ml-2">({item?.reviews || 0})</Text>
+        <Text className="text-base text-gray-500 ml-2">({item?.reviews} reviews)</Text>
       </View>
     </TouchableOpacity>
   );
