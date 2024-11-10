@@ -32,17 +32,17 @@ type ProductDetailsProps = {
 const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   const { itemDetails } = route.params; // nhận dữ liệu từ trang Catalog
   const navigation = useNavigation<StackNavigationProp<RouteTabsParamList, 'Cart'>>();
-  
+
   const [userID, setUserID] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState(itemDetails.variants[0]?.color || '');
-  const [selectedSize, setSelectedSize] = useState<string | null>(null); 
-  const [quantity, setQuantity] = useState<number>(1); 
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [quantity, setQuantity] = useState<number>(1);
   const [cartItemCount, setCartItemCount] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState<number>(0); 
-  const [modalVisible, setModalVisible] = useState(false); 
+  const [currentIndex, setCurrentIndex] = useState<number>(0);
+  const [modalVisible, setModalVisible] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
   const finalPrice = itemDetails.salePrice * (1 - itemDetails.discount / 100) * quantity;
-  
+
 
   const scrollX = useRef(new Animated.Value(0)).current;
 
@@ -81,31 +81,47 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
 
   const fetchCartItemCount = async (userId: string) => {
     try {
-      const response = await axios.get<{itemCount: number}>(`${BASE_URL}/cart/${userId}/item-count`);
+      const response = await axios.get<{ itemCount: number }>(`${BASE_URL}/cart/${userId}/item-count`);
       setCartItemCount(response.data.itemCount);
     } catch (error) {
       console.error("Error fetching cart item count:", error);
     }
   };
-
-  // Check if product is in the wishlist
-  const checkIfFavorited = async (userId: string) => {
+  // Định nghĩa kiểu Wishlist để sử dụng
+  interface WishlistType {
+    products: { _id: string }[];
+  }
+  // Hàm kiểm tra xem sản phẩm có nằm trong wishlist hay không
+  const checkIfFavorited = async () => {
+    const token = await AsyncStorage.getItem('authToken');
     try {
-      const response = await axios.get<WishlistType>(`${BASE_URL}/wishlist/${userId}`);
+      const response = await axios.get<WishlistType>(`${BASE_URL}/wishlist`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       const wishlist = response.data;
-      if (wishlist.products.some((product: { _id: string }) => product._id === itemDetails._id)) {
+  
+      if (wishlist && wishlist.products.some((product) => product._id === itemDetails._id)) {
         setIsFavorited(true);
       }
     } catch (error) {
       console.error("Error checking if product is in wishlist:", error);
     }
   };
+  
+  
 
-   // Add product to wishlist
-   const addToWishlist = async () => {
-    if (userID) {
+  // Add product to wishlist
+  const addToWishlist = async () => {
+    const token = await AsyncStorage.getItem('authToken');
+    if (token) {
       try {
-        await axios.post(`${BASE_URL}/wishlist/${userID}/add`, { productId: itemDetails._id });
+        await axios.post(
+          `${BASE_URL}/wishlist/add`,
+          { productId: itemDetails._id }, // Gửi đúng định dạng dữ liệu
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
         setIsFavorited(true);
       } catch (error) {
         console.error("Error adding product to wishlist:", error);
@@ -115,9 +131,16 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
 
   // Remove product from wishlist
   const removeFromWishlist = async () => {
-    if (userID) {
+    const token = await AsyncStorage.getItem('authToken');
+    if (token) {
       try {
-        await axios.post(`${BASE_URL}/wishlist/${userID}/remove`, { productId: itemDetails._id });
+        await axios.post(
+          `${BASE_URL}/wishlist/remove`,
+          { productId: itemDetails._id }, // Gửi đúng định dạng dữ liệu
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
         setIsFavorited(false);
       } catch (error) {
         console.error("Error removing product from wishlist:", error);
@@ -137,58 +160,58 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   };
 
   // Hàm lấy số lượng sản phẩm hiện tại trong giỏ hàng cho sản phẩm cụ thể
-const getCurrentCartItemQuantity = async (userId, productId, selectedSize, selectedColor) => {
-  try {
-    const response = await axios.get<{quantity: number}>(
-      `${BASE_URL}/cart/${userId}/item-quantity`,
-      { params: { productId, selectedSize, selectedColor } }
-    );
-    return response.data.quantity || 0;
-  } catch (error) {
-    console.error("Error fetching cart item quantity:", error);
-    return 0;
-  }
-};
-
-const addToCart = async () => {
-  if (!userID || !selectedSize || !selectedColor) {
-    alert("Please select both size and color");
-    return;
-  }
-
-  const selectedVariant = itemDetails.variants.find(variant => variant.color === selectedColor);
-  if (!selectedVariant) {
-    alert("Selected color is unavailable");
-    return;
-  }
-
-  const sizeOption = selectedVariant.sizes.find(size => size.size === selectedSize);
-  if (!sizeOption) {
-    alert("Selected size is unavailable");
-    return;
-  }
-
-  const currentCartItemQuantity = await getCurrentCartItemQuantity(userID, itemDetails._id, selectedSize, selectedColor);
-  const totalQuantity = currentCartItemQuantity + quantity;
-
-  if (totalQuantity > sizeOption.stock) {
-    alert(`Only ${sizeOption.stock - currentCartItemQuantity} items available in stock`);
-    return;
-  }
-
-  try {
-    const response = await axios.post(`${BASE_URL}/cart/${userID}/add`, {
-      productId: itemDetails._id,
-      quantity,
-      selectedSize,
-      selectedColor,
-    });
-
-    if (response.status === 200) {
-      setModalVisible(false);
-      alert("Product added to cart successfully!");
-      fetchCartItemCount(userID); 
+  const getCurrentCartItemQuantity = async (userId, productId, selectedSize, selectedColor) => {
+    try {
+      const response = await axios.get<{ quantity: number }>(
+        `${BASE_URL}/cart/${userId}/item-quantity`,
+        { params: { productId, selectedSize, selectedColor } }
+      );
+      return response.data.quantity || 0;
+    } catch (error) {
+      console.error("Error fetching cart item quantity:", error);
+      return 0;
     }
+  };
+
+  const addToCart = async () => {
+    if (!userID || !selectedSize || !selectedColor) {
+      alert("Please select both size and color");
+      return;
+    }
+
+    const selectedVariant = itemDetails.variants.find(variant => variant.color === selectedColor);
+    if (!selectedVariant) {
+      alert("Selected color is unavailable");
+      return;
+    }
+
+    const sizeOption = selectedVariant.sizes.find(size => size.size === selectedSize);
+    if (!sizeOption) {
+      alert("Selected size is unavailable");
+      return;
+    }
+
+    const currentCartItemQuantity = await getCurrentCartItemQuantity(userID, itemDetails._id, selectedSize, selectedColor);
+    const totalQuantity = currentCartItemQuantity + quantity;
+
+    if (totalQuantity > sizeOption.stock) {
+      alert(`Only ${sizeOption.stock - currentCartItemQuantity} items available in stock`);
+      return;
+    }
+
+    try {
+      const response = await axios.post(`${BASE_URL}/cart/${userID}/add`, {
+        productId: itemDetails._id,
+        quantity,
+        selectedSize,
+        selectedColor,
+      });
+
+      if (response.status === 200) {
+        setModalVisible(false);
+        alert("Product added to cart successfully!");
+        fetchCartItemCount(userID);
+      }
     } catch (error) {
       alert("Failed to add product to cart");
       console.error("Error adding product to cart:", error);
@@ -221,7 +244,7 @@ const addToCart = async () => {
       ratings[3] * 3 +
       ratings[4] * 4 +
       ratings[5] * 5;
-  
+
     return totalRatings > 0 ? weightedSum / totalRatings : 0;
   }
 
@@ -307,7 +330,7 @@ const addToCart = async () => {
           {/* Price Details with Heart Icon */}
           <View className="flex flex-row items-center justify-between mt-4">
             <View className="flex flex-row items-center">
-              <Text className="text-3xl font-bold text-gray-900">${(itemDetails.salePrice * (1 - itemDetails.discount / 100))}</Text>             
+              <Text className="text-3xl font-bold text-gray-900">${(itemDetails.salePrice * (1 - itemDetails.discount / 100))}</Text>
               {itemDetails.discount > 0 && (
                 <>
                   <Text className="text-2xl font-thin text-gray-500 line-through ml-2">${itemDetails.salePrice}</Text>
@@ -422,103 +445,103 @@ const addToCart = async () => {
 
       {/* Modal for selecting size, quantity and showing price */}
       <Modal
-  visible={modalVisible}
-  animationType="slide"
-  transparent={true}
-  onRequestClose={() => setModalVisible(false)}
->
-  {/* Background dim effect */}
-  <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onPress={() => setModalVisible(false)} />
-
-  <View className="absolute bottom-0 left-0 right-0 bg-white p-6 rounded-t-lg" style={{ height: '60%', paddingBottom: 20 }}>
-    
-    {/* Product image and price */}
-    <View className="flex flex-row items-center mb-4">
-      {/* Left: Product Image */}
-      <Image source={{ uri: getImageForSelectedColor() }} className="w-24 h-24 rounded-lg" resizeMode="cover" />
-      
-      {/* Right: Price Details */}
-      <View className="ml-4"> 
-        <Text className="text-3xl font-bold text-gray-900">${itemDetails.salePrice * (1 - itemDetails.discount / 100)}</Text>
-        <Text className="text-xl text-gray-500 line-through">${itemDetails.salePrice}</Text>
-      </View>
-    </View>
-
-    <Text className="text-lg font-semibold mb-4">Select size</Text>
-
-    {/* Size Selection */}
-    <View className="flex flex-row items-center mt-3">
-      {sizesForSelectedColor.map(size => (
-        <TouchableOpacity
-          key={size.size}
-          onPress={() => setSelectedSize(size.size)}
-          className={`w-10 h-10 rounded-full flex items-center ml-2 justify-center transition-all ${selectedSize === size.size ? 'bg-blue-500 border-2 border-[#43d854]' : 'bg-gray-200'
-            } shadow-md`}
-        >
-          <Text className={`${selectedSize === size.size ? 'text-white' : 'text-gray-900'}`}>{size.size}</Text>
-        </TouchableOpacity>
-      ))}
-    </View>
-
-    {/* Color and Quantity Selection - In the same row */}
-    <View className="flex flex-row justify-between mt-6">
-      {/* Color Selection */}
-      <View>
-        <Text className="text-lg font-semibold text-gray-700">Colors available</Text>
-        <View className="flex flex-row mt-4 space-x-2">
-          {uniqueColors.map(color => (
-            <TouchableOpacity
-              key={color}
-              onPress={() => setSelectedColor(color)}
-              className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'border-2 border-[#43d854]' : 'border border-gray-300'
-                } shadow-md`}
-              style={{ backgroundColor: colorMap[color] || "gray" }}
-            >
-              {selectedColor === color && (
-                <Text className="text-white text-xs">✓</Text>
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      {/* Quantity Selection */}
-      <View>
-        <Text className="text-lg font-semibold text-gray-700">Quantity</Text>
-        <View className="flex flex-row items-center mt-4">
-          <TouchableOpacity
-            onPress={handleDecrease}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
-          >
-            <Text className="text-lg font-bold text-gray-600">-</Text>
-          </TouchableOpacity>
-          <Text className="mx-4 text-lg font-medium">{quantity}</Text>
-          <TouchableOpacity
-            onPress={handleIncrease}
-            className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
-          >
-            <Text className="text-lg font-bold text-gray-600">+</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-
-    {/* Final Price */}
-    <View className="mt-6 flex flex-row justify-between items-center">
-      <Text className="text-xl font-bold text-gray-900">Total Price: ${finalPrice}</Text>
-    </View>
-
-    {/* Add to Cart Button - Positioned at the bottom */}
-    <View className="absolute bottom-4 left-0 right-0 px-6">
-      <TouchableOpacity
-        className="bg-red-500 py-3 rounded-lg"
-        onPress={() => addToCart()}
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
       >
-        <Text className="text-white text-center text-lg">Add To Cart</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
+        {/* Background dim effect */}
+        <Pressable style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)' }} onPress={() => setModalVisible(false)} />
+
+        <View className="absolute bottom-0 left-0 right-0 bg-white p-6 rounded-t-lg" style={{ height: '60%', paddingBottom: 20 }}>
+
+          {/* Product image and price */}
+          <View className="flex flex-row items-center mb-4">
+            {/* Left: Product Image */}
+            <Image source={{ uri: getImageForSelectedColor() }} className="w-24 h-24 rounded-lg" resizeMode="cover" />
+
+            {/* Right: Price Details */}
+            <View className="ml-4">
+              <Text className="text-3xl font-bold text-gray-900">${itemDetails.salePrice * (1 - itemDetails.discount / 100)}</Text>
+              <Text className="text-xl text-gray-500 line-through">${itemDetails.salePrice}</Text>
+            </View>
+          </View>
+
+          <Text className="text-lg font-semibold mb-4">Select size</Text>
+
+          {/* Size Selection */}
+          <View className="flex flex-row items-center mt-3">
+            {sizesForSelectedColor.map(size => (
+              <TouchableOpacity
+                key={size.size}
+                onPress={() => setSelectedSize(size.size)}
+                className={`w-10 h-10 rounded-full flex items-center ml-2 justify-center transition-all ${selectedSize === size.size ? 'bg-blue-500 border-2 border-[#43d854]' : 'bg-gray-200'
+                  } shadow-md`}
+              >
+                <Text className={`${selectedSize === size.size ? 'text-white' : 'text-gray-900'}`}>{size.size}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+
+          {/* Color and Quantity Selection - In the same row */}
+          <View className="flex flex-row justify-between mt-6">
+            {/* Color Selection */}
+            <View>
+              <Text className="text-lg font-semibold text-gray-700">Colors available</Text>
+              <View className="flex flex-row mt-4 space-x-2">
+                {uniqueColors.map(color => (
+                  <TouchableOpacity
+                    key={color}
+                    onPress={() => setSelectedColor(color)}
+                    className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${selectedColor === color ? 'border-2 border-[#43d854]' : 'border border-gray-300'
+                      } shadow-md`}
+                    style={{ backgroundColor: colorMap[color] || "gray" }}
+                  >
+                    {selectedColor === color && (
+                      <Text className="text-white text-xs">✓</Text>
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            {/* Quantity Selection */}
+            <View>
+              <Text className="text-lg font-semibold text-gray-700">Quantity</Text>
+              <View className="flex flex-row items-center mt-4">
+                <TouchableOpacity
+                  onPress={handleDecrease}
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
+                >
+                  <Text className="text-lg font-bold text-gray-600">-</Text>
+                </TouchableOpacity>
+                <Text className="mx-4 text-lg font-medium">{quantity}</Text>
+                <TouchableOpacity
+                  onPress={handleIncrease}
+                  className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 shadow-md"
+                >
+                  <Text className="text-lg font-bold text-gray-600">+</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+
+          {/* Final Price */}
+          <View className="mt-6 flex flex-row justify-between items-center">
+            <Text className="text-xl font-bold text-gray-900">Total Price: ${finalPrice}</Text>
+          </View>
+
+          {/* Add to Cart Button - Positioned at the bottom */}
+          <View className="absolute bottom-4 left-0 right-0 px-6">
+            <TouchableOpacity
+              className="bg-red-500 py-3 rounded-lg"
+              onPress={() => addToCart()}
+            >
+              <Text className="text-white text-center text-lg">Add To Cart</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
 
 
