@@ -30,26 +30,6 @@ const WishlistTab = () => {
   const [subCategories, setSubCategories] = useState([{ name: 'All', image: '' }, { name: 'New', image: 'https://picsum.photos/200' }]);
   const [selectedSubCategory, setSelectedSubCategory] = useState('All');
   const [userID, setUserID] = useState<string | null>(null);
-  // useEffect(() => {
-  //   const fetchUserID = async () => {
-  //     try {
-  //       const token = await AsyncStorage.getItem('authToken');
-  //       if (token) {
-  //         const response = await axios.get<{ _id: string }>(`${BASE_URL}/auth/user`, {
-  //           headers: { Authorization: `Bearer ${token}` },
-  //         });
-  //         if (response.status === 200) {
-  //           const user = response.data;  // Chỉ lấy _id từ response
-  //           setUserID(user._id);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching user ID:", error);
-  //     }
-  //   };
-
-  //   fetchUserID();
-  // }, []);
 
   const fetchWishlist = async (userId: string) => {
     try {
