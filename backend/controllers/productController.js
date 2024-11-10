@@ -61,6 +61,41 @@ exports.updateProduct = async (req, res) => {
     }
 };
 
+exports.updateProductStock = async (req, res) => {
+    const { productId } = req.params;
+    const { color, size, quantity } = req.body;
+
+    try {
+        const product = await Product.findById(productId);
+        if (!product) {
+            return res.status(404).json({ message: 'Product not found' });
+        }
+
+        const variant = product.variants.find(v => v.color === color);
+        if (!variant) {
+            return res.status(404).json({ message: `Color ${color} not found` });
+        }
+
+        const sizeOption = variant.sizes.find(s => s.size === size);
+        if (!sizeOption) {
+            return res.status(404).json({ message: `Size ${size} not found for color ${color}` });
+        }
+
+        // Kiểm tra và trừ số lượng tồn kho
+        if (sizeOption.stock >= quantity) {
+            sizeOption.stock -= quantity;
+        } else {
+            return res.status(400).json({ message: `Not enough stock for size ${size} of color ${color}` });
+        }
+
+        await product.save();
+        res.status(200).json({ message: 'Stock updated successfully' });
+    } catch (error) {
+        console.error("Error updating product stock:", error);
+        res.status(500).json({ message: 'Error updating product stock', error });
+    }
+};
+
 // Xóa sản phẩm
 exports.deleteProduct = async (req, res) => {
     try {

@@ -187,10 +187,10 @@ const CartTab = ({navigation}) => {
         <View className='absolute bottom-3 right-3'>
         {item.product.discount > 0 && (
           <Text style={{ textDecorationLine: 'line-through', color: 'gray', fontSize: 14 }}>
-            ${originalSubTotal.toFixed(1)}
+            ${originalSubTotal.toFixed(2)}
           </Text>
         )}
-        <Text className="text-lg font-bold">${item.subTotal.toFixed(1)}</Text>
+        <Text className="text-lg font-bold">${item.subTotal.toFixed(2)}</Text>
       </View>
         
       </View>
@@ -223,15 +223,24 @@ const CartTab = ({navigation}) => {
           <View>
             {totalAmount < cartData.reduce((sum, item) => sum + item.product.salePrice * item.quantity, 0) && (
               <Text className='line-through text-gray-500'>
-                ${cartData.reduce((sum, item) => sum + item.product.salePrice * item.quantity, 0).toFixed(1)}
+                ${cartData.reduce((sum, item) => sum + item.product.salePrice * item.quantity, 0).toFixed(2)}
               </Text>
             )}
-            <Text className="text-lg font-bold text-red-500">${totalAmount.toFixed(1)}</Text>
+            <Text className="text-lg font-bold text-red-500">${totalAmount.toFixed(2)}</Text>
           </View>
         </View>
 
         {/* Checkout Button */}
-        <TouchableOpacity className="bg-red-500 rounded-full py-4 items-center shadow-md"  onPress={() => navigation.navigate('Checkout', {cartData, totalAmount })}>
+        <TouchableOpacity 
+          className="bg-red-500 rounded-full py-4 items-center shadow-md"
+          onPress={() => {
+            if (cartData.length === 0) {
+              alert("Your cart is empty. Please add products to proceed to checkout.");
+            } else {
+              navigation.navigate('Checkout', { cartData, totalAmount });
+            }
+          }}
+        >
           <Text className="text-white font-bold text-lg">CHECK OUT</Text>
         </TouchableOpacity>
       </View>

@@ -118,7 +118,7 @@ const WishlistTab = () => {
     <TouchableOpacity
       onPress={() => navigation.navigate('ProductDetails', { itemDetails: item })}
       style={{ width: ITEM_WIDTH }}
-      className="bg-white rounded-lg p-2 shadow-md relative"
+      className="bg-white rounded-lg p-1 shadow-md relative"
     >
       <Image
         source={{ uri: item.images[0] }}
@@ -158,7 +158,7 @@ const WishlistTab = () => {
           tintColor="#fff"
           ratingBackgroundColor="#EEEEEE"
         />
-        <Text className="text-base text-gray-500 ml-2">({item?.reviews} reviews)</Text>
+        <Text className="text-sm text-gray-500 ml-1">({item?.reviews} reviews)</Text>
       </View>
     </TouchableOpacity>
   );

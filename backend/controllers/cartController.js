@@ -184,3 +184,21 @@ exports.removeProductFromCart = async (req, res) => {
       res.status(500).json({ message: "Error fetching cart item quantity" });
     }
   };
+
+  // Xóa toàn bộ giỏ hàng của người dùng
+exports.clearCart = async (req, res) => {
+  const { userId } = req.params;
+  
+  try {
+    const cart = await Cart.findOneAndDelete({ user: userId });
+    
+    if (!cart) {
+      return res.status(404).json({ message: 'Cart not found' });
+    }
+    
+    res.status(200).json({ message: 'Cart cleared successfully' });
+  } catch (error) {
+    console.error("Error clearing cart:", error);
+    res.status(500).json({ message: 'Error clearing cart', error });
+  }
+};

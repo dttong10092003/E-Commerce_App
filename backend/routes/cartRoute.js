@@ -18,4 +18,6 @@ router.patch('/:userId/update', cartController.updateProductQuantity);
 // Xóa sản phẩm khỏi giỏ hàng
 router.post('/:userId/remove', cartController.removeProductFromCart);
 
+router.delete('/:userId', cartController.clearCart);
+
 module.exports = router;

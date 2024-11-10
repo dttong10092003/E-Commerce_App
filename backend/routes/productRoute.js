@@ -8,9 +8,6 @@ router.get('/main-categories', productController.getMainCategories);
 // Route để lấy danh sách subCategory
 router.get('/sub-categories', productController.getSubCategories);
 
-// Route để lấy danh sách subSubCategory theo subCategory.name
-// router.get('/sub-categories/:subCategoryName/sub-subcategories', productController.getSubSubCategories);
-
 // Route để lấy subSubCategory dựa trên mainCategory và subCategoryName
 router.get('/:mainCategory/:subCategoryName/sub-subcategories', productController.getSubSubCategories);
 
@@ -28,6 +25,8 @@ router.post('/multiple', productController.createMultipleProducts);
 
 // Định tuyến tạo sản phẩm mới
 router.post('/', productController.createProduct);
+
+router.patch('/:productId/update-stock', productController.updateProductStock);
 
 // Định tuyến cập nhật sản phẩm
 router.put('/:id', productController.updateProduct);

@@ -7,6 +7,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../config';
 import { useFocusEffect } from '@react-navigation/native';
+import { Product } from '../constants/types';
 
 const formatAddress = (address) => {
     const { street, district, city, country } = address;
@@ -16,18 +17,144 @@ const formatAddress = (address) => {
 const CheckoutScreen = ({ route, navigation }) => {
     const { cartData, totalAmount } = route.params;
 
-    // const SHIPPING_COST = 15;
+    const [userID, setUserID] = useState<string | null>(null);
     const [promoModalVisible, setPromoModalVisible] = useState(false);
     const [availableVouchers, setAvailableVouchers] = useState([]);
     const [showAll, setShowAll] = useState(false);
     const [address, setAddress] = useState(null);
     const [paymentMethod, setPaymentMethod] = useState(null);
-    const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState(null);
+
+    const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState('dhl');
     const [selectedVouchers, setSelectedVouchers] = useState({ deliver: null, coupon: null });
 
-    const [shippingCost, setShippingCost] = useState(15); // Biến động để lưu phí giao hàng hiện tại
-    const [discountedTotal, setDiscountedTotal] = useState(totalAmount); // Biến lưu tổng giá sau khi giảm giá
+    const [shippingCost, setShippingCost] = useState(15);
+    const [discountedTotal, setDiscountedTotal] = useState(totalAmount);
 
+    // const orderData = {
+    //     userId: userID,
+    //     products: cartData,
+    //     totalAmount: discountedTotal + shippingCost,
+    //     shippingAddress: address,
+    //     paymentMethod,
+    //     deliveryMethod: selectedDeliveryMethod,
+    //     shippingCost,
+    //     discountAmount: totalAmount - discountedTotal,
+    // };
+
+    // console.log("orderData:", orderData);
+    // console.log(orderData.shippingAddress);
+    // console.log(orderData.paymentMethod);
+    // console.log(orderData.deliveryMethod);
+    // console.log(orderData.totalAmount);
+    // console.log(orderData.shippingCost);
+    // console.log(orderData.discountAmount);
+
+    useEffect(() => {
+        const fetchUserID = async () => {
+            try {
+                const token = await AsyncStorage.getItem('authToken');
+                if (token) {
+                    const response = await axios.get<{ _id: string }>(`${BASE_URL}/auth/user`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+                    if (response.status === 200) {
+                        const user = response.data;  // Chỉ lấy _id từ response
+                        setUserID(user._id);
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching user ID:", error);
+            }
+        };
+
+        fetchUserID();
+    }, []);
+
+    const handleSubmitOrder = async () => {
+        if (!userID) {
+            Alert.alert("Error", "User ID not found. Please log in again.");
+            return;
+        }
+    
+        if (!address || !paymentMethod) {
+            Alert.alert("Error", "Please provide both a shipping address and payment method.");
+            return;
+        }
+    
+        try {
+            // Kiểm tra tồn kho từng sản phẩm
+            const stockCheckPromises = cartData.map(async (item) => {
+                const response = await axios.get<Product>(`${BASE_URL}/products/${item.product._id}`);
+                const product = response.data;
+    
+                // Tìm variant và size phù hợp trong sản phẩm
+                const variant = product.variants.find(v => v.color === item.selectedColor);
+                if (!variant) {
+                    throw new Error(`Color ${item.selectedColor} not found for ${product.name}`);
+                }
+    
+                const sizeOption = variant.sizes.find(s => s.size === item.selectedSize);
+                if (!sizeOption) {
+                    throw new Error(`Size ${item.selectedSize} not available for color ${item.selectedColor} in ${product.name}`);
+                }
+    
+                if (sizeOption.stock < item.quantity) {
+                    throw new Error(`Insufficient stock for ${product.name} (${item.selectedColor}, size ${item.selectedSize}). Available: ${sizeOption.stock}, requested: ${item.quantity}`);
+                }
+            });
+    
+            // Thực hiện kiểm tra tồn kho
+            await Promise.all(stockCheckPromises);
+    
+            // Dữ liệu đơn hàng
+            const orderData = {
+                userId: userID,
+                products: cartData,
+                totalAmount: discountedTotal + shippingCost,
+                shippingAddress: address,
+                paymentMethod,
+                deliveryMethod: selectedDeliveryMethod,
+                shippingCost,
+                discountAmount: totalAmount - discountedTotal,
+            };
+    
+            // Gửi yêu cầu tạo đơn hàng
+            const response = await axios.post(`${BASE_URL}/orders`, orderData, {
+                headers: { Authorization: `Bearer ${await AsyncStorage.getItem('authToken')}` },
+            });
+    
+            if (response.status === 201) {
+                Alert.alert("Success", "Your order has been placed successfully.");
+    
+                // Xóa giỏ hàng của người dùng
+                await axios.delete(`${BASE_URL}/cart/${userID}`, {
+                    headers: { Authorization: `Bearer ${await AsyncStorage.getItem('authToken')}` },
+                });
+    
+                // Cập nhật tồn kho sau khi đặt hàng thành công
+                const stockUpdatePromises = cartData.map(async (item) => {
+                    await axios.patch(`${BASE_URL}/products/${item.product._id}/update-stock`, {
+                        color: item.selectedColor,
+                        size: item.selectedSize,
+                        quantity: item.quantity
+                    }, {
+                        headers: { Authorization: `Bearer ${await AsyncStorage.getItem('authToken')}` },
+                    });
+                });
+    
+                await Promise.all(stockUpdatePromises);
+    
+                // Điều hướng người dùng trở lại CartTab
+                navigation.navigate("Cart");
+            }
+        } catch (error) {
+            console.error("Error placing order:", error);
+            const errorMessage = error.response?.data?.message || "Failed to place the order.";
+            Alert.alert("Error", errorMessage);
+        }
+    };
+    
+    
 
     const applyVoucher = (voucher) => {
         if (voucher.type === 'deliver') {
@@ -53,6 +180,19 @@ const CheckoutScreen = ({ route, navigation }) => {
 
     const handleSelectMethod = (method) => {
         setSelectedDeliveryMethod(method);
+        switch (method) {
+            case 'fedex':
+                setShippingCost(25);
+                break;
+            case 'usps':
+                setShippingCost(20);
+                break;
+            case 'dhl':
+                setShippingCost(15);
+                break;
+            default:
+                setShippingCost(15);
+        }
     };
     const fetchUserRewards = async () => {
         const token = await AsyncStorage.getItem('authToken');
@@ -125,7 +265,6 @@ const CheckoutScreen = ({ route, navigation }) => {
         }
     };
 
-
     return (
         <SafeAreaView className="flex-1 bg-white">
             <View className="px-4 flex-1">
@@ -139,10 +278,7 @@ const CheckoutScreen = ({ route, navigation }) => {
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}>
                     {/* Shipping Address Section */}
                     <Text className="text-lg font-semibold mb-3">Shipping address</Text>
-                    <View
-                        // onPress={() => navigation.navigate('ShippingAddresses')}
-                        className="bg-white p-4 rounded-lg mb-6 shadow-sm flex-row justify-between items-center border border-gray-200"
-                    >
+                    <View className="bg-white p-4 rounded-lg mb-6 shadow-sm flex-row justify-between items-center border border-gray-200" >
                         <View className="flex-1">
                             {address ? (
                                 <>
@@ -273,7 +409,7 @@ const CheckoutScreen = ({ route, navigation }) => {
                     </View>
 
                     {/* Submit Order Button */}
-                    <TouchableOpacity className="bg-red-500 rounded-full py-4 items-center shadow-md">
+                    <TouchableOpacity className="bg-red-500 rounded-full py-4 items-center shadow-md" onPress={handleSubmitOrder}>
                         <Text className="text-white font-bold text-lg">SUBMIT ORDER</Text>
                     </TouchableOpacity>
                 </View>
