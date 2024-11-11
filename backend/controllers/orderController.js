@@ -19,7 +19,7 @@ exports.createOrder = async (req, res) => {
       deliveryMethod,
       shippingCost,
       discountAmount,
-      orderStatus: 'processing',
+      orderStatus: 'Processing',
       orderDate: Date.now(),
     });
 
@@ -30,9 +30,6 @@ exports.createOrder = async (req, res) => {
     res.status(500).json({ message: 'Error creating order', error: error.message });
   }
 };
-
-
-
 
 // Get all orders for a user
 exports.getOrdersByUser = async (req, res) => {
@@ -56,9 +53,9 @@ exports.updateOrderStatus = async (req, res) => {
     const updateData = { orderStatus };
 
     // Set canceledDate or deliveredDate based on status
-    if (orderStatus === 'canceled') {
+    if (orderStatus === 'Canceled') {
       updateData.canceledDate = Date.now();
-    } else if (orderStatus === 'delivered') {
+    } else if (orderStatus === 'Delivered') {
       updateData.deliveredDate = Date.now();
     }
 
@@ -90,5 +87,20 @@ exports.deleteOrder = async (req, res) => {
   } catch (error) {
     console.error("Error deleting order:", error);
     res.status(500).json({ message: 'Error deleting order', error });
+  }
+};
+
+
+// Count orders by status
+exports.countOrdersByStatus = async (req, res) => {
+  try {
+    // Đếm số lượng đơn hàng với orderStatus là 'Processing' và 'Shipping'
+    const processingCount = await Order.countDocuments({ orderStatus: 'Processing' });
+    const shippingCount = await Order.countDocuments({ orderStatus: 'Shipping' });
+
+    res.status(200).json({ processingCount, shippingCount });
+  } catch (error) {
+    console.error("Error counting orders by status:", error);
+    res.status(500).json({ message: 'Error counting orders by status', error: error.message });
   }
 };

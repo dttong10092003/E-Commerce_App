@@ -1,194 +1,226 @@
 // src/screens/MyOrdersScreen.tsx
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, FlatList } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import axios from 'axios';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import BASE_URL from '../config';
 
-const orders = [
-    {
-      id: '1947034',
-      date: '05-12-2019',
-      trackingNumber: 'IW3475453455',
-      quantity: 3,
-      totalAmount: '112$',
-      status: 'Delivered',
-      products: [
-        {
-          productId: 'P001',
-          productName: 'Pullover',
-          brand: 'Mango',
-          color: 'Gray',
-          size: 'L',
-          quantity: 1,
-          price: '51$',
-          image: 'https://picsum.photos/200',
-        },
-        {
-          productId: 'P002',
-          productName: 'Pullover',
-          brand: 'Mango',
-          color: 'Gray',
-          size: 'L',
-          quantity: 1,
-          price: '51$',
-          image: 'https://picsum.photos/200',
-        },
-        {
-          productId: 'P003',
-          productName: 'T-shirt',
-          brand: 'Uniqlo',
-          color: 'White',
-          size: 'M',
-          quantity: 1,
-          price: '10$',
-          image: 'https://picsum.photos/200',
-        },
-      ],
-    },
-    {
-      id: '1947035',
-      date: '05-02-2022',
-      trackingNumber: 'IW3475425255',
-      quantity: 5,
-      totalAmount: '2232$',
-      status: 'Delivered',
-      products: [
-        {
-          productId: 'P004',
-          productName: 'Sweater',
-          brand: 'Zara',
-          color: 'Blue',
-          size: 'M',
-          quantity: 2,
-          price: '60$',
-          image: 'https://picsum.photos/200',
-        },
-        {
-          productId: 'P005',
-          productName: 'Jeans',
-          brand: 'Levi\'s',
-          color: 'Black',
-          size: '32',
-          quantity: 1,
-          price: '70$',
-          image: 'https://picsum.photos/200',
-        },
-        {
-          productId: 'P006',
-          productName: 'Jacket',
-          brand: 'H&M',
-          color: 'Green',
-          size: 'L',
-          quantity: 1,
-          price: '120$',
-          image: 'https://picsum.photos/200',
-        },
-      ],
-    },
-    {
-      id: '1947036',
-      date: '05-02-2022',
-      trackingNumber: 'IW3475425256',
-      quantity: 5,
-      totalAmount: '150$',
-      status: 'Cancelled',
-      products: [
-        {
-          productId: 'P007',
-          productName: 'Dress',
-          brand: 'H&M',
-          color: 'Red',
-          size: 'S',
-          quantity: 1,
-          price: '40$',
-          image: 'https://picsum.photos/200',
-        },
-        {
-          productId: 'P008',
-          productName: 'Blouse',
-          brand: 'Uniqlo',
-          color: 'White',
-          size: 'M',
-          quantity: 1,
-          price: '30$',
-          image: 'https://picsum.photos/200',
-        },
-      ],
-    },
-    {
-      id: '1947037',
-      date: '05-02-2022',
-      trackingNumber: 'IW3475425257',
-      quantity: 5,
-      totalAmount: '200$',
-      status: 'Processing',
-      products: [
-        {
-          productId: 'P009',
-          productName: 'Sneakers',
-          brand: 'Nike',
-          color: 'Black',
-          size: '42',
-          quantity: 1,
-          price: '100$',
-          image: 'https://picsum.photos/200',
-        },
-        {
-          productId: 'P010',
-          productName: 'Cap',
-          brand: 'Adidas',
-          color: 'Blue',
-          size: 'M',
-          quantity: 1,
-          price: '20$',
-          image: 'https://picsum.photos/200',
-        },
-        {
-          productId: 'P011',
-          productName: 'Scarf',
-          brand: 'Gucci',
-          color: 'Gray',
-          size: 'One Size',
-          quantity: 1,
-          price: '80$',
-          image: 'https://picsum.photos/200',
-        },
-      ],
-    },
-  ];
+interface ShippingAddress {
+  name: string;
+  phoneNumber: string;
+  street: string;
+  district: string;
+  city: string;
+  country: string;
+}
 
+interface PaymentMethod {
+  cardType: string;
+  cardNumber: string;
+  cardHolder: string;
+  expiryDate: string;
+}
 
-const OrderCard = ({ order, onPress }) => (
-    <View className="bg-white p-4 rounded-lg my-2 mx-4 shadow-md">
-      <View className="flex-row justify-between">
-        <Text className="text-lg font-semibold">Order №{order.id}</Text>
-        <Text className="text-gray-400">{order.date}</Text>
-      </View>
-      <Text className="text-gray-600 mt-2">Tracking number: {order.trackingNumber}</Text>
-      <View className="flex-row justify-between mt-2">
+interface Product {
+  product: string; // Assuming this is the Product ID
+  quantity: number;
+  selectedSize: string;
+  selectedColor: string;
+  subTotal: number;
+}
+
+type OrderStatus = 'Processing' | 'Shipping' | 'Delivered' | 'Canceled';
+type DeliveryMethod = 'fedex' | 'usps' | 'dhl';
+
+interface Order {
+  _id: string;
+  user: string; // User ID reference
+  products: Product[];
+  totalAmount: number;
+  shippingAddress: ShippingAddress;
+  paymentMethod: PaymentMethod;
+  deliveryMethod: DeliveryMethod;
+  shippingCost: number;
+  discountAmount: number;
+  orderStatus: OrderStatus;
+  orderDate: Date;
+  canceledDate?: Date | null;
+  deliveredDate?: Date | null;
+}
+
+const OrderCard = ({ order, onPress, onCancel }) => {
+  const { _id, orderDate, totalAmount, orderStatus, products } = order;
+  const formattedDate = new Date(
+    orderStatus === 'Delivered' ? order.deliveredDate :
+    orderStatus === 'Canceled' ? order.canceledDate :
+    orderDate
+  ).toLocaleString();
+  console.log("order:", order);
+  console.log("products:", products);
+
+  const handleCancelOrder = () => {
+    Alert.alert(
+      "Confirm Cancellation",
+      "Are you sure you want to cancel this order?",
+      [
+        { text: "No" },
+        {
+          text: "Yes",
+          onPress: async () => {
+            await onCancel(_id); // Gọi hàm hủy đơn hàng
+            await restoreStock(); // Cập nhật lại tồn kho
+          },
+        },
+      ]
+    );
+  };
+
+  const restoreStock = async () => {
+    const token = await AsyncStorage.getItem('authToken');
+    const stockUpdatePromises = order.products.map(async (item) => {
+      try {
+        await axios.patch(
+          `${BASE_URL}/products/${item.product._id}/update-stock`,
+          {
+            color: item.selectedColor,
+            size: item.selectedSize,
+            quantity: item.quantity,
+            action: 'add', // Cộng lại số lượng sản phẩm
+          },
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+      } catch (error) {
+        console.error("Error updating stock for canceled order:", error);
+      }
+    });
+
+    await Promise.all(stockUpdatePromises);
+  };
+
+  return (
+  <View className="bg-white p-4 rounded-lg my-2 mx-4 shadow-md">
+    <Text className="absolute right-2 top-1 text-gray-400">{formattedDate}</Text>
+    <Text className="text-lg font-semibold mt-1">{_id}</Text>
+    <View className="flex-row justify-between mt-2">
         <Text className="text-gray-600">
-          Quantity: <Text className="text-black font-semibold">{order.quantity}</Text>
+          Items: <Text className="text-black font-semibold">{products.length}</Text>
         </Text>
         <Text className="text-gray-600">
-          Total Amount: <Text className="text-black font-semibold">{order.totalAmount}</Text>
+          Total Amount: <Text className="text-black font-semibold">${totalAmount.toFixed(2)}</Text>
         </Text>
-      </View>
-      <View className="flex-row justify-between items-center mt-4">
-        <TouchableOpacity onPress={onPress} className="border border-gray-300 px-4 py-1 rounded-full">
-          <Text className="text-black font-medium">Details</Text>
-        </TouchableOpacity>
-      <Text className={`font-semibold ${order.status === 'Delivered' ? 'text-green-500' : order.status === 'Processing' ? 'text-orange-500' : 'text-red-500'}`}>
-        {order.status}
-      </Text>
+    </View>
+    <View className="flex-row justify-between items-center mt-4">
+      <TouchableOpacity onPress={onPress} className="border border-gray-300 px-4 py-1 rounded-full">
+        <Text className="text-black font-medium">Details</Text>
+      </TouchableOpacity>
+      {orderStatus === 'Processing' && (
+          <TouchableOpacity onPress={handleCancelOrder} className="bg-red-500 px-4 py-1 rounded-full">
+            <Text className="text-white font-medium">Cancel Order</Text>
+          </TouchableOpacity>
+        )}
+        <Text
+          className={`font-semibold ${
+            orderStatus === 'Delivered'
+              ? 'text-green-500'
+              : orderStatus === 'Processing'
+              ? 'text-orange-500'
+              : orderStatus === 'Shipping'
+              ? 'text-yellow-500'
+              : 'text-red-500'
+          }`}
+        >
+          {orderStatus}
+        </Text>
     </View>
   </View>
 );
+};
+
+const fetchUserID = async (): Promise<string | null> => {
+  try {
+    const token = await AsyncStorage.getItem('authToken');
+    if (token) {
+      const response = await axios.get<{ _id: string }>(`${BASE_URL}/auth/user`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.status === 200) {
+        return response.data._id; // Trả về user ID
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching user ID:", error);
+  }
+  return null;
+};
 
 const MyOrdersScreen = ({ navigation }) => {
-  const [activeTab, setActiveTab] = useState('Delivered');
+  const [activeTab, setActiveTab] = useState('Processing');
+  const [orders, setOrders] = useState([]);
 
-  // Lọc đơn hàng theo trạng thái
-  const filteredOrders = orders.filter((order) => order.status === activeTab);
+  const fetchOrders = async () => {
+    const fetchedUserID = await fetchUserID();
+    if (!fetchedUserID) {
+      Alert.alert("Error", "Failed to fetch user ID. Please log in again.");        
+      return;
+    }
+
+    console.log(`${BASE_URL}/orders/user/${fetchedUserID}`);
+    try {
+      const token = await AsyncStorage.getItem('authToken');
+      if (token) {
+        const response = await axios.get<Order[]>(`${BASE_URL}/orders/user/${fetchedUserID}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setOrders(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching orders:", error);
+      Alert.alert("Error", "Failed to fetch orders.");
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, []);
+
+  console.log("orders:", orders);
+
+  const handleCancelOrder = async (orderId: string) => {
+    const token = await AsyncStorage.getItem('authToken');
+    try {
+      await axios.patch(
+        `${BASE_URL}/orders/${orderId}/status`,
+        { orderStatus: 'Canceled' },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      Alert.alert("Order Canceled", "Your order has been canceled.");
+      fetchOrders();
+    } catch (error) {
+      console.error("Error canceling order:", error);
+      Alert.alert("Error", "Failed to cancel the order.");
+    }
+  };
+
+  // Lọc đơn hàng theo trạng thái và sắp xếp theo ngày
+  const filteredOrders = orders
+    .filter((order) => order.orderStatus === activeTab)
+    .sort((a, b) => {
+      const dateA = new Date(
+        activeTab === 'Delivered' ? a.deliveredDate :
+        activeTab === 'Canceled' ? a.canceledDate :
+        a.orderDate
+      );
+      const dateB = new Date(
+        activeTab === 'Delivered' ? b.deliveredDate :
+        activeTab === 'Canceled' ? b.canceledDate :
+        b.orderDate
+      );
+      return dateB.getTime() - dateA.getTime(); // Sắp xếp từ mới tới cũ
+    });
 
   return (
     <SafeAreaView className="flex-1 bg-gray-100">
@@ -200,10 +232,10 @@ const MyOrdersScreen = ({ navigation }) => {
 
       {/* Tabs */}
       <View className="flex-row justify-around py-2 bg-white">
-        {['Delivered', 'Processing', 'Cancelled'].map((tab) => (
+        {['Processing', 'Shipping', 'Delivered', 'Canceled'].map((tab) => (
           <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)}>
             <Text className={`text-lg font-medium ${activeTab === tab ? 'text-black' : 'text-gray-400'}`}>
-              {tab}
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </Text>
             {activeTab === tab && <View className="h-1 bg-black mt-1 rounded-full w-full" />}
           </TouchableOpacity>
@@ -215,19 +247,20 @@ const MyOrdersScreen = ({ navigation }) => {
         data={filteredOrders}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-            <OrderCard
+          <OrderCard
             order={item}
             onPress={() => navigation.navigate('OrderDetail', { order: item })}
-            />
+            onCancel={() => handleCancelOrder(item._id)}
+          />
         )}
         contentContainerStyle={{ paddingBottom: 16 }}
         className="flex-1 mt-2"
         ListEmptyComponent={() => (
-            <View className="items-center mt-10">
+          <View className="items-center mt-10">
             <Text className="text-gray-500">No orders found for this status.</Text>
-            </View>
+          </View>
         )}
-    />
+      />
     </SafeAreaView>
   );
 };

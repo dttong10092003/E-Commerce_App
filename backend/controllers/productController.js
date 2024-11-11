@@ -63,7 +63,7 @@ exports.updateProduct = async (req, res) => {
 
 exports.updateProductStock = async (req, res) => {
     const { productId } = req.params;
-    const { color, size, quantity } = req.body;
+    const { color, size, quantity, action } = req.body;
 
     try {
         const product = await Product.findById(productId);
@@ -82,10 +82,16 @@ exports.updateProductStock = async (req, res) => {
         }
 
         // Kiểm tra và trừ số lượng tồn kho
-        if (sizeOption.stock >= quantity) {
-            sizeOption.stock -= quantity;
+        if (action === 'subtract') {
+            if (sizeOption.stock >= quantity) {
+                sizeOption.stock -= quantity; // Trừ số lượng
+            } else {
+                return res.status(400).json({ message: `Not enough stock for size ${size} of color ${color}` });
+            }
+        } else if (action === 'add') {
+            sizeOption.stock += quantity; // Cộng số lượng
         } else {
-            return res.status(400).json({ message: `Not enough stock for size ${size} of color ${color}` });
+            return res.status(400).json({ message: 'Invalid action. Use "add" or "subtract".' });
         }
 
         await product.save();

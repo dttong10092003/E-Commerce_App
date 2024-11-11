@@ -14,4 +14,7 @@ router.patch('/:orderId/status', orderController.updateOrderStatus);
 // Delete an order
 router.delete('/:orderId', orderController.deleteOrder);
 
+// Route for counting orders by status
+router.get('/count-by-status', orderController.countOrdersByStatus);
+
 module.exports = router;

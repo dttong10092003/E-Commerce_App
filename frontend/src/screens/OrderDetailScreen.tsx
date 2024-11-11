@@ -41,7 +41,7 @@ const OrderDetailScreen = ({ route, navigation }) => {
           <Text className="text-gray-600 mt-2">
             Tracking number: <Text className="font-semibold text-black">{order.trackingNumber}</Text>
           </Text>
-          <Text className={`font-semibold mt-2 ${order.status === 'Delivered' ? 'text-green-500' : order.status === 'Processing' ? 'text-orange-500' : 'text-red-500'}`}>
+          <Text className={`font-semibold mt-2 ${order.status === 'Delivered' ? 'text-green-500' : order.status === 'Processing' ? 'text-orange-500' : order.status === 'Shipping' ? 'text-yellow-500' : 'text-red-500'}`}>
             {order.status}
           </Text>
         </View>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, act } from 'react';
 import { TextInput, View, Text, Image, TouchableOpacity, ScrollView, Modal, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '../constants/icons';
@@ -136,7 +136,8 @@ const CheckoutScreen = ({ route, navigation }) => {
                     await axios.patch(`${BASE_URL}/products/${item.product._id}/update-stock`, {
                         color: item.selectedColor,
                         size: item.selectedSize,
-                        quantity: item.quantity
+                        quantity: item.quantity,
+                        action: 'subtract',
                     }, {
                         headers: { Authorization: `Bearer ${await AsyncStorage.getItem('authToken')}` },
                     });
