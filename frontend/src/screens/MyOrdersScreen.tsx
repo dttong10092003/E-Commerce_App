@@ -104,7 +104,7 @@ const OrderCard = ({ order, onPress, onCancel }) => {
   return (
   <View className="bg-white p-4 rounded-lg my-2 mx-4 shadow-md">
     <Text className="absolute right-2 top-1 text-gray-400">{formattedDate}</Text>
-    <Text className="text-lg font-semibold mt-1">{_id}</Text>
+    <Text className="text-lg font-semibold mt-1">Order: {_id}</Text>
     <View className="flex-row justify-between mt-2">
         <Text className="text-gray-600">
           Items: <Text className="text-black font-semibold">{products.length}</Text>
