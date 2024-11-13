@@ -19,7 +19,12 @@ const userSchema = new Schema({
   avatar: {
     type: String, // URL hoặc base64 của ảnh đại diện
     default: '', // Có thể thêm avatar mặc định nếu cần
-  }
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user', // mặc định là user
+  },
 } );
 
 module.exports = mongoose.model('User', userSchema);

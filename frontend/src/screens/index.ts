@@ -21,7 +21,8 @@ import CategoriesScreen from './CategoriesScreen';
 import CatalogScreen from './CatalogScreen';
 import FilterScreen from './FilterScreen';
 import PromocodesScreen from './PromocodesScreen';
-
+import HomeScreenAdmin from './HomeScreenAdmin';
+import CustomerSupport from './CustomerSupport';
 export {
   HomeScreen,
   LoginScreen,
@@ -44,5 +45,7 @@ export {
   CategoriesScreen,
   CatalogScreen,
   FilterScreen,
-  PromocodesScreen
+  PromocodesScreen,
+  HomeScreenAdmin,
+  CustomerSupport
 };

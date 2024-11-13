@@ -1,6 +1,7 @@
 // routes/authRoute.js
 const express = require('express');
-const { registerUser, loginUser, getAllUsers, getSingleUser,updateUsername,getCurrentUser,updatePassword,authenticateToken,forgotPassword,updateAvatar } = require('../controllers/authController');
+const { registerUser, loginUser, getAllUsers, getSingleUser,updateUsername,getCurrentUser,updatePassword,
+    authenticateToken,forgotPassword,updateAvatar,isAdmin  } = require('../controllers/authController');
 
 const router = express.Router();
 
@@ -25,4 +26,8 @@ router.patch('/update-password', authenticateToken, updatePassword);
 router.post('/forgot-password', forgotPassword);
 router.patch('/users/:id/avatar', updateAvatar);
 
+// Route chỉ dành cho Admin
+router.get('/admin-only-route', authenticateToken, isAdmin, (req, res) => {
+    res.status(200).json({ message: 'Welcome, Admin!' });
+  });
 module.exports = router;

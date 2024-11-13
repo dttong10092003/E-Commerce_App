@@ -26,7 +26,7 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Tạo người dùng mới với username mặc định
-    const user = await User.create({ email, password: hashedPassword, username: defaultUsername });
+    const user = await User.create({ email, password: hashedPassword, username: defaultUsername, role: 'user' });
 
     // Khởi tạo UserReward cho người dùng mới
     await createUserReward(user._id);
@@ -55,8 +55,8 @@ const loginUser = async (req, res) => {
     }
 
     // Tạo token JWT
-    const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, { expiresIn: '1d' });
-    res.status(200).json({ message: 'Login successful', token });
+    const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    res.status(200).json({ message: 'Login successful', token, role: user.role }); // Thêm role vào phản hồi
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -245,5 +245,21 @@ const updateAvatar = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+// Check for admin
+const isAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Access Denied: Admins Only' });
+  }
+  next();
+};
 
-module.exports = { registerUser, loginUser, getAllUsers, getSingleUser, updateUsername, getCurrentUser, updatePassword, authenticateToken, forgotPassword,updateAvatar};
+// Hàm cập nhật role cho các tài khoản chưa có trường role
+// const updateUserRoles = async () => {
+//   await User.updateMany(
+//     { role: { $exists: false } }, // Chỉ các tài liệu chưa có trường role
+//     { $set: { role: 'user' } }    // Thêm role: 'user'
+//   );
+//   console.log('User roles updated successfully');
+// };
+module.exports = { registerUser, loginUser, getAllUsers, getSingleUser, updateUsername, getCurrentUser, 
+  updatePassword, authenticateToken, forgotPassword,updateAvatar,isAdmin };

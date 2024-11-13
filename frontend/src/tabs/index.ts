@@ -3,5 +3,5 @@ import CartTab from './CartTab';
 import SearchTab from './SearchTab';
 import SettingTab from './SettingTab';
 import WishlistTab from './WishlistTab';
-
-export {HomeTab, WishlistTab , CartTab , SearchTab , SettingTab };
+import HomeTabAdmin from './HomeTabAdmin';
+export {HomeTab, WishlistTab , CartTab , SearchTab , SettingTab,HomeTabAdmin };

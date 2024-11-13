@@ -12,7 +12,7 @@ const wishlistRoute = require('./routes/wishlistRoute');
 const userRewardRoute = require('./routes/userRewardRoute'); 
 const cartRoute = require('./routes/cartRoute');
 const orderRoute = require('./routes/orderRoute');
-
+// const { updateUserRoles } = require('./controllers/authController');
 // initialize a new express application instance
 const app = express();
 
@@ -36,5 +36,8 @@ const PORT = process.env.PORT // http://localhost:4000/api/auth/  -> POST
 const MONGODB_URI = process.env.MONGODB_URI;
 
 mongoose.connect(MONGODB_URI)
-.then(() => app.listen(PORT, () => console.log(`Connected to DB, and running on http://localhost:${PORT}/`)))
-.catch((error) => console.log(`Error:`, error.message))
+  .then(async () => {
+    app.listen(PORT, () => console.log(`Connected to DB, and running on http://localhost:${PORT}/`));
+    // await updateUserRoles(); // Chạy hàm cập nhật sau khi kết nối DB thành công
+  })
+  .catch((error) => console.log(`Error:`, error.message));

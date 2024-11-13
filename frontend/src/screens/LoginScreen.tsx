@@ -16,10 +16,12 @@ type RootStackParamList = {
   ForgotPassword: undefined;
   Signup: undefined;
   HomeScreen: undefined;
+  HomeAdmin: undefined;
 };
 
 interface LoginResponse {
   token: string;
+  role: string;
 }
 
 const LoginScreen = (props: Props) => {
@@ -58,10 +60,16 @@ const LoginScreen = (props: Props) => {
       });
   
       if (response.status === 200) {
-        const { token } = response.data;
-        // Lưu token vào SecureStore, AsyncStorage hoặc context tuỳ vào mục tiêu của bạn
+        const { token, role } = response.data;
+        console.log('Response Data:', response.data); // Kiểm tra phản hồi API
         await AsyncStorage.setItem('authToken', token);
-        navigation.navigate('HomeScreen');
+        
+  
+        if (role === 'admin') {
+          navigation.navigate('HomeAdmin');
+        } else {
+          navigation.navigate('HomeScreen');
+        }
       }
     } catch (error) {
       console.log('Error:', error);

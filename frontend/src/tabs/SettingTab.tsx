@@ -24,6 +24,7 @@ const SettingTab = (props: Props) => {
     Promocodes: undefined;
     Reviews: undefined;
     Settings: undefined;
+    CustomerSupport: undefined;
   };
 
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -318,6 +319,17 @@ const SettingTab = (props: Props) => {
           </View>
           <Ionicons name="chevron-forward" size={24} color="#A0A0A0" />
         </TouchableOpacity>
+
+        <TouchableOpacity
+          className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"
+          onPress={() => navigation.navigate('CustomerSupport')}
+        >
+          <View>
+            <Text className="text-lg font-bold">Support</Text>
+            <Text className="text-sm text-gray-400">Help with orders, account, and more</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={24} color="#A0A0A0" />
+        </TouchableOpacity>   
 
         <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"
