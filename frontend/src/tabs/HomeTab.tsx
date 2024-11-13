@@ -6,7 +6,6 @@ import {StackNavigationProp} from '@react-navigation/stack';
 import icons from '../constants/icons';
 import images from '../constants/images';
 import { CustomSearch, ProductItem } from '../components';
-import { CategoriesData, ProductData } from '../constants/data';
 import BASE_URL from '../config';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -136,7 +135,7 @@ useFocusEffect(
     <SafeAreaView>
       <ScrollView>
         {/* Header */}
-        <View className='flex flex-row items-center justify-between mx-5'>
+        <View className='flex flex-row items-center justify-between mx-4'>
           <TouchableOpacity>
             <Image
               source={icons.menu}
@@ -164,7 +163,7 @@ useFocusEffect(
         <CustomSearch initialQuery="" />
 
         {/* Features */}
-        <Text className='text-2xl font-bold my-5 mx-5'>All Categories</Text>          
+        <Text className='text-2xl font-bold my-5 mx-4'>All Categories</Text>          
 
         {/* Categories */}
         <View>
@@ -180,7 +179,7 @@ useFocusEffect(
         </View>
 
         {/* Offer */}
-        <View className='pb-5 mx-5'> 
+        <View className='pb-5 mx-4'> 
           <TouchableOpacity onPress={handleDealOff}>
             <Image
                 source={images.deal_off}
@@ -191,7 +190,7 @@ useFocusEffect(
         </View>
 
         {/* New Product Banner */}
-        <View className="bg-[#4392F9] rounded-xl justify-between flex flex-row mx-5 pl-5 py-5">
+        <View className="bg-[#4392F9] rounded-xl justify-between flex flex-row mx-4 pl-5 py-5">
           <View>
             <Text className="text-white text-2xl font-semibold">
               New Product
@@ -229,7 +228,7 @@ useFocusEffect(
         </View>
 
         {/* special Offer */}
-        <View className="flex justify-between bg-white flex-row items-center py-3 px-4 mx-5 rounded-lg">
+        <View className="flex justify-between bg-white flex-row items-center py-3 px-4 mx-4 rounded-lg">
           <Image
             source={icons.offer}
             className="w-24 h-24"
@@ -247,7 +246,7 @@ useFocusEffect(
 
         {/* Flat Shoes Offer */}
         <TouchableOpacity>
-          <View className="my-5 mx-5">
+          <View className="my-5 mx-4">
             <Image
               source={images.flat}
               className="self-center w-full rounded-lg"
@@ -274,7 +273,7 @@ useFocusEffect(
 
         {/* Hot Summer */}
         <TouchableOpacity>
-          <View className="my-5 mx-5">
+          <View className="my-5 mx-4">
             <Image
               source={images.hot_summer}
               className="self-center w-full rounded-lg"
