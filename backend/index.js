@@ -12,6 +12,9 @@ const wishlistRoute = require('./routes/wishlistRoute');
 const userRewardRoute = require('./routes/userRewardRoute'); 
 const cartRoute = require('./routes/cartRoute');
 const orderRoute = require('./routes/orderRoute');
+const messageRoute = require('./routes/messageRoute');
+
+
 // const { updateUserRoles } = require('./controllers/authController');
 // initialize a new express application instance
 const app = express();
@@ -30,6 +33,7 @@ app.use('/api/wishlist', wishlistRoute);
 app.use('/api/user-rewards', userRewardRoute); 
 app.use('/api/cart', cartRoute);
 app.use('/api/orders', orderRoute);
+app.use('/api', messageRoute);
 
 // connect to DataBase (MONGODB)
 const PORT = process.env.PORT // http://localhost:4000/api/auth/  -> POST

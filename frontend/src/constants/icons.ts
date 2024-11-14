@@ -47,6 +47,7 @@ const wheel = require('../assets/icons/wheel.png');
 const gift = require('../assets/icons/gift.gif');
 const firework = require('../assets/icons/fireworks.gif');
 const sad = require('../assets/icons/sad.png');
+const bot = require('../assets/icons/bot.png');
 export default {
   eyeHide,
   pen,
@@ -96,5 +97,6 @@ export default {
   wheel,
   gift,
   firework,
-  sad
+  sad,
+  bot
 };
