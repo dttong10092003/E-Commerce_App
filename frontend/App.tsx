@@ -8,7 +8,8 @@ import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen,
   SignupScreen, GetStartedScreen, ProductsDetailsScreen, RatingsReviewsScreen,
   CheckoutScreen, PaymentMethodsScreen, MyOrdersScreen, OrderDetailScreen,
   ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen, AddNewCardScreen,
-  EditCardScreen, SettingsScreen, CategoriesScreen, CatalogScreen, FilterScreen, PromocodesScreen,HomeScreenAdmin, CustomerSupport  } from './src/screens';
+  EditCardScreen, SettingsScreen, CategoriesScreen, CatalogScreen, FilterScreen, 
+  PromocodesScreen,HomeScreenAdmin, CustomerSupport, ProductManagement  } from './src/screens';
 import {ItemDetails, Product, CartItem} from './src/constants/types';
 
 export type RouteStackParamList = {
@@ -69,6 +70,8 @@ const App = () => {
             <Stack.Screen name="Promocodes" component={PromocodesScreen} />
             <Stack.Screen name="HomeAdmin" component={HomeScreenAdmin} />
             <Stack.Screen name="CustomerSupport" component={CustomerSupport} />
+            <Stack.Screen name="ProductManagement" component={ProductManagement} />
+
                      
           </Stack.Navigator>
         </NavigationContainer>

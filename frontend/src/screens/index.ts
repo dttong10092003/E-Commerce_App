@@ -23,6 +23,9 @@ import FilterScreen from './FilterScreen';
 import PromocodesScreen from './PromocodesScreen';
 import HomeScreenAdmin from './HomeScreenAdmin';
 import CustomerSupport from './CustomerSupport';
+import ProductManagement from './ProductManagement';
+
+
 export {
   HomeScreen,
   LoginScreen,
@@ -47,5 +50,7 @@ export {
   FilterScreen,
   PromocodesScreen,
   HomeScreenAdmin,
-  CustomerSupport
+  CustomerSupport,
+  ProductManagement,
+  
 };

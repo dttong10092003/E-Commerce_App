@@ -1,11 +1,12 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { View, Text, Image, TouchableOpacity, ScrollView, Alert, Dimensions } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import { View, Text, Image, TouchableOpacity, ScrollView, Alert, Dimensions, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import icons from '../constants/icons';
 import images from '../constants/images';
 import axios from 'axios';
+import { Ionicons } from '@expo/vector-icons'; 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PieChart, BarChart, LineChart } from 'react-native-chart-kit';
 import BASE_URL from '../config';
@@ -20,13 +21,44 @@ type User = {
 
 type RootStackParamList = {
   Settings: undefined;
+  ProductManagement: undefined;
 };
 
 const HomeScreenAdmin = () => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const [user, setUser] = useState<User | null>(null);
+  const [isMenuVisible, setIsMenuVisible] = useState(false); // Trạng thái hiển thị menu
+  const slideAnim = useRef(new Animated.Value(-screenWidth * 0.7)).current; // Vị trí trượt của menu
+  const overlayOpacity = useRef(new Animated.Value(0)).current; // Độ mờ của lớp phủ
 
-  
+  const toggleMenu = () => {
+    if (isMenuVisible) {
+      // Close menu
+      Animated.timing(slideAnim, {
+        toValue: -screenWidth * 0.7,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+      Animated.timing(overlayOpacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start(() => setIsMenuVisible(false));
+    } else {
+      // Open menu
+      setIsMenuVisible(true);
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+      Animated.timing(overlayOpacity, {
+        toValue: 0.5,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    }
+  };
 
   // Điều hướng tới trang Profile
   const NavigateToProfile = () => {
@@ -83,12 +115,8 @@ const HomeScreenAdmin = () => {
       <ScrollView className="px-4">
         {/* Header */}
         <View className='flex flex-row items-center justify-between'>
-          <TouchableOpacity>
-            <Image
-              source={icons.menu}
-              className='w-8 h-8'
-              resizeMode='contain'>         
-            </Image>
+          <TouchableOpacity onPress={toggleMenu}>
+            <Ionicons name="menu" size={32} color="black" />
           </TouchableOpacity>
           
           <Image
@@ -195,6 +223,57 @@ const HomeScreenAdmin = () => {
           />
         </View>
       </ScrollView>
+
+      {/* Overlay for background blur effect */}
+      {isMenuVisible && (
+        <Animated.View
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            opacity: overlayOpacity,
+            zIndex: 1,
+          }}
+        >
+          <TouchableOpacity style={{ flex: 1 }} onPress={toggleMenu} />
+        </Animated.View>
+      )}
+
+      {/* Sidebar Menu */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: screenWidth * 0.6,
+          backgroundColor: 'white',
+          padding: 20,
+          transform: [{ translateX: slideAnim }],
+          zIndex: 2,
+        }}
+      >
+        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, marginTop: 20 }}>Menu</Text>
+
+        <TouchableOpacity onPress={() => { navigation.navigate('ProductManagement')}}>
+          <Text style={{ fontSize: 18, marginVertical: 10 }}>Product Management</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => { /* Navigate to Order Management */ toggleMenu(); }}>
+          <Text style={{ fontSize: 18, marginVertical: 10 }}>Order Management</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => { /* Navigate to Customer Care */ toggleMenu(); }}>
+          <Text style={{ fontSize: 18, marginVertical: 10 }}>Customer Care</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={toggleMenu} style={{ marginTop: 20 }}>
+          <Text style={{ fontSize: 18, color: 'red' }}>Close</Text>
+        </TouchableOpacity>
+      </Animated.View>
     </SafeAreaView>
   );
 };

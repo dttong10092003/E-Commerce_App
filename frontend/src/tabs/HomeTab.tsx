@@ -25,6 +25,7 @@ type Props = {};
 
 const HomeTab = (props: Props) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
+  
 
   type RootStackParamList = {
     Setting: undefined;
