@@ -5,17 +5,8 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import { speak, isSpeakingAsync, stop } from 'expo-speech';
 import icons from '../constants/icons';
-import ChatBubble from '../ChatBubble';
 import { useNavigation } from '@react-navigation/native';
 import { Picker } from 'emoji-mart-native';
-
-interface ApiResponse {
-  candidates?: {
-    content?: {
-      parts?: { text: string }[];
-    };
-  }[];
-}
 
 const CustomerSupportScreenAI = () => {
   const navigation = useNavigation();
@@ -48,7 +39,13 @@ const CustomerSupportScreenAI = () => {
     setUserInput(userInput + emoji.native);
     setEmojiPickerVisible(false);
   };
-
+  interface ApiResponse {
+    candidates?: {
+      content?: {
+        parts?: { text: string }[];
+      };
+    }[];
+  }
   const handleUserInput = async () => {
     let updatedChat = [
       ...chat,
@@ -59,15 +56,14 @@ const CustomerSupportScreenAI = () => {
     ];
     setLoading(true);
     try {
-      const response = await axios.post<ApiResponse>(
+      const response = await axios.post(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${API_KEY}`,
         {
           contents: updatedChat,
         }
       );
-      console.log("Gemini Pro API Response:", response.data);
-      const modelResponse = response.data?.candidates?.[0]?.content?.parts?.[0]?.text || "";
-
+      const data = response.data as ApiResponse;
+      const modelResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
       if (modelResponse) {
         const updatedChatWithModel = [
           ...updatedChat,
@@ -87,7 +83,7 @@ const CustomerSupportScreenAI = () => {
     }
   };
 
-  const handleSpeech = async (text: string) => {
+  const handleSpeech = async (text) => {
     if (isSpeaking) {
       stop();
       setIsSpeaking(false);
@@ -100,11 +96,27 @@ const CustomerSupportScreenAI = () => {
   };
 
   const renderChatItem = ({ item }) => (
-    <ChatBubble
-      role={item.role}
-      text={item.parts[0].text}
-      onSpeech={() => handleSpeech(item.parts[0].text)}
-    />
+    <View className={`flex-row ${item.role === "user" ? "justify-end" : "justify-start"} mb-4`}>
+      {item.role === "model" && (
+        <Image source={icons.bot} className="w-10 h-10 rounded-full mr-3" />
+      )}
+      <View 
+        className={`p-4 rounded-xl max-w-[75%] relative ${item.role === "user" ? "bg-gray-300 self-end" : "bg-blue-500 self-start"}`}
+      >
+        {item.role === "model" && <Text className="text-base text-white">TTBot</Text>}
+        <Text className={`text-base ${item.role === "user" ? "text-gray-800" : "text-white"} mt-1`}>
+          {item.parts[0].text}
+        </Text>
+        {item.role === "model" && (
+          <TouchableOpacity
+            onPress={() => handleSpeech(item.parts[0].text)}
+            className="absolute right-2 top-2"
+          >
+            <Ionicons name="volume-high-outline" size={20} color="white" />
+          </TouchableOpacity>
+        )}
+      </View>
+    </View>
   );
 
   return (
@@ -135,7 +147,7 @@ const CustomerSupportScreenAI = () => {
           placeholder="Type a message..."
           placeholderTextColor="#aaa"
           onChangeText={setUserInput}
-          value={userInput} // Liên kết với state để xóa khi gửi tin nhắn
+          value={userInput}
         />
 
         <TouchableOpacity className="mx-2">

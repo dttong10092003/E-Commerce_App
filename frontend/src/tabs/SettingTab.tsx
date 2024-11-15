@@ -342,7 +342,7 @@ const SettingTab = (props: Props) => {
           </View>
           <Ionicons name="chevron-forward" size={24} color="#A0A0A0" />
         </TouchableOpacity>
-         {/* Modal hiển thị lựa chọn */}
+        {/* Modal hiển thị lựa chọn */}
         <Modal
           transparent={true}
           visible={isModalVisible}
@@ -350,8 +350,20 @@ const SettingTab = (props: Props) => {
           onRequestClose={() => setModalVisible(false)}
         >
           {/* Nền mờ */}
-          <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}>
-            <View className="bg-white rounded-lg w-80 p-5">
+          <TouchableOpacity
+            style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}
+            activeOpacity={1} // Để tránh xử lý sự kiện khi bấm vào modal
+            onPress={() => setModalVisible(false)} // Đóng modal khi bấm ra ngoài
+          >
+            <View className="bg-white rounded-lg w-80 p-5" onStartShouldSetResponder={() => true}>
+              {/* Nút "X" để tắt modal */}
+              <TouchableOpacity
+                style={{ position: 'absolute', top: 10, right: 10 }}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={{ fontSize: 18, color: '#333' }}>✕</Text>
+              </TouchableOpacity>
+
               <Text className="text-lg font-bold mb-4 text-center">Select Support Option</Text>
               <TouchableOpacity
                 className="flex-row items-center mb-4"
@@ -368,8 +380,9 @@ const SettingTab = (props: Props) => {
                 <Text className="ml-3 text-lg">Staff</Text>
               </TouchableOpacity>
             </View>
-          </View>
+          </TouchableOpacity>
         </Modal>
+
 
         <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"
