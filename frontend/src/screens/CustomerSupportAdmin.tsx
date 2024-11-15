@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, Image, Modal, ActivityIndicator, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, Image, Modal, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useNavigation } from '@react-navigation/native';
@@ -402,7 +402,11 @@ const CustomerSupportScreen = () => {
       </Modal>
 
       {/* Message Input */}
-      <View className="flex-row items-center p-2 border-t border-gray-100 bg-white">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={10}
+        className="flex-row items-center p-2 border-t border-gray-100 bg-white"
+      >
         <TouchableOpacity onPress={() => setEmojiPickerVisible(true)} className="mx-2">
           <Ionicons name="happy-outline" size={24} color="#333" />
         </TouchableOpacity>
@@ -425,7 +429,7 @@ const CustomerSupportScreen = () => {
             <Ionicons name="send" size={24} color="#28a745" />
           </TouchableOpacity>
         )}
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };

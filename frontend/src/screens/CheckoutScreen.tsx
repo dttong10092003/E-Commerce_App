@@ -145,8 +145,8 @@ const CheckoutScreen = ({ route, navigation }) => {
     
                 await Promise.all(stockUpdatePromises);
     
-                // Điều hướng người dùng trở lại CartTab
-                navigation.navigate("Cart");
+                navigation.navigate("Cart"); // chuyển sang Cart trước khi GoBack() sẽ về Cart
+                navigation.navigate("MyOrders");
             }
         } catch (error) {
             console.error("Error placing order:", error);

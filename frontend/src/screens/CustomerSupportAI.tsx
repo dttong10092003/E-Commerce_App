@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Image, Modal } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, FlatList, ActivityIndicator, Image, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
@@ -137,7 +137,11 @@ const CustomerSupportScreenAI = () => {
       />
 
       {/* Message Input */}
-      <View className="flex-row items-center p-2 border-t border-gray-100 bg-white">
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={10}
+        className="flex-row items-center p-2 border-t border-gray-100 bg-white"
+      >
         <TouchableOpacity onPress={() => setEmojiPickerVisible(true)} className="mx-2">
           <Ionicons name="happy-outline" size={24} color="#333" />
         </TouchableOpacity>
@@ -163,7 +167,7 @@ const CustomerSupportScreenAI = () => {
             <Ionicons name="send" size={24} color="#3B82F6" />
           </TouchableOpacity>
         )}
-      </View>
+      </KeyboardAvoidingView>
 
       {/* Emoji Picker Modal */}
       <Modal visible={emojiPickerVisible} animationType="slide" transparent>

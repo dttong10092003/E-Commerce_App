@@ -66,18 +66,6 @@ const ProductManagement = () => {
         navigation.navigate('EditProduct', { product });
     };
 
-    // const renderProduct = ({ item }: { item: Product }) => (
-    //     <View className="flex-row bg-white rounded-lg p-4 mb-3 items-center shadow-sm">
-    //         <Image source={{ uri: item.images[0] }} className="w-12 h-12 rounded-lg mr-4" />
-    //         <View className="flex-1 flex-row justify-between items-center">
-    //             <Text className="text-lg font-medium">{item.name}</Text>
-    //             <TouchableOpacity onPress={() => navigateToEditProduct(item)}>
-    //                 <Ionicons name="pencil" size={24} color="blue" />
-    //             </TouchableOpacity>
-    //         </View>
-    //     </View>
-    // );
-
     const renderProduct = ({ item }: { item: Product }) => (
         <View className="flex-row bg-white rounded-lg mb-3 items-center">
           {/* Product Image */}
