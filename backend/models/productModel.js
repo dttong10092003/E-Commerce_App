@@ -7,7 +7,6 @@ const ACCESSORIES_SUBCATEGORIES = ['Bags', 'Belts', 'Hats', 'Jewelry', 'Sunglass
 const ACTIVEWEAR_SUBCATEGORIES = ['Yoga Pants', 'Shorts', 'Sports Bras', 'Tracksuits'];
 const SWIMWEAR_SUBCATEGORIES = ['Bikinis', 'One-Piece', 'Swim Trunks', 'Cover-Ups'];
 const UNDERGARMENTS_SUBCATEGORIES = ['Bras', 'Briefs', 'Boxers', 'Socks'];
-// const NEW_SUBCATEGORIES = ['New Arrivals', 'Trending', 'Limited Edition'];
 
 const productSchema = new Schema({
     name: { type: String, required: true },
@@ -23,7 +22,6 @@ const productSchema = new Schema({
     subCategory: {
         name: {
             type: String,
-            // enum: ['New', 'Clothes', 'Shoes', 'Accessories', 'Activewear', 'Swimwear', 'Undergarments'],
             enum: ['Clothes', 'Shoes', 'Accessories', 'Activewear', 'Swimwear', 'Undergarments'],
             required: true
         },
@@ -40,7 +38,6 @@ const productSchema = new Schema({
                     case 'Activewear': return ACTIVEWEAR_SUBCATEGORIES.includes(value);
                     case 'Swimwear': return SWIMWEAR_SUBCATEGORIES.includes(value);
                     case 'Undergarments': return UNDERGARMENTS_SUBCATEGORIES.includes(value);
-                    // case 'New': return NEW_SUBCATEGORIES.includes(value);
                     default: return false;
                 }
             },

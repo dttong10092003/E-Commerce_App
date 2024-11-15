@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -20,6 +20,7 @@ const ProductManagement = () => {
     const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
     const [subSubCategories, setSubSubCategories] = useState<string[]>([]);
     const [selectedSubSubCategory, setSelectedSubSubCategory] = useState<string>('All');
+    const [searchQuery, setSearchQuery] = useState<string>('');
 
     // Fetch products from the server
     const fetchProducts = async () => {
@@ -47,14 +48,36 @@ const ProductManagement = () => {
         }, [])
     );
 
-    // Filter products based on selected subSubCategory
-    const filterBySubSubCategory = (subSubCategory: string) => {
-        setSelectedSubSubCategory(subSubCategory);
-        if (subSubCategory !== 'All') {
-            const filtered = products.filter((product) => product.subSubCategory === subSubCategory);
-            setFilteredProducts(filtered);
+    // Lọc sản phẩm theo danh mục và từ khóa
+    const filterProducts = useCallback(() => {
+        let filtered = products;
+
+        if (selectedSubSubCategory !== 'All') {
+            filtered = filtered.filter((product) => product.subSubCategory === selectedSubSubCategory);
         }
-    };
+
+        if (searchQuery.trim() !== '') {
+            filtered = filtered.filter((product) =>
+                product.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        }
+
+        setFilteredProducts(filtered);
+    }, [products, selectedSubSubCategory, searchQuery]);
+
+    // Gọi lại hàm filter mỗi khi state thay đổi
+    useEffect(() => {
+        filterProducts();
+    }, [filterProducts]);
+
+    // // Filter products based on selected subSubCategory
+    // const filterBySubSubCategory = (subSubCategory: string) => {
+    //     setSelectedSubSubCategory(subSubCategory);
+    //     if (subSubCategory !== 'All') {
+    //         const filtered = products.filter((product) => product.subSubCategory === subSubCategory);
+    //         setFilteredProducts(filtered);
+    //     }
+    // };
 
     // Navigate to Add Product screen
     const navigateToAddProduct = () => {
@@ -111,6 +134,14 @@ const ProductManagement = () => {
                 </TouchableOpacity>
             </View>
 
+            {/* Input tìm kiếm */}
+            <TextInput
+                placeholder="Search by product name"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                className="bg-white px-4 py-2 rounded-lg mb-4"
+            />
+
             {/* SubSubCategory Filter */}
             <View className="flex-row flex-wrap justify-center mb-4">
                 {subSubCategories.map((subSubCategory) => (
@@ -118,7 +149,7 @@ const ProductManagement = () => {
                         key={subSubCategory}
                         className={`px-4 py-2 rounded-full mr-2 mb-2 ${selectedSubSubCategory === subSubCategory ? 'bg-blue-500' : 'bg-gray-300'
                             }`}
-                        onPress={() => filterBySubSubCategory(subSubCategory)}
+                        onPress={() => setSelectedSubSubCategory(subSubCategory)}
                     >
                         <Text
                             className={`${selectedSubSubCategory === subSubCategory ? 'text-white' : 'text-black'
@@ -132,7 +163,7 @@ const ProductManagement = () => {
 
             {/* Product List */}
             <FlatList
-                data={selectedSubSubCategory === 'All' ? products : filteredProducts}
+                data={selectedSubSubCategory === 'All' && searchQuery.trim() === '' ? products : filteredProducts}
                 keyExtractor={(item) => item._id}
                 renderItem={renderProduct}
                 showsVerticalScrollIndicator={false}
