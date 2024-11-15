@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, Image, TextInput, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, Image, TextInput, Alert, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '../constants/icons';
 import React, { useState, useEffect } from 'react';
@@ -25,6 +25,7 @@ const SettingTab = (props: Props) => {
     Reviews: undefined;
     Settings: undefined;
     CustomerSupport: undefined;
+    CustomerSupportAI: undefined;
   };
 
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -38,12 +39,23 @@ const SettingTab = (props: Props) => {
   const isFocused = useIsFocused();
   const [processingCount, setProcessingCount] = useState(0);
   const [shippingCount, setShippingCount] = useState(0);
-
+  const [isModalVisible, setModalVisible] = useState(false);
+  const handlePressSupport = () => {
+    setModalVisible(true); // Hiển thị modal khi nhấn vào Support
+  };
+  const handleSelectOption = (option) => {
+    setModalVisible(false); // Ẩn modal sau khi chọn
+    if (option === 'bot') {
+      navigation.navigate('CustomerSupportAI');
+    } else if (option === 'admin') {
+      navigation.navigate('CustomerSupport');
+    }
+  };
   const fetchOrderCounts = async () => {
     const token = await AsyncStorage.getItem('authToken');
     if (token) {
       try {
-        const response = await axios.get<{processingCount: number, shippingCount: number }>(`${BASE_URL}/orders/count-by-status`, {
+        const response = await axios.get<{ processingCount: number, shippingCount: number }>(`${BASE_URL}/orders/count-by-status`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -322,14 +334,42 @@ const SettingTab = (props: Props) => {
 
         <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"
-          onPress={() => navigation.navigate('CustomerSupport')}
+          onPress={handlePressSupport}
         >
           <View>
             <Text className="text-lg font-bold">Support</Text>
             <Text className="text-sm text-gray-400">Help with orders, account, and more</Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#A0A0A0" />
-        </TouchableOpacity>   
+        </TouchableOpacity>
+         {/* Modal hiển thị lựa chọn */}
+        <Modal
+          transparent={true}
+          visible={isModalVisible}
+          animationType="fade" // Thay "slide" bằng "fade" để có hiệu ứng chuyển mượt hơn
+          onRequestClose={() => setModalVisible(false)}
+        >
+          {/* Nền mờ */}
+          <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}>
+            <View className="bg-white rounded-lg w-80 p-5">
+              <Text className="text-lg font-bold mb-4 text-center">Select Support Option</Text>
+              <TouchableOpacity
+                className="flex-row items-center mb-4"
+                onPress={() => handleSelectOption('bot')}
+              >
+                <Image source={icons.bot} className="w-8 h-8" />
+                <Text className="ml-3 text-lg">TTBot</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                className="flex-row items-center"
+                onPress={() => handleSelectOption('admin')}
+              >
+                <Image source={icons.admin} className="w-8 h-8" />
+                <Text className="ml-3 text-lg">Staff</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
 
         <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"

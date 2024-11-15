@@ -102,7 +102,7 @@ const CustomerSupportScreen = () => {
         let loadedMessages = response.data;
 
         // Kiểm tra nếu tin nhắn chào mừng chưa có, thêm vào
-        if (!loadedMessages.some(message => message.sender === 'support' && message.text === 'Xin chào, tôi là TTBot, trợ lý kỹ thuật số của bạn. Tôi sẽ sẵn sàng giúp bạn tìm hiểu về Stylish. Nhập câu hỏi của bạn hoặc chọn một tùy chọn:')) {
+        if (!loadedMessages.some(message => message.sender === 'support' && message.text === 'Xin chào, tôi là TTStaff, trợ lý của bạn. Tôi sẽ sẵn sàng giúp bạn tìm hiểu về Stylish. Nhập câu hỏi của bạn hoặc chọn một tùy chọn:')) {
           loadedMessages = [createWelcomeMessage(), ...loadedMessages];
         }
 
@@ -120,7 +120,7 @@ const CustomerSupportScreen = () => {
     return {
       id: `welcome_${Date.now()}`, // Tạo `id` duy nhất cho mỗi tin nhắn chào mừng
       sender: 'support',
-      text: 'Xin chào, tôi là TTBot, trợ lý kỹ thuật số của bạn. Tôi sẽ sẵn sàng giúp bạn tìm hiểu về Stylish. Nhập câu hỏi của bạn hoặc chọn một tùy chọn:',
+      text: 'Xin chào, tôi là TTStaff, trợ lý của bạn. Tôi sẽ sẵn sàng giúp bạn tìm hiểu về Stylish. Nhập câu hỏi của bạn hoặc chọn một tùy chọn:',
       time: getCurrentTime(),
       options: ['Liên hệ nhân viên', 'Đặt lại mật khẩu', 'Câu hỏi khác'],
     };
@@ -298,7 +298,7 @@ const CustomerSupportScreen = () => {
         <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
         <Image source={icons.bot} className="w-10 h-10 rounded-full mx-2" />
         <View className="flex-1">
-          <Text className="font-bold text-lg text-gray-800">TTBot</Text>
+          <Text className="font-bold text-lg text-gray-800">TTStaff</Text>
         </View>
       </View>
 

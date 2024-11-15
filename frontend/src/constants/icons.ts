@@ -48,6 +48,7 @@ const gift = require('../assets/icons/gift.gif');
 const firework = require('../assets/icons/fireworks.gif');
 const sad = require('../assets/icons/sad.png');
 const bot = require('../assets/icons/bot.png');
+const admin = require('../assets/icons/admin.png');
 export default {
   eyeHide,
   pen,
@@ -98,5 +99,6 @@ export default {
   gift,
   firework,
   sad,
-  bot
+  bot,
+  admin
 };

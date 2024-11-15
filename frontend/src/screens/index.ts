@@ -22,9 +22,9 @@ import CatalogScreen from './CatalogScreen';
 import FilterScreen from './FilterScreen';
 import PromocodesScreen from './PromocodesScreen';
 import HomeScreenAdmin from './HomeScreenAdmin';
-import CustomerSupport from './CustomerSupport';
+import CustomerSupport from './CustomerSupportAdmin';
 import ProductManagement from './ProductManagement';
-
+import CustomerSupportAI from './CustomerSupportAI';
 
 export {
   HomeScreen,
@@ -52,5 +52,6 @@ export {
   HomeScreenAdmin,
   CustomerSupport,
   ProductManagement,
+  CustomerSupportAI
   
 };
