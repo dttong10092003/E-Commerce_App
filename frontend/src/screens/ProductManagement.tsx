@@ -1,18 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, FlatList, Image, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, FlatList, Image, TouchableOpacity, TextInput, Modal, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import axios from 'axios';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
 import BASE_URL from '../config';
 import { Product } from '../constants/types';
-
-
-type RootStackParamList = {
-    AddProduct: undefined;
-    EditProduct: { product: Product };
-};
+import { RootStackParamList } from '../constants/rootStackParamList';
 
 const ProductManagement = () => {
     const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
@@ -21,6 +16,9 @@ const ProductManagement = () => {
     const [subSubCategories, setSubSubCategories] = useState<string[]>([]);
     const [selectedSubSubCategory, setSelectedSubSubCategory] = useState<string>('All');
     const [searchQuery, setSearchQuery] = useState<string>('');
+
+    const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+    const [isModalVisible, setIsModalVisible] = useState(false);
 
     // Fetch products from the server
     const fetchProducts = async () => {
@@ -44,7 +42,7 @@ const ProductManagement = () => {
     useFocusEffect(
         useCallback(() => {
             fetchSubSubCategories();
-            fetchProducts();          
+            fetchProducts();
         }, [])
     );
 
@@ -70,57 +68,66 @@ const ProductManagement = () => {
         filterProducts();
     }, [filterProducts]);
 
-    // // Filter products based on selected subSubCategory
-    // const filterBySubSubCategory = (subSubCategory: string) => {
-    //     setSelectedSubSubCategory(subSubCategory);
-    //     if (subSubCategory !== 'All') {
-    //         const filtered = products.filter((product) => product.subSubCategory === subSubCategory);
-    //         setFilteredProducts(filtered);
-    //     }
-    // };
-
     // Navigate to Add Product screen
     const navigateToAddProduct = () => {
         navigation.navigate('AddProduct');
     };
 
-    // Navigate to Edit Product screen with product ID
-    const navigateToEditProduct = (product: Product) => {
-        navigation.navigate('EditProduct', { product });
+    const navigateToEditProduct = () => {
+        navigation.navigate('EditProduct', { product: selectedProduct });
+        closeModal();
+    };
+
+    const navigateToEditVariantProduct = () => {
+        if (selectedProduct) {
+            navigation.navigate('EditVariantProduct', { product: selectedProduct });
+        }
+        closeModal();
+    };
+
+    const openModal = (product: Product) => {
+        setSelectedProduct(product);
+        setIsModalVisible(true);
+    };
+
+    const closeModal = () => {
+        setSelectedProduct(null);
+        setIsModalVisible(false);
+        
     };
 
     const renderProduct = ({ item }: { item: Product }) => (
         <View className="flex-row bg-white rounded-lg mb-3 items-center">
-          {/* Product Image */}
-          <Image source={{ uri: item.images[0] }} className="w-16 h-24 rounded-bl-lg rounded-tl-lg mr-4" />
-      
-          {/* Product Information */}
-          <View className="flex-1">
-            {/* Product Name */}
-            <Text numberOfLines={1} className="text-lg font-semibold">{item.name}</Text>
-            
-            {/* SubSubCategory */}
-            <Text className="text-sm text-gray-500">{item.subSubCategory}</Text>
-            
-            
-            {/* Pricing Information */}
-            <View className="flex-row items-center">
-              <Text className="text-blue-600 font-semibold">Sale Price: ${item.salePrice.toFixed(2)}</Text>
-              {item.discount > 0 && (
-                <Text className="text-red-500 text-sm ml-2">({item.discount}% OFF)</Text>
-              )}
+            {/* Product Image */}
+            <Image source={{ uri: item.images[0] }} className="w-16 h-24 rounded-bl-lg rounded-tl-lg mr-4" />
+
+            {/* Product Information */}
+            <View className="flex-1">
+                {/* Product Name */}
+                <Text numberOfLines={1} className="text-lg font-semibold">{item.name}</Text>
+
+                {/* SubSubCategory */}
+                <Text className="text-sm text-gray-500">{item.subSubCategory}</Text>
+
+
+                {/* Pricing Information */}
+                <View className="flex-row items-center">
+                    <Text className="text-blue-600 font-semibold">Sale Price: ${item.salePrice.toFixed(2)}</Text>
+                    {item.discount > 0 && (
+                        <Text className="text-red-500 text-sm ml-2">({item.discount}% OFF)</Text>
+                    )}
+                </View>
+
+                {/* Original Price */}
+                <Text className="text-gray-500 text-xs">Original Price: ${item.importPrice.toFixed(2)}</Text>
             </View>
-            
-            {/* Original Price */}
-            <Text className="text-gray-500 text-xs">Original Price: ${item.importPrice.toFixed(2)}</Text>
-          </View>
-      
-          {/* Edit Icon */}
-          <TouchableOpacity className='mr-2' onPress={() => navigateToEditProduct(item)}>
-            <Ionicons name="pencil" size={24} color="blue" />
-          </TouchableOpacity>
+
+            {/* Edit Icon */}
+            <TouchableOpacity className="mr-2" onPress={() => openModal(item)}>
+                <Ionicons name="pencil" size={24} color="blue" />
+            </TouchableOpacity>
         </View>
-      );
+    );
 
     return (
         <SafeAreaView className="flex-1 px-4 bg-gray-100">
@@ -168,6 +175,41 @@ const ProductManagement = () => {
                 renderItem={renderProduct}
                 showsVerticalScrollIndicator={false}
             />
+
+            <Modal
+                visible={isModalVisible}
+                transparent
+                animationType="fade"
+                onRequestClose={closeModal}
+            >
+                <TouchableWithoutFeedback onPress={closeModal}>
+                    <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.5)', justifyContent: 'center', alignItems: 'center' }}>
+                        <TouchableWithoutFeedback>
+                            <View className="bg-white p-6 rounded-lg w-4/5">
+                                <Text className="text-lg font-bold mb-4">Choose Action</Text>
+                                <TouchableOpacity
+                                    className="bg-blue-500 p-3 rounded-lg mb-4"
+                                    onPress={navigateToEditProduct}
+                                >
+                                    <Text className="text-white text-center">Edit Product</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    className="bg-green-500 p-3 rounded-lg"
+                                    onPress={navigateToEditVariantProduct}
+                                >
+                                    <Text className="text-white text-center">Edit Variant Product</Text>
+                                </TouchableOpacity>
+                                <TouchableOpacity
+                                    className="mt-4"
+                                    onPress={closeModal}
+                                >
+                                    <Text className="text-center text-red-500">Cancel</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </SafeAreaView>
     );
 };

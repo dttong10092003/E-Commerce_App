@@ -10,28 +10,32 @@ import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen,
   ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen, AddNewCardScreen,
   EditCardScreen, SettingsScreen, CategoriesScreen, CatalogScreen, FilterScreen, 
   PromocodesScreen,HomeScreenAdmin, ProductManagement, CustomerSupportAI, CustomerSupport,
-  AddNewProductScreen, CustomerCareScreen} from './src/screens';
-import {ItemDetails, Product, CartItem} from './src/constants/types';
+  AddNewProductScreen, CustomerCareScreen, EditProductScreen, EditVariantProductScreen} from './src/screens';
 
-export type RouteStackParamList = {
-  Onboarding: undefined;
-  GetStarted: undefined;
-  Login: undefined;
-  Signup: undefined;
-  HomeScreen: undefined;
-  Profile: undefined;
-  Checkout: {cartData: CartItem[], totalAmount: number};
-  ForgotPassword: undefined;
-  ProductDetails: { itemDetails: Product };
-  Cart: {
-    itemDetails: ItemDetails;
-    selectedColor: string;
-    selectedSize: number;
-    quantity: number;
-  };
-  PaymentMethods: undefined;
-  RatingsReviews: { itemDetails: Product };
-};
+  
+// import {ItemDetails, Product, CartItem} from './src/constants/types';
+
+// export type RouteStackParamList = {
+//   Onboarding: undefined;
+//   GetStarted: undefined;
+//   Login: undefined;
+//   Signup: undefined;
+//   HomeScreen: undefined;
+//   Profile: undefined;
+//   Checkout: {cartData: CartItem[], totalAmount: number};
+//   ForgotPassword: undefined;
+//   ProductDetails: { itemDetails: Product };
+//   Cart: {
+//     itemDetails: ItemDetails;
+//     selectedColor: string;
+//     selectedSize: number;
+//     quantity: number;
+//   };
+//   PaymentMethods: undefined;
+//   RatingsReviews: { itemDetails: Product };
+//   EditProduct : { product: Product };
+//   EditVariantProduct: { product: Product };
+// };
 
 const App = () => {
   const Stack = createNativeStackNavigator();
@@ -75,6 +79,8 @@ const App = () => {
             <Stack.Screen name="CustomerSupport" component={CustomerSupport} />
             <Stack.Screen name="AddProduct" component={AddNewProductScreen} />
             <Stack.Screen name="CustomerCare" component={CustomerCareScreen} />
+            <Stack.Screen name="EditProduct" component={EditProductScreen} />
+            <Stack.Screen name="EditVariantProduct" component={EditVariantProductScreen} />
 
                      
           </Stack.Navigator>

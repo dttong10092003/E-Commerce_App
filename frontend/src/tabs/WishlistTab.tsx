@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import icons from '../constants/icons';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteStackParamList } from '../../App';
+import { RootStackParamList } from '../constants/rootStackParamList';
 import { Rating } from 'react-native-ratings';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -22,7 +22,7 @@ type WishlistType = {
 };
 
 const WishlistTab = () => {
-  const navigation = useNavigation<StackNavigationProp<RouteStackParamList, 'ProductDetails'>>();
+  const navigation = useNavigation<StackNavigationProp<RootStackParamList, 'ProductDetails'>>();
   const ITEM_WIDTH = (width - 48) / 2;
 
   const [searchQuery, setSearchQuery] = useState('');

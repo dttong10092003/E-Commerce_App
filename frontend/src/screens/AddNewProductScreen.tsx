@@ -15,7 +15,8 @@ const AddNewProductScreen = () => {
   const [description, setDescription] = useState('');
   const [importPrice, setImportPrice] = useState('');
   const [salePrice, setSalePrice] = useState('');
-  const [discount, setDiscount] = useState('');
+  const [discount, setDiscount] = useState('0');
+
   const [mainCategory, setMainCategory] = useState<string | null>(null);
   const [subCategory, setSubCategory] = useState<string | null>(null);
   const [subSubCategory, setSubSubCategory] = useState<string | null>(null);
@@ -25,6 +26,13 @@ const AddNewProductScreen = () => {
   const [subSubCategoryOpen, setSubSubCategoryOpen] = useState(false);
 
   const [selectedColors, setSelectedColors] = useState({});
+  const [productImages, setProductImages] = useState({
+    image1: '',
+    image2: '',
+    image3: '',
+    image4: '',
+    image5: ''
+  });
 
   const COLORS = [
     'Blue', 'Gray', 'Navy Blue', 'Dark Blue', 'Red', 'Yellow', 'Green', 'Black', 
@@ -58,68 +66,97 @@ const AddNewProductScreen = () => {
     }));
   };
   
-  const handleAddProduct = () => {
-    if (!name || !description || !importPrice || !salePrice || !mainCategory || !subCategory) {
-      Alert.alert('Error', 'Please fill all required fields.');
+  const handleAddProduct = async () => {
+    if (!name.trim() || !description.trim() || !importPrice.trim() || !salePrice.trim()) {
+      Alert.alert('Error', 'Please fill all required fields (name, description, import price, sale price).');
       return;
+    } 
+
+    const importPriceValue = parseFloat(importPrice);
+    const salePriceValue = parseFloat(salePrice);
+    const discountValue = parseFloat(discount) || 0;
+
+    if (isNaN(importPriceValue) || isNaN(salePriceValue)) {
+        Alert.alert('Error', 'Import price and sale price must be valid numbers.');
+        return;
+    }
+
+    if (discountValue > 50) {
+      Alert.alert('Error', 'Discount cannot exceed 50%.');
+      return;
+    }
+
+    if (!mainCategory || !subCategory || !subSubCategory) {
+      Alert.alert('Error', 'Please select all categories (main, sub, sub-sub).');
+      return;
+    }
+
+    const imageValues = Object.values(productImages).filter(image => image.trim() !== '');
+    if (imageValues.length === 0) {
+        Alert.alert('Error', 'Please provide at least one product image.');
+        return;
+    }
+
+    const selectedColorKeys = Object.keys(selectedColors).filter(color => selectedColors[color] !== null);
+    if (selectedColorKeys.length === 0) {
+        Alert.alert('Error', 'Please select at least one color.');
+        return;
     }
   
     // Gather data from user inputs
     const productData = {
-      name,
-      description,
-      importPrice: parseFloat(importPrice),
-      salePrice: parseFloat(salePrice),
-      discount: parseFloat(discount) || 0,
+      name: name.trim(),
+      description: description.trim(),
+      importPrice: importPriceValue,
+      salePrice: salePriceValue,
+      discount: discountValue,
       mainCategory,
-      subCategory: { name: subCategory, image: `https://picsum.photos/200?${subCategory.toLowerCase()}` },
+      subCategory: {
+        name: subCategory,
+        image: `https://picsum.photos/200?${subCategory.toLowerCase()}`
+      },
       subSubCategory,
-      images: [], // Optional: add a field for general product images if needed
-      ratings: { "1": 2, "2": 3, "3": 5, "4": 10, "5": 5 }, // Sample data for ratings
-      reviews: 25, // Placeholder for reviews
-      variants: Object.keys(selectedColors).map((color) => ({
+      images: imageValues,
+      ratings: { "1": 0, "2": 0, "3": 0, "4": 0, "5": 0 }, 
+      reviews: 0,
+      variants: selectedColorKeys.map(color => ({
         color,
         image: selectedColors[color].image,
         sizes: selectedColors[color].size.map(size => ({
-          size,
-          stock: parseInt(selectedColors[color].quantity) || 0
+            size,
+            stock: parseInt(selectedColors[color].quantity) || 0
         }))
       }))
     };
-  
+
+    try {
+      await axios.post(`${BASE_URL}/products`, productData);
+      Alert.alert('Success', 'Product added successfully!');
+
+      setName('');
+        setDescription('');
+        setImportPrice('');
+        setSalePrice('');
+        setDiscount('0');
+        setMainCategory(null);
+        setSubCategory(null);
+        setSubSubCategory(null);
+        setProductImages({
+            image1: '',
+            image2: '',
+            image3: '',
+            image4: '',
+            image5: ''
+        });
+        setSelectedColors({});
+    } catch (error) {
+      console.error('Error adding product:', error);
+      Alert.alert('Error', 'Failed to add product.');
+    }  
     // Log the structured data
     console.log("Product Data:", JSON.stringify(productData, null, 2));
-  
-    // Alert to show that product data is logged successfully
-    Alert.alert('Product Data', 'Check the console log for the structured product data');
   };
   
-
-//   const handleAddProduct = async () => {
-//     if (!name || !description || !importPrice || !salePrice || !mainCategory || !subCategory) {
-//       Alert.alert('Error', 'Please fill all required fields.');
-//       return;
-//     }
-
-//     const productData = {
-//       name,
-//       description,
-//       importPrice: parseFloat(importPrice),
-//       salePrice: parseFloat(salePrice),
-//       discount: parseFloat(discount) || 0,
-//       mainCategory,
-//       subCategory,
-//       subSubCategory,
-//     };
-
-//     try {
-//       await axios.post(`${BASE_URL}/products`, productData);
-//       Alert.alert('Success', 'Product added successfully!');
-//     } catch (error) {
-//       console.error('Error adding product:', error);
-//       Alert.alert('Error', 'Failed to add product.');
-//     }
-//   };
 
   return (
    
@@ -172,6 +209,20 @@ const AddNewProductScreen = () => {
             keyboardType="numeric"
             className="bg-white p-4 rounded-lg mb-4"
             />
+
+            {/* Product Images */}
+            <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>Product Images</Text>
+                {Object.keys(productImages).map((key, index) => (
+                    <TextInput
+                        key={index}
+                        placeholder={`Image ${index + 1} URL`}
+                        value={productImages[key]}
+                        onChangeText={(value) =>
+                            setProductImages((prev) => ({ ...prev, [key]: value }))
+                        }
+                        style={{ backgroundColor: 'white', padding: 10, borderRadius: 5, marginBottom: 8 }}
+                    />
+                ))}
 
             {/* Colors Section */}
             <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 8 }}>Colors</Text>
@@ -256,7 +307,6 @@ const AddNewProductScreen = () => {
             borderRadius: 8,
           }}
           zIndex={3000}
-          zIndexInverse={1000}
         />
 
         {/* Sub Category */}
@@ -283,7 +333,6 @@ const AddNewProductScreen = () => {
             borderRadius: 8,
           }}
           zIndex={2000}
-          zIndexInverse={3000}
         />
 
         {/* Sub SubCategory */}
@@ -310,7 +359,6 @@ const AddNewProductScreen = () => {
             borderRadius: 8,
           }}
           zIndex={1000}
-          zIndexInverse={3000}
         />
 
         {/* Add Product Button */}

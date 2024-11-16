@@ -3,7 +3,7 @@ import { Image, ScrollView, Text, TouchableOpacity, View, FlatList, Animated, Di
 import { RouteProp, useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteTabsParamList } from './HomeScreen';
-import { RouteStackParamList } from '../../App';
+import { RootStackParamList } from '../constants/rootStackParamList';
 import { Rating } from 'react-native-ratings';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { CategoriesData, ProductData } from '../constants/data';
@@ -23,7 +23,7 @@ type WishlistType = {
   products: { _id: string }[];
 };
 
-type ScreenRouteProps = RouteProp<RouteStackParamList, 'ProductDetails'>;
+type ScreenRouteProps = RouteProp<RootStackParamList, 'ProductDetails'>;
 
 type ProductDetailsProps = {
   route: ScreenRouteProps;

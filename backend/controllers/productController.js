@@ -3,7 +3,7 @@ const Product = require('../models/productModel');
 // Lấy tất cả sản phẩm
 exports.getAllProducts = async (req, res) => {
     try {
-        const products = await Product.find();
+        const products = await Product.find().sort({ createdAt: -1 });
         res.status(200).json(products);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching products' });
@@ -127,7 +127,6 @@ exports.getMainCategories = async (req, res) => {
 };
 
 // Lấy danh sách các subCategory (distinct name và image)
-
 exports.getSubCategories = async (req, res) => {
     try {
         const subCategories = await Product.distinct("subCategory");
@@ -182,7 +181,7 @@ exports.getProductsByCategory = async (req, res) => {
             filter.subSubCategory = subSubCategory;
         }
 
-        const products = await Product.find(filter);
+        const products = await Product.find(filter).sort({ createdAt: -1 });
         res.status(200).json(products);
     } catch (error) {
         console.error('Error fetching products by category:', error);

@@ -5,11 +5,11 @@ import { AirbnbRating } from 'react-native-ratings';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { RouteStackParamList } from '../../App';
+import { RootStackParamList } from '../constants/rootStackParamList';
 import { Ratings } from '../constants/types';
 
 
-type RatingsReviewsScreenRouteProp = RouteProp<RouteStackParamList, 'RatingsReviews'>;
+type RatingsReviewsScreenRouteProp = RouteProp<RootStackParamList, 'RatingsReviews'>;
 
 const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = ({ route }) => {
     const navigation = useNavigation();
