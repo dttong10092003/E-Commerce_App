@@ -26,7 +26,7 @@ import CustomerSupport from './CustomerSupportAdmin';
 import ProductManagement from './ProductManagement';
 import CustomerSupportAI from './CustomerSupportAI';
 import AddNewProductScreen from './AddNewProductScreen';
-
+import CustomerCareScreen from './CustomerCareScreen';
 
 export {
   HomeScreen,
@@ -56,5 +56,6 @@ export {
   ProductManagement,
   CustomerSupportAI,
   AddNewProductScreen,
+  CustomerCareScreen
   
 };

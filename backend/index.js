@@ -13,7 +13,7 @@ const userRewardRoute = require('./routes/userRewardRoute');
 const cartRoute = require('./routes/cartRoute');
 const orderRoute = require('./routes/orderRoute');
 const messageRoute = require('./routes/messageRoute');
-
+const supportRequestRoutes = require('./routes/supportRequestRoutes');
 
 // const { updateUserRoles } = require('./controllers/authController');
 // initialize a new express application instance
@@ -34,7 +34,7 @@ app.use('/api/user-rewards', userRewardRoute);
 app.use('/api/cart', cartRoute);
 app.use('/api/orders', orderRoute);
 app.use('/api', messageRoute);
-
+app.use('/api/support-requests', supportRequestRoutes);
 // connect to DataBase (MONGODB)
 const PORT = process.env.PORT // http://localhost:4000/api/auth/  -> POST
 const MONGODB_URI = process.env.MONGODB_URI;

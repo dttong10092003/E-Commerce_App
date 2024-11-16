@@ -137,7 +137,7 @@ const CustomerSupportScreen = () => {
       setQuestionModalVisible(true); // Hiển thị modal khi chọn "Câu hỏi khác"
       return;
     }
-
+  
     const userMessage: Message = {
       id: String(messages.length + 1),
       sender: 'user',
@@ -146,27 +146,48 @@ const CustomerSupportScreen = () => {
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     saveMessage(userMessage);
-
-    let response: Message;
+  
     if (option === 'Liên hệ nhân viên') {
-      response = {
-        id: String(messages.length + 2),
-        sender: 'support',
-        text: 'Nhân viên sẽ sớm liên hệ với bạn!',
-        time: getCurrentTime(),
-      };
-    } else if (option === 'Đặt lại mật khẩu') {
-      response = {
-        id: String(messages.length + 2),
-        sender: 'support',
-        text: 'Vui lòng kiểm tra email của bạn để đặt lại mật khẩu.',
-        time: getCurrentTime(),
-      };
+      try {
+        const token = await AsyncStorage.getItem('authToken');
+        const userId = await AsyncStorage.getItem('userId');
+  
+        if (!token || !userId) {
+          Alert.alert('Lỗi', 'Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
+          return;
+        }
+  
+        const response = await axios.post(
+          `${BASE_URL}/support-requests`,
+          { userId }, // Gửi userId trong body
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+  
+        if (response.status === 201) {
+          Alert.alert('Thành công', 'Yêu cầu hỗ trợ đã được gửi.');
+  
+          // Thêm tin nhắn phản hồi từ server
+          const serverResponse: Message = {
+            id: String(messages.length + 2),
+            sender: 'support',
+            text: 'Yêu cầu hỗ trợ của bạn đã được gửi. Vui lòng đợi phản hồi.',
+            time: getCurrentTime(),
+          };
+          setMessages((prevMessages) => [...prevMessages, serverResponse]);
+          saveMessage(serverResponse);
+        }
+      } catch (error) {
+        console.error('Error creating support request:', error);
+        if (error.response && error.response.data && error.response.data.message) {
+          Alert.alert('Lỗi', error.response.data.message); // Hiển thị lỗi từ backend
+        } else {
+          Alert.alert('Lỗi', 'Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại sau.');
+        }
+      }
     }
-
-    setMessages((prevMessages) => [...prevMessages, response]);
-    saveMessage(response);
   };
+  
+  
   const handleQuestionSelect = (question: string) => {
     setQuestionModalVisible(false);
     const userMessage: Message = {
@@ -191,21 +212,28 @@ const CustomerSupportScreen = () => {
       setIsTyping(false); // Kết thúc trạng thái nhập
     }, 1500); // Thời gian chờ để tạo hiệu ứng
   };
-  const saveMessage = async (message: Message) => {
+  const saveMessage = async (message) => {
     const token = await AsyncStorage.getItem('authToken');
     const userId = await AsyncStorage.getItem('userId');
-    if (token && userId) {
-      try {
-        await axios.post(
-          `${BASE_URL}/messages`,
-          { ...message, userId },
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      } catch (error) {
-        console.error('Error saving message:', error);
-      }
+  
+    if (!userId) {
+      console.error('Error: User ID is undefined.');
+      return;
+    }
+  
+    try {
+      const response = await axios.post(
+        `${BASE_URL}/messages`,
+        { ...message, userId },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      console.log('Message saved successfully:', response.data);
+    } catch (error) {
+      console.error('Error saving message:', error);
+      Alert.alert('Lỗi', 'Không thể lưu tin nhắn.');
     }
   };
+  
 
   const handleSend = () => {
     if (newMessage.trim()) {

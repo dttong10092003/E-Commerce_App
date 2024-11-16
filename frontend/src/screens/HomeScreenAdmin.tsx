@@ -22,6 +22,7 @@ type User = {
 type RootStackParamList = {
   Settings: undefined;
   ProductManagement: undefined;
+  CustomerCare: undefined;
 };
 
 const HomeScreenAdmin = () => {
@@ -266,7 +267,7 @@ const HomeScreenAdmin = () => {
           <Text style={{ fontSize: 18, marginVertical: 10 }}>Order Management</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={() => { /* Navigate to Customer Care */ toggleMenu(); }}>
+        <TouchableOpacity onPress={() => { navigation.navigate('CustomerCare')}}>
           <Text style={{ fontSize: 18, marginVertical: 10 }}>Customer Care</Text>
         </TouchableOpacity>
 
