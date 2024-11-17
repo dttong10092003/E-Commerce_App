@@ -44,6 +44,18 @@ exports.getOrdersByUser = async (req, res) => {
   }
 };
 
+// Get all orders
+exports.getAllOrders = async (req, res) => {
+  try {
+    // Lấy tất cả đơn hàng và populate thông tin sản phẩm
+    const orders = await Order.find().populate('products.product');
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error("Error fetching all orders:", error);
+    res.status(500).json({ message: 'Error fetching all orders', error });
+  }
+};
+
 // Update order status
 exports.updateOrderStatus = async (req, res) => {
   const { orderId } = req.params;

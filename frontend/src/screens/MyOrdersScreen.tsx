@@ -1,4 +1,3 @@
-// src/screens/MyOrdersScreen.tsx
 import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -51,11 +50,11 @@ interface Order {
 }
 
 const OrderCard = ({ order, onPress, onCancel }) => {
-  const { _id, orderDate, totalAmount, orderStatus, products } = order;
+  const { _id, totalAmount, orderStatus, products } = order;
   const formattedDate = new Date(
     orderStatus === 'Delivered' ? order.deliveredDate :
     orderStatus === 'Canceled' ? order.canceledDate :
-    orderDate
+    order.orderDate
   ).toLocaleString();
   console.log("order:", order);
   console.log("products:", products);
@@ -235,7 +234,7 @@ const MyOrdersScreen = ({ navigation }) => {
         {['Processing', 'Shipping', 'Delivered', 'Canceled'].map((tab) => (
           <TouchableOpacity key={tab} onPress={() => setActiveTab(tab)}>
             <Text className={`text-lg font-medium ${activeTab === tab ? 'text-black' : 'text-gray-400'}`}>
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              {tab}
             </Text>
             {activeTab === tab && <View className="h-1 bg-black mt-1 rounded-full w-full" />}
           </TouchableOpacity>

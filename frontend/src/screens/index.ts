@@ -30,6 +30,10 @@ import CustomerCareScreen from './CustomerCareScreen';
 import EditProductScreen from './EditProductScreen';
 import EditVariantProductScreen from './EditVariantProductScreen';
 import ChatSocket from './ChatSocket';
+import AdminOrderDetailScreen from './AdminOrderDetailScreen';
+import AdminOrderScreen from './AdminOrderScreen';
+
+
 export {
   HomeScreen,
   LoginScreen,
@@ -61,5 +65,7 @@ export {
   CustomerCareScreen,
   EditProductScreen,
   EditVariantProductScreen,
-  ChatSocket
+  ChatSocket,
+  AdminOrderDetailScreen,
+  AdminOrderScreen,
 };

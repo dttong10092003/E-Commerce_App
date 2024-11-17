@@ -8,6 +8,9 @@ router.post('/', orderController.createOrder);
 // Get all orders for a user
 router.get('/user/:userId', orderController.getOrdersByUser);
 
+// Lấy tất cả đơn hàng
+router.get('/', orderController.getAllOrders);
+
 // Update order status
 router.patch('/:orderId/status', orderController.updateOrderStatus);
 
