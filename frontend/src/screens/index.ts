@@ -29,7 +29,7 @@ import AddNewProductScreen from './AddNewProductScreen';
 import CustomerCareScreen from './CustomerCareScreen';
 import EditProductScreen from './EditProductScreen';
 import EditVariantProductScreen from './EditVariantProductScreen';
-
+import ChatSocket from './ChatSocket';
 export {
   HomeScreen,
   LoginScreen,
@@ -61,5 +61,5 @@ export {
   CustomerCareScreen,
   EditProductScreen,
   EditVariantProductScreen,
-  
+  ChatSocket
 };

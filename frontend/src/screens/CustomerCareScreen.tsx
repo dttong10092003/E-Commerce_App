@@ -1,18 +1,25 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect,useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 import BASE_URL from '../config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const CustomerCareScreen = () => {
-  const navigation = useNavigation();
+import { StackNavigationProp } from '@react-navigation/stack';
+type RootStackParamList= {
+  CustomerCare: undefined;
+  ChatSocket: undefined;
+}
+type CustomerCareScreenNavigationProp = StackNavigationProp<RootStackParamList, 'CustomerCare'>;
+
+const CustomerCareScreen: React.FC = () => {
+  const navigation = useNavigation<CustomerCareScreenNavigationProp>();
   const [supportRequests, setSupportRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-
+  const isFocused = useIsFocused();
   // Fetch support requests from the backend
   const fetchRequests = async () => {
     setLoading(true);
@@ -27,7 +34,11 @@ const CustomerCareScreen = () => {
       setLoading(false);
     }
   };
-
+  useEffect(() => {
+    if (isFocused) {
+      fetchRequests(); // Gọi lại fetchRequests khi màn hình được focus
+    }
+  }, [isFocused]);
   // Accept a support request
   const handleAccept = async (requestId) => {
     try {
@@ -37,16 +48,22 @@ const CustomerCareScreen = () => {
         { status: 'accepted' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+  
       Alert.alert('Success', 'Request accepted successfully.');
-      // Update state locally to avoid re-fetching
+  
+      // Lọc danh sách để loại bỏ request đã accept
       setSupportRequests((prevRequests) =>
         prevRequests.filter((request) => request._id !== requestId)
       );
+  
+      // Chuyển sang màn hình ChatSocket
+      navigation.navigate('ChatSocket');
     } catch (error) {
       console.error('Error accepting request:', error);
       Alert.alert('Error', 'Failed to accept the request.');
     }
   };
+  
 
   // Reject a support request
   const handleReject = async (requestId) => {
@@ -57,8 +74,10 @@ const CustomerCareScreen = () => {
         { status: 'rejected' },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+  
       Alert.alert('Success', 'Request rejected successfully.');
-      // Update state locally to avoid re-fetching
+  
+      // Lọc danh sách để loại bỏ request đã reject
       setSupportRequests((prevRequests) =>
         prevRequests.filter((request) => request._id !== requestId)
       );
@@ -74,9 +93,7 @@ const CustomerCareScreen = () => {
     fetchRequests().finally(() => setRefreshing(false));
   }, []);
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+
 
   const renderRequestItem = ({ item }) => (
     <View className="bg-white p-4 rounded-lg shadow mb-4">
@@ -113,6 +130,7 @@ const CustomerCareScreen = () => {
           data={supportRequests}
           keyExtractor={(item) => item._id}
           renderItem={renderRequestItem}
+          extraData={supportRequests} // Buộc FlatList render lại khi supportRequests thay đổi
           contentContainerStyle={{ paddingBottom: 20 }}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />

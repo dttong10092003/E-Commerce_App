@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, FlatList, Image, Modal, ActivityIndicator, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { Picker } from 'emoji-mart-native';
 import icons from '../constants/icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -19,10 +19,13 @@ type Message = {
   time: string;
   imageUri?: string;
   options?: string[];
+  action?: string;
 };
-
+type RootStackParamList = {
+  ChatSocket: undefined; // Route ChatSocket phải được định nghĩa ở đây
+};
 const CustomerSupportScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [emojiPickerVisible, setEmojiPickerVisible] = useState(false);
@@ -137,7 +140,7 @@ const CustomerSupportScreen = () => {
       setQuestionModalVisible(true); // Hiển thị modal khi chọn "Câu hỏi khác"
       return;
     }
-  
+
     const userMessage: Message = {
       id: String(messages.length + 1),
       sender: 'user',
@@ -146,48 +149,46 @@ const CustomerSupportScreen = () => {
     };
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     saveMessage(userMessage);
-  
+
     if (option === 'Liên hệ nhân viên') {
       try {
         const token = await AsyncStorage.getItem('authToken');
         const userId = await AsyncStorage.getItem('userId');
-  
+
         if (!token || !userId) {
           Alert.alert('Lỗi', 'Không tìm thấy thông tin người dùng. Vui lòng đăng nhập lại.');
           return;
         }
-  
+
         const response = await axios.post(
           `${BASE_URL}/support-requests`,
           { userId }, // Gửi userId trong body
           { headers: { Authorization: `Bearer ${token}` } }
         );
-  
+
         if (response.status === 201) {
           Alert.alert('Thành công', 'Yêu cầu hỗ trợ đã được gửi.');
-  
+
           // Thêm tin nhắn phản hồi từ server
           const serverResponse: Message = {
             id: String(messages.length + 2),
             sender: 'support',
-            text: 'Yêu cầu hỗ trợ của bạn đã được gửi. Vui lòng đợi phản hồi.',
+            text: 'Yêu cầu hỗ trợ của bạn đã được gửi. Vui lòng vào room đợi phản hồi.',
             time: getCurrentTime(),
+            action: 'goToRoom', // Thêm action để thực hiện chuyển hướng
           };
           setMessages((prevMessages) => [...prevMessages, serverResponse]);
           saveMessage(serverResponse);
         }
       } catch (error) {
-        console.error('Error creating support request:', error);
-        if (error.response && error.response.data && error.response.data.message) {
-          Alert.alert('Lỗi', error.response.data.message); // Hiển thị lỗi từ backend
-        } else {
-          Alert.alert('Lỗi', 'Không thể gửi yêu cầu hỗ trợ. Vui lòng thử lại sau.');
-        }
+        Alert.alert('Lỗi', 'Đã xảy ra lỗi khi gửi yêu cầu hỗ trợ.');
+        console.error(error);
       }
     }
   };
-  
-  
+
+
+
   const handleQuestionSelect = (question: string) => {
     setQuestionModalVisible(false);
     const userMessage: Message = {
@@ -215,12 +216,12 @@ const CustomerSupportScreen = () => {
   const saveMessage = async (message) => {
     const token = await AsyncStorage.getItem('authToken');
     const userId = await AsyncStorage.getItem('userId');
-  
+
     if (!userId) {
       console.error('Error: User ID is undefined.');
       return;
     }
-  
+
     try {
       const response = await axios.post(
         `${BASE_URL}/messages`,
@@ -233,7 +234,7 @@ const CustomerSupportScreen = () => {
       Alert.alert('Lỗi', 'Không thể lưu tin nhắn.');
     }
   };
-  
+
 
   const handleSend = () => {
     if (newMessage.trim()) {
@@ -293,9 +294,18 @@ const CustomerSupportScreen = () => {
   const renderMessageItem = ({ item }: { item: Message }) => (
     <View className={`flex-row ${item.sender === 'user' ? 'justify-end' : ''} items-center my-3 px-4`}>
       {item.sender === 'support' && <Image source={icons.bot} className="w-10 h-10 rounded-full mr-3" />}
-      <View className={`${item.sender === 'user' && !item.imageUri ? 'bg-green-700' : item.sender === 'support' ? 'bg-gray-100' : ''} p-4 rounded-2xl max-w-[75%] shadow-md`}>
+      <View
+        className={`${item.sender === 'user' && !item.imageUri
+            ? 'bg-green-700'
+            : item.sender === 'support'
+              ? 'bg-gray-100'
+              : ''
+          } p-4 rounded-2xl max-w-[75%] shadow-md`}
+      >
         {item.text && (
-          <Text className={`text-base ${item.sender === 'user' ? 'text-white' : 'text-gray-800'}`}>{item.text}</Text>
+          <Text className={`text-base ${item.sender === 'user' ? 'text-white' : 'text-gray-800'}`}>
+            {item.text}
+          </Text>
         )}
         {item.imageUri && (
           <TouchableOpacity onPress={() => handleImagePress(item.imageUri)} className="mt-2">
@@ -315,10 +325,20 @@ const CustomerSupportScreen = () => {
             ))}
           </View>
         )}
+        {/* Hiển thị nút "Vào room" nếu action là 'goToRoom' */}
+        {item.action === 'goToRoom' && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate('ChatSocket')} // Điều hướng đến trang ChatSocket
+            className="bg-blue-500 px-4 py-2 mt-3 rounded-full"
+          >
+            <Text className="text-white text-center">Vào room</Text>
+          </TouchableOpacity>
+        )}
         <Text className="text-xs text-gray-400 text-right mt-2">{item.time}</Text>
       </View>
     </View>
   );
+
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -371,7 +391,7 @@ const CustomerSupportScreen = () => {
               <Ionicons name="close" size={24} color="white" />
             </TouchableOpacity>
             {/* Nút tải xuống */}
-            <TouchableOpacity  style={{ marginRight: 15 }}>
+            <TouchableOpacity style={{ marginRight: 15 }}>
               <Ionicons name="download-outline" size={24} color="white" />
             </TouchableOpacity>
             {/* Nút chỉnh sửa */}

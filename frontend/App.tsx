@@ -10,7 +10,7 @@ import { HomeScreen, OnboardingScreen, LoginScreen, ForgotPasswordScreen,
   ShippingAddressesScreen, EditAddressScreen, AddNewAddressScreen, AddNewCardScreen,
   EditCardScreen, SettingsScreen, CategoriesScreen, CatalogScreen, FilterScreen, 
   PromocodesScreen,HomeScreenAdmin, ProductManagement, CustomerSupportAI, CustomerSupport,
-  AddNewProductScreen, CustomerCareScreen, EditProductScreen, EditVariantProductScreen} from './src/screens';
+  AddNewProductScreen, CustomerCareScreen, EditProductScreen, EditVariantProductScreen, ChatSocket} from './src/screens';
 
   
 // import {ItemDetails, Product, CartItem} from './src/constants/types';
@@ -81,6 +81,7 @@ const App = () => {
             <Stack.Screen name="CustomerCare" component={CustomerCareScreen} />
             <Stack.Screen name="EditProduct" component={EditProductScreen} />
             <Stack.Screen name="EditVariantProduct" component={EditVariantProductScreen} />
+            <Stack.Screen name="ChatSocket" component={ChatSocket} />
 
                      
           </Stack.Navigator>
