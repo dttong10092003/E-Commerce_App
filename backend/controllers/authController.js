@@ -11,7 +11,7 @@ const createUserReward = require('./userRewardController').createUserReward;
 // Đăng ký người dùng
 const registerUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role = 'user' } = req.body;
 
     // Kiểm tra email đã tồn tại chưa
     const existingUser = await User.findOne({ email });
@@ -26,7 +26,7 @@ const registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Tạo người dùng mới với username mặc định
-    const user = await User.create({ email, password: hashedPassword, username: defaultUsername, role: 'user' });
+    const user = await User.create({ email, password: hashedPassword, username: defaultUsername, role });
 
     // Khởi tạo UserReward cho người dùng mới
     await createUserReward(user._id);

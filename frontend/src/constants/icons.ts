@@ -50,6 +50,10 @@ const sad = require('../assets/icons/sad.png');
 const bot = require('../assets/icons/bot.png');
 const admin = require('../assets/icons/admin.png');
 const man = require('../assets/icons/man.png');
+const mastercard_white = require('../assets/icons/mastercard_white.png');
+const wallet = require('../assets/icons/wallet.png');
+const paypal = require('../assets/icons/paypal.png');
+const dollar = require('../assets/icons/dollar.png');
 export default {
   eyeHide,
   pen,
@@ -102,5 +106,9 @@ export default {
   sad,
   bot,
   admin,
-  man
+  man,
+  mastercard_white,
+  wallet,
+  paypal,
+  dollar,
 };

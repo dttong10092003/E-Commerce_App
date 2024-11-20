@@ -6,7 +6,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import icons from '../constants/icons';
 import images from '../constants/images';
 import axios from 'axios';
-import { Ionicons } from '@expo/vector-icons'; 
+import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { PieChart, BarChart, LineChart } from 'react-native-chart-kit';
 import BASE_URL from '../config';
@@ -24,6 +24,7 @@ type RootStackParamList = {
   ProductManagement: undefined;
   CustomerCare: undefined;
   AdminOrder: undefined;
+  CreateAccount: undefined;
 };
 
 const HomeScreenAdmin = () => {
@@ -120,37 +121,123 @@ const HomeScreenAdmin = () => {
           <TouchableOpacity onPress={toggleMenu}>
             <Ionicons name="menu" size={32} color="black" />
           </TouchableOpacity>
-          
+
           <Image
             source={images.logo}
             className='w-14 h-14'
-            resizeMode='contain'>          
+            resizeMode='contain'>
           </Image>
 
           <TouchableOpacity onPress={NavigateToProfile}>
             <Image
-               source={user?.avatar ? { uri: user.avatar } : icons.profile}
-               className="w-8 h-8 rounded-full"
-              resizeMode='cover'>         
+              source={user?.avatar ? { uri: user.avatar } : icons.profile}
+              className="w-8 h-8 rounded-full"
+              resizeMode='cover'>
             </Image>
           </TouchableOpacity>
         </View>
+
         {/* My Cards */}
-        <View className="p-5 bg-blue-500 rounded-lg mb-5 shadow-lg">
-          <Text className="text-white text-lg">Balance</Text>
-          <Text className="text-white text-3xl font-bold mt-1">$5756</Text>
-          <Text className="text-white mt-1">Credit Card - Eddy Cus...</Text>
+        <View
+          style={{
+            backgroundColor: '#4a90e2', // Màu xanh dương nền
+            borderRadius: 16, // Bo góc
+            padding: 20, // Padding toàn bộ
+            marginBottom: 20, // Khoảng cách dưới
+            position: 'relative', // Vị trí để hỗ trợ các phần tử con
+            shadowColor: '#000', // Bóng đổ
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.2,
+            shadowRadius: 10,
+            elevation: 5,
+          }}
+        >
+          {/* Biểu tượng chip */}
+          <Image
+            source={icons.chip}
+            style={{ width: 40, height: 40, position: 'absolute', top: 20, right: 20 }}
+            resizeMode="contain"
+          />
+
+          {/* Balance */}
+          <Text style={{ color: 'white', fontSize: 14 }}>Balance</Text>
+          <Text style={{ color: 'white', fontSize: 32, fontWeight: 'bold', marginTop: 5 }}>$5,756</Text>
+
+          {/* Tên chủ thẻ và ngày hết hạn */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
+            <View>
+              <Text style={{ color: '#d3d3d3', fontSize: 12, fontWeight: '500' }}>CARD HOLDER</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginTop: 5 }}>Eddy Cusuma</Text>
+            </View>
+            <View>
+              <Text style={{ color: '#d3d3d3', fontSize: 12, fontWeight: '500' }}>VALID THRU</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginTop: 5 }}>12/22</Text>
+            </View>
+          </View>
+
+          {/* Số thẻ */}
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 18,
+              fontWeight: '500',
+              letterSpacing: 2,
+              marginTop: 20,
+            }}
+          >
+            3778 **** **** 1234
+          </Text>
+
+          {/* Logo thẻ */}
+          <Image
+            source={icons.mastercard_white}
+            style={{ width: 50, height: 50, position: 'absolute', bottom: 5, right: 20 }}
+            resizeMode="contain"
+          />
         </View>
+
 
         {/* Recent Transactions */}
         <View className="bg-white p-5 rounded-lg shadow-lg mb-5">
-          <Text className="text-lg font-bold text-gray-700">Recent Transactions</Text>
-          <View className="mt-3">
-            <Text className="text-gray-600">Deposit from my - <Text className="text-red-500">- $350</Text></Text>
-            <Text className="text-gray-600 mt-1">Deposit Paypal - <Text className="text-green-500">+ $2520</Text></Text>
-            <Text className="text-gray-600 mt-1">Jeni Wilson - <Text className="text-green-500">+ $150</Text></Text>
+          <Text className="text-lg font-bold text-gray-800">Recent Transactions</Text>
+
+          {/* Giao dịch 1 */}
+          <View className="flex-row items-center mt-5">
+            <View className="bg-yellow-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+              <Image source={icons.wallet} className="w-6 h-6" resizeMode="contain" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-gray-800 font-medium text-base">Deposit from my</Text>
+              <Text className="text-gray-500 text-sm">28 January 2021</Text>
+            </View>
+            <Text className="text-red-500 font-bold text-base">- $850</Text>
+          </View>
+
+          {/* Giao dịch 2 */}
+          <View className="flex-row items-center mt-5">
+            <View className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+              <Image source={icons.paypal} className="w-6 h-6" resizeMode="contain" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-gray-800 font-medium text-base">Deposit Paypal</Text>
+              <Text className="text-gray-500 text-sm">25 January 2021</Text>
+            </View>
+            <Text className="text-green-500 font-bold text-base">+ $2,500</Text>
+          </View>
+
+          {/* Giao dịch 3 */}
+          <View className="flex-row items-center mt-5">
+            <View className="bg-teal-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
+              <Image source={icons.dollar} className="w-6 h-6" resizeMode="contain" />
+            </View>
+            <View className="flex-1">
+              <Text className="text-gray-800 font-medium text-base">Jeni Wilson</Text>
+              <Text className="text-gray-500 text-sm">21 January 2021</Text>
+            </View>
+            <Text className="text-green-500 font-bold text-base">+ $5,400</Text>
           </View>
         </View>
+
 
         {/* Weekly Activity */}
         <View className="bg-white p-5 rounded-lg shadow-lg mb-5">
@@ -168,46 +255,13 @@ const HomeScreenAdmin = () => {
             showValuesOnTopOfBars={true}
             chartConfig={chartConfig}
             style={{
-                borderRadius: 15,
-                marginTop: 10,
-                marginLeft: -30, 
-              }}
+              borderRadius: 15,
+              marginTop: 10,
+              marginLeft: -30,
+            }}
           />
         </View>
 
-        {/* Expense Statistics */}
-        <View className="bg-white p-5 rounded-lg shadow-lg mb-5">
-          <Text className="text-lg font-bold text-gray-700">Expense Statistics</Text>
-          <PieChart
-            data={[
-              { name: "Entertainment", population: 30, color: "pink", legendFontColor: "#7F7F7F", legendFontSize: 15 },
-              { name: "Bills", population: 15, color: "orange", legendFontColor: "#7F7F7F", legendFontSize: 15 },
-              { name: "Groceries", population: 25, color: "yellow", legendFontColor: "#7F7F7F", legendFontSize: 15 },
-              { name: "Others", population: 30, color: "blue", legendFontColor: "#7F7F7F", legendFontSize: 15 },
-            ]}
-            width={screenWidth - 40}
-            height={220}
-            accessor="population"
-            backgroundColor="transparent"
-            paddingLeft="15"
-            absolute
-            chartConfig={chartConfig}
-            style={{ borderRadius: 10, marginTop: 10 }}
-          />
-        </View>
-
-        {/* Quick Transfer */}
-        <View className="bg-white p-5 rounded-lg shadow-lg mb-5">
-          <Text className="text-lg font-bold text-gray-700">Quick Transfer</Text>
-          <View className="flex-row justify-around mt-4">
-            <Image source={icons.profile} className="w-12 h-12 rounded-full" />
-            <Image source={icons.profile} className="w-12 h-12 rounded-full" />
-            <Image source={icons.profile} className="w-12 h-12 rounded-full" />
-          </View>
-          <TouchableOpacity className="mt-5 bg-blue-500 py-3 rounded-lg">
-            <Text className="text-white text-center text-lg font-semibold">Send</Text>
-          </TouchableOpacity>
-        </View>
 
         {/* Balance History */}
         <View className="bg-white p-5 rounded-lg shadow-lg mb-5">
@@ -244,7 +298,8 @@ const HomeScreenAdmin = () => {
         </Animated.View>
       )}
 
-      {/* Sidebar Menu */}
+      
+      {/* Sidebar Menu
       <Animated.View
         style={{
           position: 'absolute',
@@ -272,10 +327,58 @@ const HomeScreenAdmin = () => {
           <Text style={{ fontSize: 18, marginVertical: 10 }}>Customer Care</Text>
         </TouchableOpacity>
 
+        <TouchableOpacity onPress={() => { navigation.navigate('CustomerCare')}}>
+          <Text style={{ fontSize: 18, marginVertical: 10 }}>Create Account</Text>
+        </TouchableOpacity>
+
         <TouchableOpacity onPress={toggleMenu} style={{ marginTop: 20 }}>
           <Text style={{ fontSize: 18, color: 'red' }}>Close</Text>
         </TouchableOpacity>
+      </Animated.View> */}
+
+
+      {/* Sidebar Menu */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          width: screenWidth * 0.6,
+          backgroundColor: 'white',
+          padding: 22,
+          transform: [{ translateX: slideAnim }],
+          zIndex: 2,
+        }}
+      >
+        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, marginTop: 20 }}>Menu</Text>
+
+        <TouchableOpacity onPress={() => { navigation.navigate('ProductManagement') }} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+          <Ionicons name="cube-outline" size={20} color="black" style={{ marginRight: 10 }} />
+          <Text style={{ fontSize: 18 }}>Product Management</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => { navigation.navigate('AdminOrder') }} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+          <Ionicons name="clipboard-outline" size={20} color="black" style={{ marginRight: 10 }} />
+          <Text style={{ fontSize: 18 }}>Order Management</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => { navigation.navigate('CustomerCare') }} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+          <Ionicons name="people-outline" size={20} color="black" style={{ marginRight: 10 }} />
+          <Text style={{ fontSize: 18 }}>Customer Care</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => { navigation.navigate('CreateAccount') }} style={{ flexDirection: 'row', alignItems: 'center', marginVertical: 10 }}>
+          <Ionicons name="person-add-outline" size={20} color="black" style={{ marginRight: 10 }} />
+          <Text style={{ fontSize: 18 }}>Create Account</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={toggleMenu} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 20 }}>
+          <Ionicons name="close-outline" size={20} color="red" style={{ marginRight: 10 }} />
+          <Text style={{ fontSize: 18, color: 'red' }}>Close</Text>
+        </TouchableOpacity>
       </Animated.View>
+
     </SafeAreaView>
   );
 };

@@ -32,7 +32,7 @@ import EditVariantProductScreen from './EditVariantProductScreen';
 import ChatSocket from './ChatSocket';
 import AdminOrderDetailScreen from './AdminOrderDetailScreen';
 import AdminOrderScreen from './AdminOrderScreen';
-
+import CreateAccountAdminScreen from './CreateAccountAdminScreen';
 
 export {
   HomeScreen,
@@ -68,4 +68,5 @@ export {
   ChatSocket,
   AdminOrderDetailScreen,
   AdminOrderScreen,
+  CreateAccountAdminScreen
 };
