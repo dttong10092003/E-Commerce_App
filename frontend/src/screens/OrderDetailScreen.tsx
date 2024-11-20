@@ -211,11 +211,8 @@ const OrderDetailScreen = ({ route, navigation }) => {
 
         {/* Action Buttons */}
         <View className="flex-row justify-around p-4 mt-4">
-          <TouchableOpacity onPress={handleReorder} className="border border-gray-300 px-4 py-2 rounded-full">
-            <Text className="text-black font-medium">Reorder</Text>
-          </TouchableOpacity>
-          <TouchableOpacity className="bg-red-500 px-4 py-2 rounded-full">
-            <Text className="text-white font-medium">Leave feedback</Text>
+          <TouchableOpacity onPress={handleReorder} className="bg-blue-200 border border-black-500 px-6 py-3 rounded-full">
+            <Text className="font-medium">Reorder</Text>
           </TouchableOpacity>
         </View>
       </View>

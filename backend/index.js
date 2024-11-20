@@ -17,6 +17,7 @@ const cartRoute = require("./routes/cartRoute");
 const orderRoute = require("./routes/orderRoute");
 const messageRoute = require("./routes/messageRoute");
 const supportRequestRoutes = require("./routes/supportRequestRoutes");
+const feedbackRoute = require("./routes/feedbackRoute");
 
 // Khởi tạo ứng dụng express
 const app = express();
@@ -36,6 +37,7 @@ app.use("/api/cart", cartRoute);
 app.use("/api/orders", orderRoute);
 app.use("/api", messageRoute);
 app.use("/api/support-requests", supportRequestRoutes);
+app.use("/api/feedback", feedbackRoute);
 
 // Cấu hình MongoDB
 const PORT = process.env.PORT;

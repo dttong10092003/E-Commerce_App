@@ -1,10 +1,83 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, FlatList, Alert } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, Alert, Modal, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BASE_URL from '../config';
+
+const StarRating = ({ rating, setRating }) => {
+  return (
+    <View style={{ flexDirection: "row", justifyContent: "center", marginVertical: 10 }}>
+      {[1, 2, 3, 4, 5].map((star) => (
+        <TouchableOpacity key={star} onPress={() => setRating(star)}>
+          <Ionicons
+            name={star <= rating ? "star" : "star-outline"}
+            size={30}
+            color={star <= rating ? "#FFD700" : "#C0C0C0"} // Vàng cho sao được chọn, xám cho sao chưa chọn
+            style={{ marginHorizontal: 5 }}
+          />
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+const FeedbackModal = ({
+  isVisible,
+  onClose,
+  onSubmit,
+  selectedOrder,
+  rating,
+  setRating,
+  comment,
+  setComment,
+}) => {
+  return (
+    <Modal visible={isVisible} animationType="slide" transparent={true}>
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: "rgba(0,0,0,0.5)" }}>
+        <View style={{ backgroundColor: "white", width: "90%", padding: 20, borderRadius: 10 }}>
+          <Text style={{ fontSize: 20, fontWeight: "bold", marginBottom: 10 }}>Leave Feedback</Text>
+          <Text style={{ fontSize: 16, marginBottom: 10 }}>Order: {selectedOrder?._id}</Text>
+          <Text style={{ fontSize: 16, marginBottom: 10 }}>Rate the products:</Text>
+
+          {/* Star Rating */}
+          <StarRating rating={rating} setRating={setRating} />
+
+          {/* Comment Input */}
+          <TextInput
+            placeholder="Write your comment..."
+            value={comment}
+            onChangeText={setComment}
+            style={{
+              borderWidth: 1,
+              borderColor: "#C0C0C0",
+              borderRadius: 10,
+              padding: 10,
+              marginVertical: 10,
+              height: 80,
+              textAlignVertical: "top",
+            }}
+           
+          />
+
+          {/* Actions */}
+          <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 20 }}>
+            <TouchableOpacity onPress={onClose} style={{ padding: 10, backgroundColor: "#E0E0E0", borderRadius: 5 }}>
+              <Text style={{ fontSize: 16 }}>Cancel</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={onSubmit}
+              style={{ padding: 10, backgroundColor: "#FFD700", borderRadius: 5 }}
+            >
+              <Text style={{ fontSize: 16, color: "black", fontWeight: "bold" }}>Submit</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+};
 
 interface ShippingAddress {
   name: string;
@@ -49,7 +122,7 @@ interface Order {
   deliveredDate?: Date | null;
 }
 
-const OrderCard = ({ order, onPress, onCancel }) => {
+const OrderCard = ({ order, onPress, onCancel, onFeedback }) => {
   const { _id, totalAmount, orderStatus, products } = order;
   const formattedDate = new Date(
     orderStatus === 'Delivered' ? order.deliveredDate :
@@ -121,6 +194,11 @@ const OrderCard = ({ order, onPress, onCancel }) => {
             <Text className="text-white font-medium">Cancel Order</Text>
           </TouchableOpacity>
         )}
+        {orderStatus === "Delivered" && !order.hasFeedback && (
+          <TouchableOpacity onPress={() => onFeedback(order)} className="bg-blue-500 px-4 py-1 rounded-full">
+            <Text className="text-white font-medium">Leave Feedback</Text>
+          </TouchableOpacity>
+        )}
         <Text
           className={`font-semibold ${
             orderStatus === 'Delivered'
@@ -159,6 +237,20 @@ const fetchUserID = async (): Promise<string | null> => {
 const MyOrdersScreen = ({ navigation }) => {
   const [activeTab, setActiveTab] = useState('Processing');
   const [orders, setOrders] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null); 
+  const [feedbackModalVisible, setFeedbackModalVisible] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+
+  const checkFeedbackForOrder = async (orderId) => {
+    try {
+      const response = await axios.get<{hasFeedback: boolean}>(`${BASE_URL}/feedback/check/${orderId}`);
+      return response.data.hasFeedback;
+    } catch (error) {
+      console.error("Error checking feedback for order:", error);
+      return false;
+    }
+  };
 
   const fetchOrders = async () => {
     const fetchedUserID = await fetchUserID();
@@ -174,7 +266,18 @@ const MyOrdersScreen = ({ navigation }) => {
         const response = await axios.get<Order[]>(`${BASE_URL}/orders/user/${fetchedUserID}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setOrders(response.data);
+
+        const ordersWithFeedbackInfo = await Promise.all(
+          response.data.map(async (order) => {
+            if (order.orderStatus === "Delivered") {
+              const hasFeedback = await checkFeedbackForOrder(order._id);
+              return { ...order, hasFeedback };
+            }
+            return { ...order, hasFeedback: true }; 
+          })
+        );
+
+        setOrders(ordersWithFeedbackInfo);
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -186,7 +289,51 @@ const MyOrdersScreen = ({ navigation }) => {
     fetchOrders();
   }, []);
 
-  console.log("orders:", orders);
+
+  const handleFeedback = (order) => {
+    setSelectedOrder(order);
+    setFeedbackModalVisible(true);
+  };
+
+  const submitFeedback = async () => {
+    try {
+      const uniqueProducts = selectedOrder.products.reduce((acc, item) => {
+        if (item.product && item.product._id && !acc.find((p) => p.product._id === item.product._id)) {
+          acc.push(item);
+        }
+        return acc;
+      }, []);
+
+      const feedbackPromises = uniqueProducts.map(async (product) => {
+        try {
+          await axios.post(
+            `${BASE_URL}/feedback`,
+            {
+              userId: selectedOrder.user,
+              orderId: selectedOrder._id,
+              productId: product.product._id,
+              rating,
+              comment,
+            }
+          );
+        } catch (error) {
+          console.error(`Error submitting feedback for product ${product.product._id}:`, error);
+        }
+      });
+
+      await Promise.all(feedbackPromises);
+
+      Alert.alert("Feedback Submitted", "Thank you for your feedback!");
+      setFeedbackModalVisible(false);
+      setRating(5);
+      setComment("");
+      await fetchOrders();
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      Alert.alert("Error", "Failed to submit feedback.");
+    }
+  };
+  
 
   const handleCancelOrder = async (orderId: string) => {
     const token = await AsyncStorage.getItem('authToken');
@@ -250,6 +397,7 @@ const MyOrdersScreen = ({ navigation }) => {
             order={item}
             onPress={() => navigation.navigate('OrderDetail', { order: item })}
             onCancel={() => handleCancelOrder(item._id)}
+            onFeedback={() => handleFeedback(item)}
           />
         )}
         contentContainerStyle={{ paddingBottom: 16 }}
@@ -259,6 +407,18 @@ const MyOrdersScreen = ({ navigation }) => {
             <Text className="text-gray-500">No orders found for this status.</Text>
           </View>
         )}
+      />
+
+      {/* Feedback Modal */}
+      <FeedbackModal
+        isVisible={feedbackModalVisible}
+        onClose={() => setFeedbackModalVisible(false)}
+        onSubmit={submitFeedback}
+        selectedOrder={selectedOrder}
+        rating={rating}
+        setRating={setRating}
+        comment={comment}
+        setComment={setComment}
       />
     </SafeAreaView>
   );
