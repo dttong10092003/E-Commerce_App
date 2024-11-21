@@ -23,7 +23,7 @@ const feedbackRoute = require("./routes/feedbackRoute");
 const app = express();
 
 // Middlewares
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 app.use(cors());
 
 // Định nghĩa routes

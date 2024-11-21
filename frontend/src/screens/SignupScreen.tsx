@@ -82,7 +82,7 @@ const SignupScreen = (props: Props) => {
   return (
     <SafeAreaView className="px-5 pt-5 flex-1 bg-white">
       <Text className="text-4xl font-bold text-start">
-        Create an{'\n'}account
+        Create an account
       </Text>
       <View>
         <FormField

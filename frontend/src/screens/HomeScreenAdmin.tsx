@@ -33,6 +33,10 @@ const HomeScreenAdmin = () => {
   const [isMenuVisible, setIsMenuVisible] = useState(false); // Trạng thái hiển thị menu
   const slideAnim = useRef(new Animated.Value(-screenWidth * 0.7)).current; // Vị trí trượt của menu
   const overlayOpacity = useRef(new Animated.Value(0)).current; // Độ mờ của lớp phủ
+  const [totalDeliveredAmount, setTotalDeliveredAmount] = useState(0);
+  const [recentTransactions, setRecentTransactions] = useState([]);
+  const [weeklyActivity, setWeeklyActivity] = useState([]);
+  const [balanceHistory, setBalanceHistory] = useState([]);
 
   const toggleMenu = () => {
     if (isMenuVisible) {
@@ -68,6 +72,57 @@ const HomeScreenAdmin = () => {
     navigation.navigate('Settings');
   };
 
+  const fetchBalanceHistory = async () => {
+    try {
+      const response = await axios.get<{ balanceHistory: any[] }>(`${BASE_URL}/orders/balance-history`);
+      if (response.status === 200) {
+        setBalanceHistory(response.data.balanceHistory);
+      }
+    } catch (error) {
+      console.error('Failed to fetch balance history:', error);
+      Alert.alert('Error', 'Failed to load balance history');
+    }
+  };
+
+
+  const fetchWeeklyActivity = async () => {
+    try {
+      const response = await axios.get<{ weeklyActivity: any[] }>(`${BASE_URL}/orders/weekly-activity`);
+      if (response.status === 200) {
+        setWeeklyActivity(response.data.weeklyActivity);
+      }
+    } catch (error) {
+      console.error('Failed to fetch weekly activity:', error);
+      Alert.alert('Error', 'Failed to load weekly activity data');
+    }
+  };
+
+  const fetchRecentTransactions = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}/orders/recent-transactions`);
+      if (response.status === 200) {
+        setRecentTransactions(response.data as any);
+      }
+    } catch (error) {
+      console.error('Failed to fetch recent transactions:', error);
+      Alert.alert('Error', 'Failed to load recent transactions');
+    }
+  };
+
+
+  const fetchTotalDeliveredAmount = async () => {
+    try {
+      const response = await axios.get<{ totalAmount: number }>(`${BASE_URL}/orders/total-delivered-amount`);
+      if (response.status === 200) {
+        setTotalDeliveredAmount(response.data.totalAmount);
+      }
+    } catch (error) {
+      console.error('Failed to fetch total delivered amount:', error);
+      Alert.alert('Error', 'Failed to load total delivered amount');
+    }
+  };
+
+
   // Lấy thông tin người dùng từ server khi component tải
   const fetchUserData = async () => {
     try {
@@ -97,6 +152,11 @@ const HomeScreenAdmin = () => {
   useFocusEffect(
     useCallback(() => {
       fetchUserData();
+      fetchTotalDeliveredAmount();
+      fetchRecentTransactions();
+      fetchWeeklyActivity();
+      fetchBalanceHistory();
+
     }, [])
   );
 
@@ -161,17 +221,19 @@ const HomeScreenAdmin = () => {
 
           {/* Balance */}
           <Text style={{ color: 'white', fontSize: 14 }}>Balance</Text>
-          <Text style={{ color: 'white', fontSize: 32, fontWeight: 'bold', marginTop: 5 }}>$5,756</Text>
+          <Text style={{ color: 'white', fontSize: 32, fontWeight: 'bold', marginTop: 5 }}>
+            ${totalDeliveredAmount.toLocaleString()}
+          </Text>
 
           {/* Tên chủ thẻ và ngày hết hạn */}
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
             <View>
               <Text style={{ color: '#d3d3d3', fontSize: 12, fontWeight: '500' }}>CARD HOLDER</Text>
-              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginTop: 5 }}>Eddy Cusuma</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginTop: 5 }}>Alexander Tin</Text>
             </View>
             <View>
               <Text style={{ color: '#d3d3d3', fontSize: 12, fontWeight: '500' }}>VALID THRU</Text>
-              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginTop: 5 }}>12/22</Text>
+              <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginTop: 5 }}>12/27</Text>
             </View>
           </View>
 
@@ -185,7 +247,7 @@ const HomeScreenAdmin = () => {
               marginTop: 20,
             }}
           >
-            3778 **** **** 1234
+            4089 **** **** 3946
           </Text>
 
           {/* Logo thẻ */}
@@ -201,83 +263,85 @@ const HomeScreenAdmin = () => {
         <View className="bg-white p-5 rounded-lg shadow-lg mb-5">
           <Text className="text-lg font-bold text-gray-800">Recent Transactions</Text>
 
-          {/* Giao dịch 1 */}
-          <View className="flex-row items-center mt-5">
-            <View className="bg-yellow-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
-              <Image source={icons.wallet} className="w-6 h-6" resizeMode="contain" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-gray-800 font-medium text-base">Deposit from my</Text>
-              <Text className="text-gray-500 text-sm">28 January 2021</Text>
-            </View>
-            <Text className="text-red-500 font-bold text-base">- $850</Text>
-          </View>
-
-          {/* Giao dịch 2 */}
-          <View className="flex-row items-center mt-5">
-            <View className="bg-blue-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
-              <Image source={icons.paypal} className="w-6 h-6" resizeMode="contain" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-gray-800 font-medium text-base">Deposit Paypal</Text>
-              <Text className="text-gray-500 text-sm">25 January 2021</Text>
-            </View>
-            <Text className="text-green-500 font-bold text-base">+ $2,500</Text>
-          </View>
-
-          {/* Giao dịch 3 */}
-          <View className="flex-row items-center mt-5">
-            <View className="bg-teal-100 w-12 h-12 rounded-full flex items-center justify-center mr-4">
-              <Image source={icons.dollar} className="w-6 h-6" resizeMode="contain" />
-            </View>
-            <View className="flex-1">
-              <Text className="text-gray-800 font-medium text-base">Jeni Wilson</Text>
-              <Text className="text-gray-500 text-sm">21 January 2021</Text>
-            </View>
-            <Text className="text-green-500 font-bold text-base">+ $5,400</Text>
-          </View>
+          {recentTransactions.length > 0 ? (
+            recentTransactions.map((transaction, index) => (
+              <View className="flex-row items-center mt-5" key={transaction._id || index}>
+                <View className={`w-12 h-12 rounded-full flex items-center justify-center mr-4 ${transaction.orderStatus === 'Delivered' ? 'bg-green-100' : 'bg-yellow-100'}`}>
+                  <Image
+                    source={icons.wallet}
+                    className="w-6 h-6"
+                    resizeMode="contain"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-gray-800 font-medium text-base">
+                    {transaction.user?.username}
+                  </Text>
+                  <Text className="text-gray-500 text-sm">
+                    {new Date(transaction.orderDate).toLocaleDateString()}
+                  </Text>
+                </View>
+                <Text
+                  className={`font-bold text-base ${transaction.totalAmount > 0 ? 'text-green-500' : 'text-red-500'
+                    }`}
+                >
+                  ${transaction.totalAmount.toLocaleString()}
+                </Text>
+              </View>
+            ))
+          ) : (
+            <Text className="text-gray-500 text-center mt-5">No recent transactions</Text>
+          )}
         </View>
-
 
         {/* Weekly Activity */}
         <View className="bg-white p-5 rounded-lg shadow-lg mb-5">
           <Text className="text-lg font-bold text-gray-700 mb-2">Weekly Activity</Text>
-          <BarChart
-            data={{
-              labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-              datasets: [{ data: [400, 300, 200, 500, 600, 700, 800] }],
-            }}
-            width={screenWidth - 50}
-            height={220}
-            yAxisLabel="$"
-            yAxisSuffix=""
-            fromZero={true}
-            showValuesOnTopOfBars={true}
-            chartConfig={chartConfig}
-            style={{
-              borderRadius: 15,
-              marginTop: 10,
-              marginLeft: -30,
-            }}
-          />
+          {weeklyActivity.length > 0 ? (
+            <BarChart
+              data={{
+                labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                datasets: [{ data: weeklyActivity }],
+              }}
+              width={screenWidth - 50}
+              height={220}
+              yAxisLabel="$"
+              yAxisSuffix=""
+              fromZero={true}
+              showValuesOnTopOfBars={true}
+              chartConfig={chartConfig}
+              style={{
+                borderRadius: 15,
+                marginTop: 10,
+                marginLeft: -15,
+              }}
+            />
+          ) : (
+            <Text className="text-gray-500 text-center mt-5">No activity this week</Text>
+          )}
         </View>
-
 
         {/* Balance History */}
         <View className="bg-white p-5 rounded-lg shadow-lg mb-5">
           <Text className="text-lg font-bold text-gray-700">Balance History</Text>
-          <LineChart
-            data={{
-              labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-              datasets: [{ data: [500, 600, 800, 400, 700, 1000] }],
-            }}
-            width={screenWidth - 40}
-            height={220}
-            yAxisLabel="$"
-            chartConfig={chartConfig}
-            style={{ borderRadius: 10, marginTop: 10 }}
-          />
+          {balanceHistory.length > 0 ? (
+            <LineChart
+              data={{
+                labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+                datasets: [{ data: balanceHistory }],
+              }}
+              width={screenWidth - 40}
+              height={220}
+              yAxisLabel="$"
+              chartConfig={chartConfig}
+              style={{ borderRadius: 10, marginTop: 10, marginLeft: -20, }}
+            />
+          ) : (
+            <Text className="text-gray-500 text-center mt-5">No balance history available</Text>
+          )}
         </View>
+
+
       </ScrollView>
 
       {/* Overlay for background blur effect */}
@@ -297,45 +361,6 @@ const HomeScreenAdmin = () => {
           <TouchableOpacity style={{ flex: 1 }} onPress={toggleMenu} />
         </Animated.View>
       )}
-
-      
-      {/* Sidebar Menu
-      <Animated.View
-        style={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          width: screenWidth * 0.6,
-          backgroundColor: 'white',
-          padding: 20,
-          transform: [{ translateX: slideAnim }],
-          zIndex: 2,
-        }}
-      >
-        <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, marginTop: 20 }}>Menu</Text>
-
-        <TouchableOpacity onPress={() => { navigation.navigate('ProductManagement')}}>
-          <Text style={{ fontSize: 18, marginVertical: 10 }}>Product Management</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => { navigation.navigate('AdminOrder')}}>
-          <Text style={{ fontSize: 18, marginVertical: 10 }}>Order Management</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => { navigation.navigate('CustomerCare')}}>
-          <Text style={{ fontSize: 18, marginVertical: 10 }}>Customer Care</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => { navigation.navigate('CustomerCare')}}>
-          <Text style={{ fontSize: 18, marginVertical: 10 }}>Create Account</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={toggleMenu} style={{ marginTop: 20 }}>
-          <Text style={{ fontSize: 18, color: 'red' }}>Close</Text>
-        </TouchableOpacity>
-      </Animated.View> */}
-
 
       {/* Sidebar Menu */}
       <Animated.View

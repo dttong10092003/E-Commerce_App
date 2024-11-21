@@ -8,58 +8,59 @@ import axios from 'axios';
 import { RootStackParamList } from '../constants/rootStackParamList';
 import { Ratings } from '../constants/types';
 import BASE_URL from '../config';
+import icons from '../constants/icons';
 
 interface Feedback {
     _id: string;
     user: {
-      _id: string;
-      username: string;
-      avatar: string;
+        _id: string;
+        username: string;
+        avatar: string;
     };
     rating: number;
     comment: string;
     createdAt: string;
-  }
+}
 
 type RatingsReviewsScreenRouteProp = RouteProp<RootStackParamList, 'RatingsReviews'>;
 
-const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = ({ route }) => {
+const RatingsReviewsScreen: React.FC<{ route: RatingsReviewsScreenRouteProp }> = ({ route }) => {
     const navigation = useNavigation();
-    const { itemDetails } = route.params; 
+    const { itemDetails } = route.params;
     const [reviews, setReviews] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const fetchReviews = async (productId: string) => {
         try {
-          const response = await axios.get<Feedback[]>(`${BASE_URL}/feedback/product/${productId}`);
-          return response.data;
+            const response = await axios.get<Feedback[]>(`${BASE_URL}/feedback/product/${productId}`);
+            return response.data;
         } catch (error) {
-          console.error("Error fetching reviews:", error);
-          return [];
+            console.error("Error fetching reviews:", error);
+            return [];
         }
-      };
+    };
 
     useEffect(() => {
         const fetchData = async () => {
-          setLoading(true);
-          const fetchedReviews = await fetchReviews(itemDetails._id);
-          setReviews(fetchedReviews);
-          setLoading(false);
+            setLoading(true);
+            const fetchedReviews = await fetchReviews(itemDetails._id);
+            setReviews(fetchedReviews);
+            setLoading(false);
         };
         fetchData();
-      }, [itemDetails._id]);
+    }, [itemDetails._id]);
 
     function calculateAverageRating(ratings: Ratings): number {
         const totalRatings = ratings[1] + ratings[2] + ratings[3] + ratings[4] + ratings[5];
         const weightedSum =
-          ratings[1] * 1 +
-          ratings[2] * 2 +
-          ratings[3] * 3 +
-          ratings[4] * 4 +
-          ratings[5] * 5;
-      
+            ratings[1] * 1 +
+            ratings[2] * 2 +
+            ratings[3] * 3 +
+            ratings[4] * 4 +
+            ratings[5] * 5;
+
         return totalRatings > 0 ? weightedSum / totalRatings : 0;
-      }
+    }
 
     const starData = [
         { stars: 5, count: itemDetails?.ratings?.[5] || 0 },
@@ -73,11 +74,11 @@ const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = (
 
     if (loading) {
         return (
-          <SafeAreaView className="flex-1 justify-center items-center">
-            <ActivityIndicator size="large" color="#0000ff" />
-          </SafeAreaView>
+            <SafeAreaView className="flex-1 justify-center items-center">
+                <ActivityIndicator size="large" color="#0000ff" />
+            </SafeAreaView>
         );
-      }
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-white px-4">
@@ -88,7 +89,7 @@ const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = (
             </View>
 
             {/* Ratings Summary */}
-            <View className="my-4">               
+            <View className="my-4">
                 <View className="flex flex-row items-center mt-3">
                     <Text className="text-5xl font-bold">{calculateAverageRating(itemDetails.ratings).toFixed(1)}</Text>
                     <View className="ml-6">
@@ -121,7 +122,13 @@ const RatingsReviewsScreen: React.FC<{route: RatingsReviewsScreenRouteProp}> = (
             <ScrollView>
                 {reviews.map((review) => (
                     <View key={review.id} className="flex flex-row items-start mb-6">
-                        <Image source={{ uri: review.user.avatar }} className="w-12 h-12 rounded-full" />
+                        <Image
+                            source={review.user.avatar
+                                ? { uri: `data:image/jpeg;base64,${review.user.avatar}` }
+                                : icons.profile // Avatar mặc định
+                            }
+                            className="w-12 h-12 rounded-full"
+                        />
                         <View className="ml-4 flex-1">
                             <View className="flex flex-row justify-between">
                                 <Text className="font-bold">{review.user.username}</Text>
