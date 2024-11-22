@@ -6,7 +6,6 @@ import Slider from '@react-native-community/slider';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
-import { Product } from '../constants/types';
 import { colorMap } from '../constants/colors';
 
 type RootStackParamList = {
@@ -26,9 +25,6 @@ type RootStackParamList = {
     allColors: string[];
     allSizes: string[];
     allDiscounts: number[];
-  };
-  ProductDetails: {
-    itemDetails: Product;
   };
 };
 

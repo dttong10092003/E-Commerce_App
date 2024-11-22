@@ -8,6 +8,7 @@ const splash1 = require('../assets/images/spash_1.png');
 const splash2 = require('../assets/images/spash_2.png');
 const splash3 = require('../assets/images/spash_3.png');
 const sponsored = require('../assets/images/sponserd.png');
+const sneaker = require('../assets/images/sneaker.png');
 export default {
   cover,
   deal_off,
@@ -19,4 +20,5 @@ export default {
   splash2,
   splash3,
   sponsored,
+  sneaker,
 };

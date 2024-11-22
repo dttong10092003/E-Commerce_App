@@ -144,12 +144,11 @@ exports.getSubSubCategories = async (req, res) => {
 
         const filter = {};
 
-        // const filter = { "subCategory.name": subCategoryName };
         if (mainCategory !== 'All') {
             filter.mainCategory = mainCategory; // Chỉ thêm mainCategory khi nó không phải là "All"
         }
 
-        if (subCategoryName !== 'New') { // New hoặc All
+        if (subCategoryName !== 'New') {
             filter["subCategory.name"] = subCategoryName;
         }
 

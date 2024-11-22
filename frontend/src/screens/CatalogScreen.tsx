@@ -82,20 +82,6 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
     new Set(products.map((product) => product.discount))
   ).sort((a, b) => a - b);
 
-  // const allSizes = sortSizesAutomatically(Array.from(
-  //   new Set(products.flatMap((product) => product.variants.map((variant) => variant.size)))
-  //   )
-  // );
-  // const allColors = Array.from(
-  //   new Set(
-  //     products
-  //       .flatMap((product) => 
-  //         product.variants.flatMap((variant) => 
-  //           variant.colors.map((colorObj) => colorObj.color)
-  //         )
-  //       )
-  //   ) 
-  // );
   const allSizes = sortSizesAutomatically(
     Array.from(
       new Set(

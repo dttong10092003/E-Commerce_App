@@ -1,6 +1,5 @@
 import {
     View,
-    Text,
     TouchableOpacity,
     Image,
     TextInput,
@@ -15,13 +14,20 @@ import {
     placeholder?: string;
     initialQuery: string;
   };
-  
-  type ScreenNavigationProps = StackNavigationProp<RootStackParamList, 'Search'>;
-  
-  
+
   type RootStackParamList = {
-    Search: {query: string} | undefined;
+    Catalog: {
+      mainCategory: string; 
+      subCategoryName: string; 
+      subSubCategory: string;
+      filters?: {
+        searchQuery?: string;
+      };
+    };
   };
+  
+  type ScreenNavigationProps = StackNavigationProp<RootStackParamList, 'Catalog'>;
+
   const CustomSearch: React.FC<CustomSearchProps> = ({
     placeholder,
     initialQuery,
@@ -34,14 +40,21 @@ import {
       if (query.trim() === '') {
         return Alert.alert('Please fill the required field');
       } else {
-        navigation.navigate('Search', {query});
+        navigation.navigate('Catalog', {
+          mainCategory: 'All',
+          subCategoryName: 'New',
+          subSubCategory: 'All',
+          filters: {
+            searchQuery: query,
+          },
+        });
         setQuery('');
       }
     };
   
     return (
-      <View className="mx-3">
-        <View className="flex flex-row items-center justify-between bg-white w-full rounded-xl pr-5  h-16">
+      <View className="mx-4">
+        <View className="flex flex-row items-center justify-between bg-white w-full rounded-xl pr-4 h-16">
           <TouchableOpacity onPress={handlePress}>
             <Image
               source={icons.search}
@@ -53,7 +66,7 @@ import {
             placeholder={placeholder || 'Search any Product..'}
             value={query}
             onChangeText={(e: string) => setQuery(e)}
-            className="text-[#BBBBBB] flex-1 text-lg font-pregular bg-white"
+            className="text-black-500 flex-1 text-lg font-pregular bg-white"
             placeholderTextColor={'#BBBBBB'}
             onSubmitEditing={handlePress}
           />

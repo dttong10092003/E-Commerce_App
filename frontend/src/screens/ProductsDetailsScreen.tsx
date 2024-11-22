@@ -6,7 +6,6 @@ import { RouteTabsParamList } from './HomeScreen';
 import { RootStackParamList } from '../constants/rootStackParamList';
 import { Rating } from 'react-native-ratings';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { CategoriesData, ProductData } from '../constants/data';
 import { colorMap } from '../constants/colors';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -14,6 +13,7 @@ import BASE_URL from '../config';
 import axios from 'axios';
 import { Ratings } from '../constants/types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Product } from '../constants/types';
 
 
 const { width } = Dimensions.get('window');
@@ -30,9 +30,10 @@ type ProductDetailsProps = {
 };
 
 const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
-  const { itemDetails } = route.params; // nhận dữ liệu từ trang Catalog
+  // const { itemDetails } = route.params; 
   const navigation = useNavigation<StackNavigationProp<RouteTabsParamList, 'Cart'>>();
   
+  const [itemDetails, setItemDetails] = useState<Product>(route.params.itemDetails);
   const [userID, setUserID] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState(itemDetails.variants[0]?.color || '');
   const [selectedSize, setSelectedSize] = useState<string | null>(null); 
@@ -42,6 +43,7 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   const [modalVisible, setModalVisible] = useState(false); 
   const [isFavorited, setIsFavorited] = useState(false);
   const finalPrice = itemDetails.salePrice * (1 - itemDetails.discount / 100) * quantity;
+  const [products, setProducts] = useState<Product[]>([]);
   
 
   const scrollX = useRef(new Animated.Value(0)).current;
@@ -53,7 +55,18 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
   const sizesForSelectedColor = itemDetails.variants
     .find(variant => variant.color === selectedColor)?.sizes || [];
 
-  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get<Product[]>(
+          `${BASE_URL}/products/${itemDetails.mainCategory}/${itemDetails.subCategory.name}/${itemDetails.subSubCategory}/products`
+        );
+        setProducts(response.data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      } finally {
+      }
+    };
+
     const fetchUserID = async () => {
       try {
         const token = await AsyncStorage.getItem('authToken');
@@ -73,11 +86,30 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
       }
     };
 
+  useEffect(() => {
     fetchUserID();
+    fetchProducts();
   }, []);
 
   console.log("userID:", userID);
   console.log("itemDetails.id:", itemDetails._id);
+
+  const handleProductPress = (product: Product) => {
+    setItemDetails(product);
+    console.log("Product details new 1", itemDetails._id);
+    setSelectedColor(product.variants[0]?.color || '');
+    setSelectedSize(null);
+    setQuantity(1);
+  };
+
+  useEffect(() => {
+    if (itemDetails) {
+      console.log("Product details new 2:", itemDetails._id);
+      if (userID) {
+        checkIfFavorited(userID);
+      }
+    }
+  }, [itemDetails, userID]);
 
   const fetchCartItemCount = async (userId: string) => {
     try {
@@ -93,9 +125,11 @@ const ProductsDetailsScreen: React.FC<ProductDetailsProps> = ({ route }) => {
     try {
       const response = await axios.get<WishlistType>(`${BASE_URL}/wishlist/${userId}`);
       const wishlist = response.data;
-      if (wishlist.products.some((product: { _id: string }) => product._id === itemDetails._id)) {
-        setIsFavorited(true);
-      }
+      const isProductFavorited = wishlist.products.some(
+        (product: { _id: string }) => product._id === itemDetails._id
+      );
+  
+      setIsFavorited(isProductFavorited); 
     } catch (error) {
       console.error("Error checking if product is in wishlist:", error);
     }
@@ -369,41 +403,40 @@ const addToCart = async () => {
             <Text className="text-xl font-bold mb-3">You can also like this</Text>
             <FlatList
               horizontal
-              data={ProductData}
+              data={products.filter(product => product._id !== itemDetails._id)}
               renderItem={({ item }) => (
-                <View className="mr-4 w-40">
-                  <View className="relative">
-                    <Image source={{ uri: item.image }} className="w-full h-44 rounded-lg" />
-                    {item.priceOff && (
-                      <View className="absolute top-2 left-2 bg-red-500 px-2 py-1 rounded-full">
-                        <Text className="text-white text-xs">{item.priceOff}%</Text>
-                      </View>
-                    )}
-                  </View>
+                  <TouchableOpacity className="mr-4 w-40" onPress={() => handleProductPress(item)}>
+                    <View className="relative">
+                      <Image source={{ uri: item.images[0] }} className="w-full h-40 rounded-lg" />
+                      {item.discount > 0 && (
+                        <View className="absolute top-2 left-2 bg-red-500 px-2 py-1 rounded-full">
+                          <Text className="text-white text-xs">{item.discount}%</Text>
+                        </View>
+                      )}
+                    </View>
 
-                  {/* Giới hạn số dòng của tiêu đề sản phẩm */}
-                  <Text className="text-sm mt-2 text-gray-500" numberOfLines={1} ellipsizeMode="tail">
-                    {item.title}
-                  </Text>
+                    <Text className="text-sm mt-2 text-gray-500" numberOfLines={1} ellipsizeMode="tail">
+                      {item.name}
+                    </Text>
 
-                  <View className="flex flex-row items-center mt-1">
-                    <Rating
-                      type="custom"
-                      ratingCount={5}
-                      imageSize={14}
-                      readonly={true}
-                      startingValue={item.stars}
-                    />
-                    <Text className="ml-2 text-xs text-gray-500">({item.numberOfReview})</Text>
-                  </View>
+                    <View className="flex flex-row items-center mt-1">
+                      <Rating
+                        type="custom"
+                        ratingCount={5}
+                        imageSize={14}
+                        readonly={true}
+                        startingValue={calculateAverageRating(item.ratings)}
+                      />
+                      <Text className="ml-2 text-xs text-gray-500">({item.reviews} reivews)</Text>
+                    </View>
 
-                  <View className="flex flex-row items-center mt-1">
-                    {item.priceBeforeDeal && (
-                      <Text className="line-through text-sm text-gray-400">${item.priceBeforeDeal}</Text>
-                    )}
-                    <Text className="ml-2 text-sm text-red-500">${item.price}</Text>
-                  </View>
-                </View>
+                    <View className="flex flex-row items-center mt-1">
+                      <Text className="text-sm text-red-500">${item.salePrice * (1 - item.discount / 100)}</Text>
+                      {item.discount > 0 && (
+                        <Text className="ml-2 line-through text-sm text-gray-400">${item.salePrice}</Text>
+                      )}
+                    </View>
+                  </TouchableOpacity>
               )}
               keyExtractor={(item, index) => index.toString()}
               showsHorizontalScrollIndicator={false}

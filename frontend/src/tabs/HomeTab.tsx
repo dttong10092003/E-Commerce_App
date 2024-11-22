@@ -1,8 +1,8 @@
-import {View, Text, Image, TouchableOpacity, ImageSourcePropType, FlatList, ScrollView,Alert } from 'react-native';
+import { View, Text, Image, TouchableOpacity, ImageSourcePropType, FlatList, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import React, { useEffect, useState, useCallback } from 'react';
-import {useNavigation,useFocusEffect } from '@react-navigation/native';
-import {StackNavigationProp} from '@react-navigation/stack';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import icons from '../constants/icons';
 import images from '../constants/images';
 import { CustomSearch, ProductItem } from '../components';
@@ -19,18 +19,27 @@ type SubCategory = {
 type User = {
   username: string;
   email: string;
-  avatar: string; 
+  avatar: string;
 };
 type Props = {};
 
 const HomeTab = (props: Props) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
-  
+
 
   type RootStackParamList = {
     Setting: undefined;
     ProductDetails: { itemDetails: Product };
     Categories: { subCategoryName: string };
+    Catalog: {
+      mainCategory: string;
+      subCategoryName: string;
+      subSubCategory: string;
+      filters?: {
+        selectedDiscount?: number;
+        searchQuery?: string;
+      };
+    };
   };
 
   const NavigateToProfile = () => {
@@ -38,23 +47,53 @@ const HomeTab = (props: Props) => {
   };
 
   const handleSelectCategory = (subCategory: SubCategory) => {
-    // Xu ly chuyen sang trang category duoc chon
     navigation.navigate('Categories', { subCategoryName: subCategory.name });
   }
 
+  // Có thể có sản phẩm hoặc không
   const handleDealOff = () => {
-    // Xu ly chuyen sang trang deal off
+    navigation.navigate('Catalog', {
+      mainCategory: 'All',
+      subCategoryName: 'New',
+      subSubCategory: 'All',
+      filters: {
+        selectedDiscount: 40,
+      },
+    });
   }
 
   const handleViewAllNewArrival = () => {
-    // Xu ly chuyen sang trang new arrival
+    navigation.navigate('Catalog', {
+      mainCategory: 'All',
+      subCategoryName: 'New',
+      subSubCategory: 'All',
+    });
   };
+
+  const handleSneaker = () => {
+    navigation.navigate('Catalog', {
+      mainCategory: 'All',
+      subCategoryName: 'New',
+      subSubCategory: 'Sneakers',
+    });
+  };
+
+  const handleSummer = () => {
+    navigation.navigate('Catalog', {
+      mainCategory: 'All',
+      subCategoryName: 'New',
+      subSubCategory: 'All',
+      filters: {
+        searchQuery: 'Summer',
+      },
+    });
+  }
 
   const [categories, setCategories] = useState<SubCategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [user, setUser] = useState<User | null>(null); // Thêm state cho thông tin người dùng
- 
-// Lấy thông tin người dùng (bao gồm avatar) từ server khi component tải
+
+  // Lấy thông tin người dùng (bao gồm avatar) từ server khi component tải
 
   const fetchUserData = async () => {
     try {
@@ -65,7 +104,7 @@ const HomeTab = (props: Props) => {
             Authorization: `Bearer ${token}`,
           },
         });
-        
+
         if (response.status === 200) {
           const { username, email, avatar } = response.data as User;
           setUser({
@@ -82,56 +121,52 @@ const HomeTab = (props: Props) => {
   };
 
 
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get<SubCategory[]>(`${BASE_URL}/products/sub-categories`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to fetch subcategories:', error);
+    }
+  };
 
 
 
-    const fetchCategories = async () => {
-      try {
-        const response = await axios.get<SubCategory[]>(`${BASE_URL}/products/sub-categories`);
-        // const response = await axios.get<SubCategory[]>("http://192.168.1.2:4000/api/products/sub-categories");
-        setCategories(response.data);
-      } catch (error) {
-        console.error('Failed to fetch subcategories:', error);
-      }
-    };
+  const fetchProducts = async () => {
+    try {
+      const response = await axios.get<Product[]>(`${BASE_URL}/products`);
+      setProducts(response.data);
+    } catch (error) {
+      console.error('Failed to fetch products:', error);
+    }
+  };
 
- 
-  
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get<Product[]>(`${BASE_URL}/products`);
-        setProducts(response.data);
-      } catch (error) {
-        console.error('Failed to fetch products:', error);
-      }
-    };
-   
 
   console.log('categoriesData:', categories);
 
-  const renderItem = ({item}: { item: SubCategory}) => (
-      <TouchableOpacity onPress={() => handleSelectCategory(item)}>
-        <Image
-          source={{uri: item.image}}
-          className='w-24 h-24 rounded-full'              
+  const renderItem = ({ item }: { item: SubCategory }) => (
+    <TouchableOpacity onPress={() => handleSelectCategory(item)}>
+      <Image
+        source={{ uri: item.image }}
+        className='w-24 h-24 rounded-full'
 
-        />
-        <Text className='text-black-100/80 text-center text-lg font-medium'>{' '}{item.name}{' '}</Text>
-      </TouchableOpacity>
+      />
+      <Text className='text-black-100/80 text-center text-lg font-medium'>{' '}{item.name}{' '}</Text>
+    </TouchableOpacity>
   );
-// Hàm refresh toàn bộ trang
-const refreshHomePage = async () => {
-  await fetchUserData();
-  await fetchCategories();
-  await fetchProducts();
-};
+  // Hàm refresh toàn bộ trang
+  const refreshHomePage = async () => {
+    await fetchUserData();
+    await fetchCategories();
+    await fetchProducts();
+  };
 
-// Gọi refreshHomePage khi màn hình được focus
-useFocusEffect(
-  useCallback(() => {
-    refreshHomePage();
-  }, [])
-);
+  // Gọi refreshHomePage khi màn hình được focus
+  useFocusEffect(
+    useCallback(() => {
+      refreshHomePage();
+    }, [])
+  );
   return (
     <SafeAreaView>
       <ScrollView>
@@ -141,51 +176,51 @@ useFocusEffect(
             <Image
               source={icons.menu}
               className='w-8 h-8'
-              resizeMode='contain'>         
+              resizeMode='contain'>
             </Image>
           </TouchableOpacity>
-          
+
           <Image
             source={images.logo}
             className='w-14 h-14'
-            resizeMode='contain'>          
+            resizeMode='contain'>
           </Image>
 
           <TouchableOpacity onPress={NavigateToProfile}>
             <Image
-               source={user?.avatar ? { uri: user.avatar } : icons.profile}
-               className="w-8 h-8 rounded-full"
-              resizeMode='cover'>         
+              source={user?.avatar ? { uri: user.avatar } : icons.profile}
+              className="w-8 h-8 rounded-full"
+              resizeMode='cover'>
             </Image>
           </TouchableOpacity>
         </View>
 
         {/* Search */}
-        <CustomSearch initialQuery="" />
+        <CustomSearch initialQuery="" placeholder='Search any Product...' />
 
         {/* Features */}
-        <Text className='text-2xl font-bold my-5 mx-4'>All Categories</Text>          
+        <Text className='text-2xl font-bold my-5 mx-4'>All Categories</Text>
 
         {/* Categories */}
         <View>
-        <FlatList
+          <FlatList
             data={categories}
             renderItem={renderItem}
             // keyExtractor={(item) => `${item.id}`}
             horizontal
             showsHorizontalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View className='w-5'/>}
-            contentContainerStyle={{paddingHorizontal: 20}}
+            ItemSeparatorComponent={() => <View className='w-5' />}
+            contentContainerStyle={{ paddingHorizontal: 20 }}
           />
         </View>
 
         {/* Offer */}
-        <View className='pb-5 mx-4'> 
+        <View className='pb-5 mx-4'>
           <TouchableOpacity onPress={handleDealOff}>
             <Image
-                source={images.deal_off}
-                className='w-full mt-6 rounded-lg'
-                resizeMode='cover'
+              source={images.deal_off}
+              className='w-full mt-6 rounded-lg'
+              resizeMode='cover'
             />
           </TouchableOpacity>
         </View>
@@ -216,15 +251,15 @@ useFocusEffect(
         <View className="my-6">
           <FlatList
             data={products}
-            renderItem={({item}) => (
-            <ProductItem
-              itemDetails={item}
-            />
+            renderItem={({ item }) => (
+              <ProductItem
+                itemDetails={item}
+              />
             )}
             horizontal
             showsHorizontalScrollIndicator={false}
             ItemSeparatorComponent={() => <View className="w-8" />}
-            contentContainerStyle={{paddingHorizontal: 20}}
+            contentContainerStyle={{ paddingHorizontal: 17 }}
           />
         </View>
 
@@ -245,36 +280,38 @@ useFocusEffect(
           </View>
         </View>
 
-        {/* Flat Shoes Offer */}
-        <TouchableOpacity>
-          <View className="my-5 mx-4">
+        {/* Sneaker */}
+        <TouchableOpacity onPress={handleSneaker}>
+          <View className="mt-6 mx-4">
             <Image
-              source={images.flat}
+              source={images.sneaker}
               className="self-center w-full rounded-lg"
               resizeMode="cover"
             />
           </View>
         </TouchableOpacity>
 
-        {/* Product */}
-        <View className="my-6">
+        {/* Sneakers & Boots */}
+        <View className="my-4">
           <FlatList
-            data={products}
-            renderItem={({item}) => (
-            <ProductItem
-              itemDetails={item}
-            />
+            data={products.filter(product => 
+              product.subSubCategory === 'Sneakers' || product.subSubCategory === 'Boots'
+            )}
+            renderItem={({ item }) => (
+              <ProductItem
+                itemDetails={item}
+              />
             )}
             horizontal
             showsHorizontalScrollIndicator={false}
             ItemSeparatorComponent={() => <View className="w-8" />}
-            contentContainerStyle={{paddingHorizontal: 20}}
+            contentContainerStyle={{ paddingHorizontal: 17 }}
           />
         </View>
 
         {/* Hot Summer */}
-        <TouchableOpacity>
-          <View className="my-5 mx-4">
+        <TouchableOpacity onPress={handleSummer}>
+          <View className="my-4 mx-4">
             <Image
               source={images.hot_summer}
               className="self-center w-full rounded-lg"
