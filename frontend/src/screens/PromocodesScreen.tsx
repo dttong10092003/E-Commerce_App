@@ -66,16 +66,6 @@ const PromocodesScreen = ({ navigation }) => {
         }
     };
 
-    // const checkCanCheckIn = (lastCheckInTime) => {
-    //     if (lastCheckInTime) {
-    //         const currentTime = Date.now();
-    //         const timeSinceLastCheckIn = currentTime - new Date(lastCheckInTime).getTime();
-    //         setCanCheckIn(timeSinceLastCheckIn >= 60000); // 1 minute = 60000 ms
-    //     } else {
-    //         setCanCheckIn(true);
-    //     }
-    // };
-
     const checkCanCheckIn = (lastCheckInTime) => {
         if (lastCheckInTime) {
             const currentDate = new Date();
@@ -194,8 +184,8 @@ const PromocodesScreen = ({ navigation }) => {
     );
 
     return (
-        <SafeAreaView className="flex-1 bg-white">
-            <View className="px-4 pb-4 pt-2 bg-white shadow flex-row items-center">
+        <SafeAreaView className="flex-1 bg-gray-100">
+            <View className="px-4 pb-4 flex-row items-center">
                 <Ionicons name="chevron-back" size={24} color="black" onPress={() => navigation.goBack()} />
                 <Text className="text-2xl font-bold ml-4 text-gray-800">Promocodes</Text>
             </View>
