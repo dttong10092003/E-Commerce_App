@@ -6,6 +6,7 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import axios from 'axios';
 import BASE_URL from '../config';
 import { Ionicons } from '@expo/vector-icons';
+import { subCategoryImages } from '../constants/subCategoryImages';
 
 type EditProductRouteProp = RouteProp<{ params: { product: any } }, 'params'>;
 
@@ -87,7 +88,7 @@ const EditProductScreen = () => {
       mainCategory: mainCategory,
       subCategory: {
         name: subCategory,
-        image: `https://picsum.photos/200?${subCategory.toLowerCase()}`
+        image: subCategoryImages[subCategory] || `https://picsum.photos/200?${subCategory.toLowerCase()}`
       },
       subSubCategory: subSubCategory,
       images: imageValues,
