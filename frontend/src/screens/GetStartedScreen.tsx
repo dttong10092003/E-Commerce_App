@@ -10,11 +10,11 @@ type Props = {};
 const GetStartedScreen = (props: Props) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   type RootStackParamList = {
-    HomeScreen: undefined;
+    Login: undefined;
   };
 
   const GetStarted = () => {
-    navigation.navigate('HomeScreen');
+    navigation.navigate('Login');
   };
   return (
     <ImageBackground

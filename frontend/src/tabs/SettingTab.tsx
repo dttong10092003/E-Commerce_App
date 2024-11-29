@@ -321,7 +321,7 @@ const SettingTab = (props: Props) => {
           <Ionicons name="chevron-forward" size={24} color="#A0A0A0" />
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"
         // onPress={() => navigation.navigate('Reviews')}
         >
@@ -330,7 +330,7 @@ const SettingTab = (props: Props) => {
             <Text className="text-sm text-gray-400">Reviews for 4 items</Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#A0A0A0" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity
           className="flex-row items-center justify-between px-4 py-4 border-b border-gray-200"

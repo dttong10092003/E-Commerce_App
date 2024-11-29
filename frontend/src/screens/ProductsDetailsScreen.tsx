@@ -477,15 +477,15 @@ const addToCart = async () => {
       </View>
     </View>
 
-    <Text className="text-lg font-semibold mb-4">Select size</Text>
+    <Text className="text-lg font-semibold mb-2">Select size</Text>
 
     {/* Size Selection */}
-    <View className="flex flex-row items-center mt-3">
+    <View className="flex flex-row items-center flex-wrap">
       {sizesForSelectedColor.map(size => (
         <TouchableOpacity
           key={size.size}
           onPress={() => setSelectedSize(size.size)}
-          className={`w-10 h-10 rounded-full flex items-center ml-2 justify-center transition-all ${selectedSize === size.size ? 'bg-blue-500 border-2 border-[#43d854]' : 'bg-gray-200'
+          className={`w-10 h-10 rounded-full flex items-center mr-2 mt-2 justify-center transition-all ${selectedSize === size.size ? 'bg-blue-500 border-2 border-[#43d854]' : 'bg-gray-200'
             } shadow-md`}
         >
           <Text className={`${selectedSize === size.size ? 'text-white' : 'text-gray-900'}`}>{size.size}</Text>
@@ -494,7 +494,7 @@ const addToCart = async () => {
     </View>
 
     {/* Color and Quantity Selection - In the same row */}
-    <View className="flex flex-row justify-between mt-6">
+    <View className="flex flex-row justify-between mt-4">
       {/* Color Selection */}
       <View>
         <Text className="text-lg font-semibold text-gray-700">Colors available</Text>

@@ -1,7 +1,6 @@
 import { View, Text, Image } from 'react-native';
 import React from 'react';
 import Onboarding from 'react-native-onboarding-swiper';
-import  images  from '../constants/images';
 import { SplashData } from '../constants/data';
 import { useNavigation } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -10,13 +9,13 @@ import { StackNavigationProp } from '@react-navigation/stack';
 
 type Props = {};
 export type RootStackParamList = {
-  Login: undefined;
+  GetStarted: undefined;
 
 };
 const OnboardingScreen = (props: Props) => {
   const navigation = useNavigation<StackNavigationProp<RootStackParamList>>();
   const handlDone = () => {
-    navigation.navigate('Login');
+    navigation.navigate('GetStarted');
   };
 
   return (

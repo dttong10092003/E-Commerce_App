@@ -221,13 +221,13 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
         {/* Variants */}
         <View className="flex-row mt-2">
           <Text className="text-gray-500 text-xs mr-1">Sizes:</Text>
-          <Text className="text-xs">{Array.from(new Set(item.variants.flatMap((variant) => variant.sizes.map((sizeObj) => sizeObj.size)))).join(', ')}</Text>
+          <Text className="text-xs w-[90%]">{Array.from(new Set(item.variants.flatMap((variant) => variant.sizes.map((sizeObj) => sizeObj.size)))).join(', ')}</Text>
         </View>
 
         {/* Available Colors */}
         <View className="flex-row mt-2">
           <Text className="text-gray-500 text-xs mr-2">Colors:</Text>
-          <View className="flex-row">
+          <View className="flex-row flex-wrap w-[90%]">
           {Array.from(new Set(item.variants.map((variant) => variant.color))).map((uniqueColor: string, index) => (
             <View
               key={index}
@@ -285,13 +285,13 @@ const CatalogScreen: React.FC<CatalogScreenProps> = ({ route }) => {
       {/* Available Sizes */}
       <View className="flex-row mt-2">
         <Text className="text-gray-500 text-xs mr-1">Sizes:</Text>
-        <Text className="text-xs">{Array.from(new Set(item.variants.flatMap((variant) => variant.sizes.map((sizeObj) => sizeObj.size)))).join(', ')}</Text>
+        <Text className="text-xs w-[90%]">{Array.from(new Set(item.variants.flatMap((variant) => variant.sizes.map((sizeObj) => sizeObj.size)))).join(', ')}</Text>
       </View>
 
       {/* Available Colors */}
       <View className="flex-row mt-2">
         <Text className="text-gray-500 text-xs mr-1">Colors:</Text>
-        <View className="flex-row">
+        <View className="flex-row flex-wrap w-[90%]">
         {Array.from(new Set(item.variants.map((variant) => variant.color))).map((uniqueColor: string, index) => (
           <View
             key={index}

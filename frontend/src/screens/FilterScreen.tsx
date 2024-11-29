@@ -179,27 +179,6 @@ const FilterScreen: React.FC = () => {
           ))}
         </View>
 
-        {/* Category */}
-        {/* <Text className="text-lg font-semibold mt-4">Category</Text>
-        <View className="flex-row mt-2 flex-wrap">
-          {['All', 'Women', 'Men', 'Boys', 'Girls'].map((category) => (
-            <TouchableOpacity
-              key={category}
-              onPress={() => setSelectedCategory(category)}
-              style={{
-                padding: 8,
-                borderWidth: 1,
-                borderRadius: 8, // Giảm độ tròn của border
-                borderColor: selectedCategory === category ? 'red' : '#ddd',
-                backgroundColor: selectedCategory === category ? 'red' : 'white',
-                marginRight: 8,
-                marginBottom: 8,
-              }}
-            >
-              <Text style={{ color: selectedCategory === category ? 'white' : 'black' }}>{category}</Text>
-            </TouchableOpacity>
-          ))}
-        </View> */}
 
         {/* Discard and Apply Buttons */}
         <View className="flex-row mt-6 mb-4">
