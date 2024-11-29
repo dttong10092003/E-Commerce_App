@@ -37,7 +37,7 @@ const SearchTab: React.FC = () => {
           try {
               const response = await axios.get<SubCategory[]>(`${BASE_URL}/products/sub-categories`);
               // setSubCategories(response.data);
-              setSubCategories([{ name: 'New', image: 'https://picsum.photos/200' }, ...response.data]);
+              setSubCategories([{ name: 'New', image: 'https://i.postimg.cc/pLS9CRYM/new.png' }, ...response.data]);
           } catch (error) {
               console.error('Error fetching sub-categories:', error);
           }

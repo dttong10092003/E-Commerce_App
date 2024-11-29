@@ -28,7 +28,7 @@ const WishlistTab = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
   const [wishlistData, setWishlistData] = useState([]);
-  const [subCategories, setSubCategories] = useState([{ name: 'All', image: '' }, { name: 'New', image: 'https://picsum.photos/200' }]);
+  const [subCategories, setSubCategories] = useState([{ name: 'All', image: '' }, { name: 'New', image: 'https://i.postimg.cc/pLS9CRYM/new.png' }]);
   const [selectedSubCategory, setSelectedSubCategory] = useState('All');
   const [userID, setUserID] = useState<string | null>(null);
 
@@ -90,10 +90,10 @@ const WishlistTab = () => {
 
   const handleSearch = (text) => {
     setSearchQuery(text);
-
+  
     // Lọc sản phẩm theo tên trong danh sách thuộc sub-category đã chọn
-    if (text) {
-      const filtered = filteredData.filter((item) =>
+    if (text.trim()) {  // Kiểm tra nếu text không trống
+      const filtered = wishlistData.filter((item) =>
         item.name?.toLowerCase().includes(text.toLowerCase())
       );
       setFilteredData(filtered);
@@ -102,6 +102,7 @@ const WishlistTab = () => {
       filterProductsBySubCategory(selectedSubCategory);
     }
   };
+  
 
   function calculateAverageRating(ratings: Ratings): number {
     const totalRatings = ratings[1] + ratings[2] + ratings[3] + ratings[4] + ratings[5];

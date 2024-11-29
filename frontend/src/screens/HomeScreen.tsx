@@ -69,6 +69,7 @@ export type RouteTabsParamList = {
   RatingsReviews: {
     itemDetails: Product;
   };
+  CustomerSupportAI: undefined;
 };
 const HomeScreen = (props: Props) => {
   const Tab = createBottomTabNavigator();
