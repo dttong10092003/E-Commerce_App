@@ -241,7 +241,7 @@ const PromocodesScreen = ({ navigation }) => {
                                 }}
                                 disabled={spinCount === 0}
                             >
-                                <Image source={icons.gift} className="w-40 h-40" resizeMode="contain" />
+                                <Image source={icons.gift} className="w-40 h-40 " resizeMode="contain" />
                             </TouchableOpacity>
                         </View>
                         <Text className="text-lg font-semibold mb-4 text-left">Available Vouchers</Text>

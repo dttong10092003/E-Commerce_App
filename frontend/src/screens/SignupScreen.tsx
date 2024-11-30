@@ -94,7 +94,7 @@ const SignupScreen = (props: Props) => {
             setEmailError('');
             setForm({ ...form, email: e });
           }}
-          placeholder="username or email"
+          placeholder="email"
           otherStyles="my-3"
         />
 
